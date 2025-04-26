@@ -37,22 +37,16 @@
       ondragover="Apple2.handleDragOver(0, event)"
       ondrop="Apple2.handleDrop(0, event)"
       ondragend="Apple2.handleDragEnd(0, event)">
-  <div class="outer">
+  <div class="outer" class="not-selectable">
     <div id="exit-fullscreen">
       <button onClick="Apple2.exitFullScreen();">Exit Full Page</button>
     </div>
-    <div id="header">
-      <a href="https://github.com/whscullin/apple2js#readme" target="_blank">
-        <img src="img/badge2e.png" id="badge" />
-      </a>
-      <div id="subtitle">An Apple //e Emulator in JavaScript</div>
-    </div>
     <div id="display">
       <div class="overscan">
-        <canvas id="screen" width="592" height="416" tabindex="-1"></canvas>
+        <canvas id="screen" width="560" height="384" tabindex="-1" class="not-selectable"></canvas>
       </div>
     </div>
-    <div class="inset">
+    <div class="inset" style="float:left;width:auto;min-width:100px;max-width:240px;margin-left:6px;">
       <div class="disk"
            ondragover="Apple2.handleDragOver(1, event)"
            ondrop="Apple2.handleDrop(1, event)"
@@ -86,7 +80,6 @@
     </div>
     <div id="reset-row">
       <div id="controls" class="inset">
-        <div id="khz" onclick="Apple2.toggleShowFPS()">0 kHz</div>
         <button id="pause-run" onclick="Apple2.pauseRun()" title="Pause/Run">
           <i class="fas fa-pause"></i>
         </button>
@@ -96,20 +89,21 @@
         <button id="toggle-printer" onclick="Apple2.openPrinterModal()" title="Toggle Printer">
           <i class="fas fa-print"></i>
         </button>
-        <div class="spacer short"></div>
+        <!-- <div class="spacer short"></div> -->
         <button onclick="Apple2.copy()" title="Copy">
           <i class="fas fa-copy"></i>
         </button>
         <button onclick="Apple2.paste()" title="Paste">
           <i class="fas fa-paste"></i>
         </button>
-          <div class="spacer"></div>
-        <button onclick="window.open('https://github.com/whscullin/apple2js#readme', 'blank')" title="About">
+          <!-- <div class="spacer"></div> -->
+        <button id="toggle-info" onclick="window.open('https://github.com/whscullin/apple2js#readme', 'blank')" title="About">
           <i class="fas fa-info"></i>
         </button>
         <button onclick="Apple2.openOptions()" title="Options (F4)">
           <i class="fas fa-cog"></i>
         </button>
+        <div id="khz" onclick="Apple2.toggleShowFPS()">0 kHz</div>
       </div>
       <div id="reset" type="button"
         onclick="Apple2.reset(event)"
@@ -117,7 +111,7 @@
         Reset
       </div>
     </div>
-    <div class="inset">
+    <div class="inset" style="margin-top:6px; margin-bottom:6px;">
       <div id="keyboard"></div>
     </div>
   </div>
@@ -324,6 +318,13 @@
       </filter>
   </svg>
 
+  <script>
+    window.addEventListener('resize', () => {
+      let vw = window.innerWidth;
+      document.documentElement.style.setProperty('--scale-factor', Math.min(2, Math.max(1, 1 + (vw - 600) / 600)));
+    });
+    window.dispatchEvent(new Event('resize'));
+  </script>
   <script src="dist/main2e.bundle.js"></script>
 </body>
 </html>

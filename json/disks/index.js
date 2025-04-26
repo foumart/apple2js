@@ -24,4 +24,9 @@ disk_index = [
         name: 'Apple II Audit',
         category: 'Utility',
     },
+    {
+        filename: 'json/disks/7drl-runes-of-eternity.dsk',
+        name: 'Runes of Eternity',
+        category: 'Utility',
+    },
 ];
