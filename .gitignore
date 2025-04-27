@@ -5,4 +5,5 @@
 /coverage
 /node_modules
 /tmp
+/dist_bckp
 __diff_output__

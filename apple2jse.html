@@ -320,7 +320,7 @@
       const scale = +Math.min(2, Math.max(0.5, 1 + (window.innerWidth - width) / width)).toFixed(3);
       document.documentElement.style.setProperty('--scale-factor', scale);
       document.getElementsByClassName("outer")[0].style.transformOrigin = `${window.innerWidth - width < 0 ? "0%" : "50%"} 0%`;
-      document.getElementById("screen").style.imageRendering = scale === 1 ? "pixelated" : "auto";
+      document.getElementById("screen").style.imageRendering = scale === 1 ? "pixelated" : "optimizeSpeed";
     });
 
     requestAnimationFrame(() => {
