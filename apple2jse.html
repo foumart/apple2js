@@ -10,6 +10,9 @@
  software for any purpose.  It is provided "as is" without express or
  implied warranty.
 -->
+<!-- 
+ Responsive adaptation by Noncho Savov '2025
+-->
 <html>
 <head>
 
@@ -33,10 +36,7 @@
 <script type="text/javascript" src="json/disks/index.js"></script>
 
 </head>
-<body class="apple2e"
-      ondragover="Apple2.handleDragOver(0, event)"
-      ondrop="Apple2.handleDrop(0, event)"
-      ondragend="Apple2.handleDragEnd(0, event)">
+<body class="apple2e" ondragover="Apple2.handleDragOver(0, event)" ondrop="Apple2.handleDrop(0, event)" ondragend="Apple2.handleDragEnd(0, event)">
   <div class="outer" class="not-selectable">
     <div id="exit-fullscreen">
       <button onClick="Apple2.exitFullScreen();">Exit Full Page</button>
@@ -46,36 +46,34 @@
         <canvas id="screen" width="560" height="384" tabindex="-1" class="not-selectable"></canvas>
       </div>
     </div>
-    <div class="inset" style="float:left;width:auto;min-width:100px;max-width:240px;margin-left:6px;">
-      <div class="disk"
-           ondragover="Apple2.handleDragOver(1, event)"
-           ondrop="Apple2.handleDrop(1, event)"
-           ondragend="Apple2.handleDragEnd(1, event)">
-        <div class="disk-light" id="disk1"></div>
-        <button title="Load Disk"
-                onclick="Apple2.openLoad(1, event);">
+    <div id="periphery" class="inset">
+      <div class="disk" ondragover="Apple2.handleDragOver(1, event)" ondrop="Apple2.handleDrop(1, event)" ondragend="Apple2.handleDragEnd(1, event)">
+        <button title="Load Disk" onclick="Apple2.openLoad(1, event);">
           <i class="fas fa-folder-open"></i>
         </button>
-        <button title="Save Disk"
-                onclick="Apple2.openSave(1, event);">
+        <button title="Save Disk" onclick="Apple2.openSave(1, event);">
           <i class="fas fa-save"></i>
         </button>
         <div id="disk-label1" class="disk-label">Disk 1</div>
       </div>
-      <div class="disk"
-           ondragover="Apple2.handleDragOver(2, event)"
-           ondrop="Apple2.handleDrop(2, event)"
-           ondragend="Apple2.handleDragEnd(2, event)">
-        <div class="disk-light" id="disk2"></div>
-        <button title="Load Disk"
-                onclick="Apple2.openLoad(2, event);">
+    </div>
+    <div id="periphery" class="inset">
+      <div class="disk" ondragover="Apple2.handleDragOver(2, event)" ondrop="Apple2.handleDrop(2, event)" ondragend="Apple2.handleDragEnd(2, event)">
+        <button title="Load Disk"  onclick="Apple2.openLoad(2, event);">
           <i class="fas fa-folder-open"></i>
         </button>
-        <button title="Save Disk"
-                onclick="Apple2.openSave(2, event);">
+        <button title="Save Disk" onclick="Apple2.openSave(2, event);">
           <i class="fas fa-save"></i>
         </button>
         <div id="disk-label2" class="disk-label">Disk 2</div>
+      </div>
+    </div>
+    <div id="lights">
+      <div class="inset">
+        <div class="disk-light" id="disk1"></div>
+      </div>
+      <div class="inset">
+        <div class="disk-light" id="disk2"></div>
       </div>
     </div>
     <div id="reset-row">
@@ -105,13 +103,11 @@
         </button>
         <div id="khz" onclick="Apple2.toggleShowFPS()">0 kHz</div>
       </div>
-      <div id="reset" type="button"
-        onclick="Apple2.reset(event)"
-        oncontextmenu="Apple2.reset(event)">
+      <div id="reset" type="button" onclick="Apple2.reset(event)" oncontextmenu="Apple2.reset(event)">
         Reset
       </div>
     </div>
-    <div class="inset" style="margin-top:6px; margin-bottom:6px;">
+    <div class="inset" style="margin-bottom:6px;background-color:black;height:196px;">
       <div id="keyboard"></div>
     </div>
   </div>
@@ -235,14 +231,11 @@
           <table>
             <tr>
               <td>
-                <select id="category_select" multiple="multiple"
-                        onchange="Apple2.selectCategory(event)" >
+                <select id="category_select" multiple="multiple" onchange="Apple2.selectCategory(event)" >
                 </select>
               </td>
               <td>
-                <select id="disk_select" multiple="multiple"
-                        onchange="Apple2.selectDisk(event)"
-                        ondblclick="Apple2.clickDisk(event)">
+                <select id="disk_select" multiple="multiple" onchange="Apple2.selectDisk(event)" ondblclick="Apple2.clickDisk(event)">
                 </select>
               </td>
             </tr>
@@ -320,10 +313,18 @@
 
   <script>
     window.addEventListener('resize', () => {
-      let vw = window.innerWidth;
-      document.documentElement.style.setProperty('--scale-factor', Math.min(2, Math.max(1, 1 + (vw - 600) / 600)));
+      const scrollBar = window.innerWidth / window.innerHeight > 580 / 640;
+      document.body.style.overflowY = scrollBar ? "scroll" : "hidden";
+      const scrollerWidth = scrollBar ? (window.innerWidth - document.documentElement.clientWidth) / 2 : 0;
+      const width = 584 + (scrollBar ? scrollerWidth : 0);
+      const scale = Math.min(2, Math.max(0.5, 1 + (window.innerWidth - width) / width));
+      document.documentElement.style.setProperty('--scale-factor', scale);
+      document.getElementsByClassName("outer")[0].style.transformOrigin = `${window.innerWidth - width < 0 ? "0%" : "50%"} 0%`;
     });
-    window.dispatchEvent(new Event('resize'));
+
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
   </script>
   <script src="dist/main2e.bundle.js"></script>
 </body>
