@@ -6,4 +6,5 @@
 /node_modules
 /tmp
 /dist_bckp
+/dist
 __diff_output__
