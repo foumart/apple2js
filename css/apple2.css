@@ -9,6 +9,7 @@ body {
     overflow-x: hidden;
     overflow-y: hidden;
     margin: 0;
+    -webkit-touch-callout: none;
 }
 
 #toggle-printer, #toggle-info {
@@ -141,7 +142,7 @@ input[type='text'] {
 }
 
 #periphery button {
-    min-width: 32px;
+    width: 28px;
 }
 
 .disk {
@@ -202,9 +203,8 @@ th {
 }
 
 .inset button {
-    min-width: 28px;
+    width: 28px;
     margin: 1px 0 1px 1px;
-
 }
 
 #khz {
@@ -220,12 +220,6 @@ th {
     border-radius: 5px;
     margin: 1px;
     user-select: none;
-}
-
-canvas {
-    display: block;
-    float: left;
-    image-rendering: pixelated;
 }
 
 .mono {
@@ -263,13 +257,13 @@ canvas {
 
 #screen {
     cursor: crosshair;
-    -moz-image-rendering: -moz-crisp-edges;
-    -webkit-image-rendering: -webkit-optimize-contrast;
-    image-rendering: optimizeSpeed;
-    width: 560px;
-    height: 384px;
+    width: 1120px;
+    height: 768px;
     touch-action: manipulation;
     user-select: none;
+    transform: scale(0.5);
+    transform-origin: 0 0;
+    position: absolute;
 }
 
 #screen.mouseMode {
@@ -290,6 +284,9 @@ canvas {
     -khtml-user-select: none;
     -webkit-user-select: none;
     -o-user-select: none;
+    -webkit-user-select: none;
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
 }
 
 #about {
