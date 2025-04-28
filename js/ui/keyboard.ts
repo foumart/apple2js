@@ -14,8 +14,8 @@ const keymap = {
     0x05: [0x05, 0x05, 0x05], //
     0x06: [0x06, 0x06, 0x06], //
     0x07: [0x07, 0x07, 0x07], //
-    0x08: [0x7f, 0x7f, 0x7f], // BS/DELETE
-    0x09: [0x09, 0x09, 0x09], // TAB
+    0x08: [0x7f, 0x7f, 0x7f], // BS/Delete
+    0x09: [0x09, 0x09, 0x09], // Tab
     0x0a: [0x0a, 0x0a, 0x0a], //
     0x0b: [0x0b, 0x0b, 0x0b], //
     0x0c: [0x0c, 0x0c, 0x0c], //
@@ -23,8 +23,8 @@ const keymap = {
     0x0e: [0x0e, 0x0e, 0x0e], //
     0x0f: [0x0f, 0x0f, 0x0f], //
 
-    0x10: [0xff, 0xff, 0xff], // SHIFT
-    0x11: [0xff, 0xff, 0xff], // CTRL
+    0x10: [0xff, 0xff, 0xff], // Shift
+    0x11: [0xff, 0xff, 0xff], // Control
     0x12: [0xff, 0xff, 0xff], // ALT/OPTION
     0x13: [0x13, 0x13, 0x13], //
     0x14: [0x14, 0x14, 0x14], //
@@ -34,7 +34,7 @@ const keymap = {
     0x18: [0x18, 0x18, 0x18], //
     0x19: [0x19, 0x19, 0x19], //
     0x1a: [0x1a, 0x1a, 0x1a], //
-    0x1b: [0x1b, 0x1b, 0x1b], // ESC
+    0x1b: [0x1b, 0x1b, 0x1b], // Esc
     0x1c: [0x1c, 0x1c, 0x1c], //
     0x1d: [0x1d, 0x1d, 0x1d], //
     0x1e: [0x1e, 0x1e, 0x1e], //
@@ -85,7 +85,7 @@ const keymap = {
     0x46: [0x66, 0x06, 0x46], // F
     0x47: [0x67, 0x07, 0x47], // G - BELL
     0x48: [0x68, 0x08, 0x48], // H
-    0x49: [0x69, 0x09, 0x49], // I - TAB
+    0x49: [0x69, 0x09, 0x49], // I - Tab
     0x4a: [0x6a, 0x0a, 0x4a], // J - NL
     0x4b: [0x6b, 0x0b, 0x4b], // K - VT
     0x4c: [0x6c, 0x0c, 0x4c], // L
@@ -165,17 +165,17 @@ function isUiKitKey(k: string): k is KnownKeys<typeof uiKitMap> {
 // prettier-ignore
 export const keys2 = [
     [
-        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ':', '-', 'RESET'],
-        ['ESC', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'REPT', 'RETURN'],
-        ['CTRL', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '&larr;', '&rarr;'],
-        ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'SHIFT'],
-        ['POWER', '&nbsp;']
+        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ':', '-', 'Reset'],
+        ['Esc', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'REPT', 'Return'],
+        ['Control', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '&larr;', '&rarr;'],
+        ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift'],
+        ['PW', '&nbsp;']
     ], [
-        ['!', '"', '#', '$', '%', '&', '\'', '(', ')', '0', '*', '=', 'RESET'],
-        ['ESC', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', '@', 'REPT', 'RETURN'],
-        ['CTRL', 'A', 'S', 'D', 'F', 'BELL', 'H', 'J', 'K', 'L', '+', '&larr;', '&rarr;'],
-        ['SHIFT', 'Z', 'X', 'C', 'V', 'B', '^', ']', '<', '>', '?', 'SHIFT'],
-        ['POWER', '&nbsp;']
+        ['!', '"', '#', '$', '%', '&', '\'', '(', ')', '0', '*', '=', 'Reset'],
+        ['Esc', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', '@', 'REPT', 'Return'],
+        ['Control', 'A', 'S', 'D', 'F', 'BELL', 'H', 'J', 'K', 'L', '+', '&larr;', '&rarr;'],
+        ['Shift', 'Z', 'X', 'C', 'V', 'B', '^', ']', '<', '>', '?', 'Shift'],
+        ['PW', '&nbsp;']
     ]
 ] as const;
 
@@ -184,17 +184,17 @@ type Key2 = DeepMemberOf<typeof keys2>;
 // prettier-ignore
 export const keys2e = [
     [
-        ['ESC', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'DELETE'],
-        ['TAB', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'],
-        ['CTRL', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '"', 'RETURN'],
-        ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'SHIFT'],
-        ['LOCK', '`', 'POW', 'OPEN_APPLE', '&nbsp;', 'CLOSED_APPLE', '&larr;', '&rarr;', '&darr;', '&uarr;']
+        ['Esc', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Delete'],
+        ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'],
+        ['Control', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '"', 'Return'],
+        ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift'],
+        ['Lock', '`', 'PW', 'OPEN_APPLE', '&nbsp;', 'CLOSED_APPLE', '&larr;', '&rarr;', '&darr;', '&uarr;']
     ], [
-        ['ESC', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', 'DELETE'],
-        ['TAB', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '|'],
-        ['CTRL', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '\'', 'RETURN'],
-        ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 'SHIFT'],
-        ['CAPS', '~', 'POW', 'OPEN_APPLE', '&nbsp;', 'CLOSED_APPLE', '&larr;', '&rarr;', '&darr;', '&uarr;']
+        ['Esc', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', 'Delete'],
+        ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '|'],
+        ['Control', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '\'', 'Return'],
+        ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 'Shift'],
+        ['Caps', '~', 'PW', 'OPEN_APPLE', '&nbsp;', 'CLOSED_APPLE', '&larr;', '&rarr;', '&darr;', '&uarr;']
     ]
 ] as const;
 
@@ -204,13 +204,13 @@ type Key2e = DeepMemberOf<typeof keys2e>;
 const keyspravetz82 = [
     [
         ['!', '"', '#', '¤', '%', '&', '\'', '(', ')', '0', '*', '=', '﹁', 'RST'],
-        ['ОСВ', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', 'RPT', 'RETURN'],
+        ['ОСВ', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', 'RPT', 'Return'],
         ['МК', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '+', '[', ']', '&darr;'],
         ['ЛАТ', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 'ЛАТ', 'ЛАТ2'],
         ['ВКЛ', '&nbsp;']
     ], [
         ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ':', '-', 'Ч', 'RST'],
-        ['ОСВ', 'Я', 'В', 'Е', 'Р', 'Т', 'Ъ', 'У', 'И', 'О', 'П', 'Ю', 'RPT', 'RETURN'],
+        ['ОСВ', 'Я', 'В', 'Е', 'Р', 'Т', 'Ъ', 'У', 'И', 'О', 'П', 'Ю', 'RPT', 'Return'],
         ['МК', 'А', 'С', 'Д', 'Ф', 'Г', 'Х', 'Й', 'К', 'Л', ';', 'Ш', 'Щ', '&darr;'],
         ['ЛАТ', 'З', 'Ь', 'Ц', 'Ж', 'Б', 'Н', 'М', ',', '.', '/', 'ЛАТ', 'ЛАТ2'],
         ['ВКЛ', '&nbsp;']
@@ -250,7 +250,7 @@ export default class KeyBoard {
                 break;
             case 'pravetz82':
                 this.keys = keyspravetz82;
-                this.capslocked = false; // Pravetz 82 starts with CAPS LOCK off.
+                this.capslocked = false; // Pravetz 82 starts with Caps Lock off.
                 break;
             default:
                 this.keys = keys2;
@@ -295,7 +295,7 @@ export default class KeyBoard {
 
     shiftKey(down: boolean) {
         const shiftKeys = this.kb.querySelectorAll(
-            this.layout !== 'pravetz82' ? '.key-SHIFT' : '.key-ЛАТ'
+            this.layout !== 'pravetz82' ? '.key-Shift' : '.key-ЛАТ'
         );
         this.shifted = down;
         if (down) {
@@ -313,7 +313,7 @@ export default class KeyBoard {
 
     controlKey(down: boolean) {
         const ctrlKey = this.kb.querySelector(
-            this.layout !== 'pravetz82' ? '.key-CTRL' : '.key-МК'
+            this.layout !== 'pravetz82' ? '.key-Control' : '.key-МК'
         );
         this.controlled = down;
         if (down) {
@@ -362,7 +362,7 @@ export default class KeyBoard {
      */
     capslockKey(down?: boolean | undefined) {
         const capsLock = this.kb.querySelector(
-            this.layout !== 'pravetz82' ? '.key-LOCK' : '.key-ЛАТ2'
+            this.layout !== 'pravetz82' ? '.key-Lock' : '.key-ЛАТ2'
         );
 
         if (arguments.length === 0) {
@@ -422,7 +422,7 @@ export default class KeyBoard {
                 key.classList.add('key-' + key1.replace(/[&#;]/g, ''));
 
                 if (key1.length > 1) {
-                    if (key1 === 'LOCK') key.classList.add('v-center2');
+                    if (key1 === 'Lock') key.classList.add('v-center2');
                     else key.classList.add('v-center');
                 }
                 if (key1 !== key2) {
@@ -430,7 +430,7 @@ export default class KeyBoard {
                     label.append(label2);
                     label.append(document.createElement('br'));
                 }
-                if (key1 === 'LOCK') {
+                if (key1 === 'Lock') {
                     key.classList.add('active');
                 }
 
@@ -473,13 +473,13 @@ export default class KeyBoard {
                 case 'BELL':
                     key = 'G';
                     break;
-                case 'RETURN':
+                case 'Return':
                     key = '\r';
                     break;
-                case 'TAB':
+                case 'Tab':
                     key = '\t';
                     break;
-                case 'DELETE':
+                case 'Delete':
                     key = '\x7F';
                     break;
                 case '&larr;':
@@ -501,7 +501,7 @@ export default class KeyBoard {
                 case '&nbsp;':
                     key = ' ';
                     break;
-                case 'ESC':
+                case 'Esc':
                     key = '\x1B';
                     break;
                 default:
@@ -521,7 +521,7 @@ export default class KeyBoard {
                         break;
 
                     // Second row.
-                    case 'ОСВ': // Pravetz 82 ESC key in cyrillic.
+                    case 'ОСВ': // Pravetz 82 Esc key in cyrillic.
                         key = '\x1B';
                         break;
                     case 'Я':
@@ -632,26 +632,26 @@ export default class KeyBoard {
 
             if (key.length > 1) {
                 switch (key) {
-                    case 'SHIFT':
+                    case 'Shift':
                     case 'ЛАТ': // Shift on Pravetz 82 switches to cyrillic.
                         this.shiftKey(!this.shifted);
                         break;
-                    case 'CTRL':
-                    case 'МК': // Pravetz 82 CTRL key in cyrillic.
+                    case 'Control':
+                    case 'МК': // Pravetz 82 Control key in cyrillic.
                         this.controlKey(!this.controlled);
                         break;
-                    case 'CAPS':
-                    case 'LOCK':
-                    case 'ЛАТ2': // CAPS LOCK on Pravetz 82 switches between cyrillic and latin.
+                    case 'Caps':
+                    case 'Lock':
+                    case 'ЛАТ2': // Caps Lock on Pravetz 82 switches between cyrillic and latin.
                         this.capslockKey(undefined);
                         break;
-                    case 'POW':
-                    case 'POWER':
+                    case 'PW':
+                    case 'PW':
                     case 'ВКЛ': // Pravetz 82 power key in cyrillic.
                         if (window.confirm('Power Cycle?'))
                             window.location.reload();
                         break;
-                    case 'RESET':
+                    case 'Reset':
                     case 'RST':
                         this.cpu.reset();
                         break;
@@ -685,7 +685,7 @@ export default class KeyBoard {
                     key >= 'a' &&
                     key <= 'z'
                 ) {
-                    // CAPS LOCK on Pravetz 82 switches between cyrillic and latin.
+                    // Caps Lock on Pravetz 82 switches between cyrillic and latin.
                     this.io.keyDown(key.charCodeAt(0) - 0x20);
                 } else {
                     this.io.keyDown(key.charCodeAt(0));

@@ -630,30 +630,30 @@ export class VideoModesGL implements VideoModes {
         config.displayScanlineLevel = 0.5;
         config.videoWhiteOnly = true;
         config.videoSaturation = 0.8;
-        config.videoSize = new screenEmu.Size(1.25, 1.15);
-        config.videoCenter = new screenEmu.Point(0.01, 0.02);
+        config.videoSize = new screenEmu.Size(1.34, 1.25);
+        config.videoCenter = new screenEmu.Point(0.01, 0.026);
         // config.videoDecoder = 'CANVAS_CXA2025AS';
         return config;
     }
 
     private monitorII(): screenEmu.DisplayConfiguration {
-        // Values taken from openemulator/libemulation/res/library/Monitors/Apple Monitor II.xml
+        // Custom values for Monochrome monitor
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
             this.screen.width,
             this.screen.height
         );
         config.videoDecoder = 'CANVAS_MONOCHROME';
-        config.videoBrightness = 0.15;
-        config.videoContrast = 0.8;
-        config.videoSaturation = 1.45;
-        config.videoHue = 0.27;
-        config.videoCenter = new screenEmu.Point(0.01, 0.02);
-        config.videoSize = new screenEmu.Size(1.25, 1.15);
+        config.videoBrightness = 0;
+        config.videoContrast = 0.75;
+        config.videoSaturation = 1.5;
+        config.videoHue = 0.35;
+        config.videoCenter = new screenEmu.Point(0.01, 0.026);
+        config.videoSize = new screenEmu.Size(1.34, 1.25);
         config.videoBandwidth = 9000000;
-        config.displayBarrel = 0.1;
+        config.displayBarrel = 0;
         config.displayScanlineLevel = 0.5;
-        config.displayCenterLighting = 0.5;
+        config.displayCenterLighting = 1;
         config.displayLuminanceGain = 1.5;
         return config;
     }

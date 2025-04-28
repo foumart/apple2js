@@ -2,14 +2,14 @@ import { JSX } from 'preact';
 import { DeepMemberOf, KnownKeys } from '../../types';
 
 export const SPECIAL_KEY_MAP = {
-    Shift: 'SHIFT',
-    Enter: 'RETURN',
-    CapsLock: 'LOCK',
-    Control: 'CTRL',
-    Escape: 'ESC',
-    Delete: 'RESET',
-    Tab: 'TAB',
-    Backspace: 'DELETE',
+    Shift: 'Shift',
+    Enter: 'Return',
+    CapsLock: 'Lock',
+    Control: 'Control',
+    Escape: 'Esc',
+    Delete: 'Reset',
+    Tab: 'Tab',
+    Backspace: 'Delete',
     ArrowUp: '&uarr;',
     ArrowDown: '&darr;',
     ArrowRight: '&rarr;',
@@ -19,7 +19,7 @@ export const SPECIAL_KEY_MAP = {
     UIKeyInputRightArrow: '&rarr;',
     UIKeyInputUpArrow: '&uarr;',
     UIKeyInputDownArrow: '&darr;',
-    UIKeyInputEscape: 'ESC',
+    UIKeyInputEscape: 'Esc',
 } as const;
 
 export const isSpecialKey = (
@@ -29,14 +29,14 @@ export const isSpecialKey = (
 };
 
 export const SPECIAL_KEY_CODE = {
-    TAB: 9,
-    RETURN: 13,
-    ESC: 27,
+    Tab: 9,
+    Return: 13,
+    Esc: 27,
     '&uarr;': 11,
     '&darr;': 10,
     '&rarr;': 21,
     '&larr;': 8,
-    DELETE: 127,
+    Delete: 127,
 } as const;
 
 export const hasSpecialKeyCode = (
@@ -51,18 +51,18 @@ export const hasSpecialKeyCode = (
 // prettier-ignore
 export const keys2 = [
     [
-        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ':', '-', 'RESET'],
-        ['ESC', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'REPT', 'RETURN'],
-        ['CTRL', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '&larr;', '&rarr;'],
-        ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'SHIFT'],
-        ['POWER', '&nbsp;'],
+        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ':', '-', 'Reset'],
+        ['Esc', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'REPT', 'Return'],
+        ['Control', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '&larr;', '&rarr;'],
+        ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift'],
+        ['PW', '&nbsp;'],
     ],
     [
-        ['!', '"', '#', '$', '%', '&', "'", '(', ')', '0', '*', '=', 'RESET'],
-        ['ESC', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', '@', 'REPT', 'RETURN'],
-        ['CTRL', 'A', 'S', 'D', 'F', 'BELL', 'H', 'J', 'K', 'L', '+', '&larr;', '&rarr;'],
-        ['SHIFT', 'Z', 'X', 'C', 'V', 'B', '^', ']', '<', '>', '?', 'SHIFT'],
-        ['POWER', '&nbsp;'],
+        ['!', '"', '#', '$', '%', '&', "'", '(', ')', '0', '*', '=', 'Reset'],
+        ['Esc', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', '@', 'REPT', 'Return'],
+        ['Control', 'A', 'S', 'D', 'F', 'BELL', 'H', 'J', 'K', 'L', '+', '&larr;', '&rarr;'],
+        ['Shift', 'Z', 'X', 'C', 'V', 'B', '^', ']', '<', '>', '?', 'Shift'],
+        ['PW', '&nbsp;'],
     ],
 ] as const;
 
@@ -74,23 +74,23 @@ export type Key2 = DeepMemberOf<typeof keys2>;
 // prettier-ignore
 export const keys2e = [
     [
-        ['ESC', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'DELETE'],
-        ['TAB', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'],
-        ['CTRL', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '"', 'RETURN'],
-        ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'SHIFT'],
-        ['LOCK', '`', 'POW', 'OPEN_APPLE', '&nbsp;', 'CLOSED_APPLE', '&larr;', '&rarr;', '&darr;', '&uarr;'],
+        ['Esc', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Delete'],
+        ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'],
+        ['Control', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '"', 'Return'],
+        ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift'],
+        ['Lock', '`', 'PW', 'OPEN_APPLE', '&nbsp;', 'CLOSED_APPLE', '&larr;', '&rarr;', '&darr;', '&uarr;'],
     ],
     [
-        ['ESC', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', 'DELETE'],
-        ['TAB', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '|'],
-        ['CTRL', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', "'", 'RETURN'],
-        ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 'SHIFT'],
-        ['CAPS', '~', 'POW', 'OPEN_APPLE', '&nbsp;', 'CLOSED_APPLE', '&larr;', '&rarr;', '&darr;', '&uarr;'],
+        ['Esc', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', 'Delete'],
+        ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '|'],
+        ['Control', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', "'", 'Return'],
+        ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 'Shift'],
+        ['Caps', '~', 'PW', 'OPEN_APPLE', '&nbsp;', 'CLOSED_APPLE', '&larr;', '&rarr;', '&darr;', '&uarr;'],
     ],
 ] as const;
 
 /** Shifted */
-const SHIFTED = {
+const ShiftED = {
     '!': '1',
     '@': '2',
     '#': '3',
@@ -114,8 +114,8 @@ const SHIFTED = {
     '~': '`',
 } as const;
 
-export const isShiftyKey = (k: string): k is KnownKeys<typeof SHIFTED> => {
-    return k in SHIFTED;
+export const isShiftyKey = (k: string): k is KnownKeys<typeof ShiftED> => {
+    return k in ShiftED;
 };
 
 export type Key2e = DeepMemberOf<typeof keys2e>;
@@ -152,7 +152,7 @@ export const mapKeyboardEvent = (
     let keyLabel = key;
     if (key.length === 1) {
         if (isShiftyKey(key)) {
-            keyLabel = SHIFTED[key];
+            keyLabel = ShiftED[key];
         } else {
             keyLabel = key.toUpperCase();
         }
@@ -200,13 +200,13 @@ export const mapMouseEvent = (
         case 'BELL':
             key = 'G';
             break;
-        case 'RETURN':
+        case 'Return':
             key = '\r';
             break;
-        case 'TAB':
+        case 'Tab':
             key = '\t';
             break;
-        case 'DELETE':
+        case 'Delete':
             key = '\x7F';
             break;
         case '&larr;':
@@ -224,7 +224,7 @@ export const mapMouseEvent = (
         case '&nbsp;':
             key = ' ';
             break;
-        case 'ESC':
+        case 'Esc':
             key = '\x1B';
             break;
         default:
