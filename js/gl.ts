@@ -621,6 +621,7 @@ export class VideoModesGL implements VideoModes {
         this._sv.displayConfiguration = this._displayConfig;
     }
 
+    // Composite display
     private defaultMonitor(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
@@ -628,11 +629,26 @@ export class VideoModesGL implements VideoModes {
             this.screen.height
         );
         config.displayScanlineLevel = 0.5;
-        config.videoWhiteOnly = true;
-        config.videoSaturation = 0.8;
+        config.videoWhiteOnly = false;
+        config.videoSaturation = 0.85;
         config.videoSize = new screenEmu.Size(1.34, 1.25);
         config.videoCenter = new screenEmu.Point(0.01, 0.026);
-        // config.videoDecoder = 'CANVAS_CXA2025AS';
+        config.videoDecoder = "CANVAS_YUV";
+        config.videoBrightness = 0;
+        config.videoContrast = 1;
+        config.videoHue = 0;
+        config.videoBandwidth = 6000000;
+        config.videoLumaBandwidth = 4244770;
+        config.videoChromaBandwidth = 600000;
+        config.displayPixelDensity = 72;
+        config.displayBarrel = 0;
+        config.displayShadowMaskLevel = 0;
+        config.displayShadowMaskDotPitch = 0;
+        config.displayShadowMask = "SHADOWMASK_TRIAD";
+        config.displayPersistence = 0;
+        config.displayCenterLighting = 1;
+        config.displayLuminanceGain = 1;
+
         return config;
     }
 
