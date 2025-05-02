@@ -32,6 +32,7 @@ export interface Apple2Options {
     gl: boolean;
     rom: string;
     canvas: HTMLCanvasElement;
+    canvas2: HTMLCanvasElement;
     tick: () => void;
 }
 
@@ -101,7 +102,7 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
         this.cpu = new CPU6502({
             flavor: options.enhanced ? FLAVOR_ROCKWELL_65C02 : FLAVOR_6502,
         });
-        this.vm = new VideoModes(options.canvas, options.e);
+        this.vm = new VideoModes(options.gl ? options.canvas : options.canvas2, options.e);
 
         const [{ default: Apple2ROM }, { default: characterRom }] =
             await Promise.all([

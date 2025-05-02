@@ -108,6 +108,7 @@ export const Apple2 = (props: Apple2Props) => {
         if (screenRef.current) {
             const options = {
                 canvas: screenRef.current,
+                canvas2: screenRef.current,
                 tick: () => {
                     /* do nothing */
                 },

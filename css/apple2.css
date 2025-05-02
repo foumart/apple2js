@@ -69,7 +69,7 @@ body {
     align-items: center;
 }
 
-.full-page #screen {
+.full-page #screen, .full-page #screen2 {
     width: 100%;
     height: 100%;
 }
@@ -266,11 +266,22 @@ th {
     position: absolute;
 }
 
-#screen.mouseMode {
+#screen2 {
+    cursor: crosshair;
+    width: 560px;
+    height: 384px;
+    touch-action: manipulation;
+    user-select: none;
+    position: absolute;
+    image-rendering: pixelated;
+}
+
+#screen.mouseMode, 
+#screen2.mouseMode {
     cursor: none;
 }
 
-#screen:-webkit-full-screen {
+#screen:-webkit-full-screen, #screen2:-webkit-full-screen {
     background-color: black;
     top: 0;
     left: 0;
