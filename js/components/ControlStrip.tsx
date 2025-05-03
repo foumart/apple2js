@@ -61,7 +61,7 @@ export const ControlStrip = ({
             const joystick = new JoyStick(io);
             options.addOptions(joystick);
 
-            const screen = new Screen(vm);
+            const screen = new Screen(apple2);
             options.addOptions(screen);
         }
     }, [apple2, e, options]);

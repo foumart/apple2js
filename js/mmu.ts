@@ -5,6 +5,7 @@ import { debug } from './util';
 import { byte, Memory, Restorable } from './types';
 import Apple2IO from './apple2io';
 import { HiresPage, LoresPage, VideoModes } from './videomodes';
+import { VideoModeMix } from './apple2';
 
 /*
  * I/O Switch locations
@@ -208,17 +209,34 @@ export default class MMU implements Memory, Restorable<MMUState> {
         new RAM(0xe0, 0xff),
     ];
 
+    private vm: VideoModes;
+    private lores1: LoresPage;
+    private lores2: LoresPage;
+    private hires1: HiresPage;
+    private hires2: HiresPage;
+
+    //private _oldVM: VideoModes;
+
     constructor(
         private readonly cpu: CPU6502,
-        private readonly vm: VideoModes,
-        private readonly lores1: LoresPage,
-        private readonly lores2: LoresPage,
-        private readonly hires1: HiresPage,
-        private readonly hires2: HiresPage,
+        videoModeMix: VideoModeMix,
         private readonly io: Apple2IO,
         private readonly ram: RAM[],
-        private readonly rom: ROM
+        private readonly rom: ROM,
     ) {
+        this.applyVideoModeMix(videoModeMix);
+        this.init();
+    }
+
+    private applyVideoModeMix(videoModeMix: VideoModeMix) {
+        this.vm = videoModeMix.vm;
+        this.lores1 = videoModeMix.gr;
+        this.lores2 = videoModeMix.gr2;
+        this.hires1 = videoModeMix.hgr;
+        this.hires2 = videoModeMix.hgr2;
+    }
+
+    private init() {
         this.mem00_01 = [this.ram[0], this.ram[1]];
         this.mem02_03 = [this.ram[0], this.ram[1]];
         this.mem04_07 = [this.lores1.bank0(), this.lores1.bank1()];
@@ -938,5 +956,24 @@ export default class MMU implements Memory, Restorable<MMUState> {
         this.memE0_FF[2].setState(state.memE0_FF[2]);
 
         this._updateBanks();
+    }
+
+    public switchVideoMode(videoModeMix: VideoModeMix) {
+        //this._oldVM = this.vm;
+        //this.vm = videoModeMix.vm;
+        //this.lores1 = videoModeMix.gr;
+        //this.lores2 = videoModeMix.gr2;
+        //this.hires1 = videoModeMix.hgr;
+        //this.hires2 = videoModeMix.hgr2;
+
+        this.applyVideoModeMix(videoModeMix);
+        this.init();
+
+        if (!this.__80store) this.vm.page(this._page2 ? 2 : 1);
+        this.vm.doubleHires(this._iouDisable);
+
+        this.vm._80col(this.vm.is80Col());
+        this.vm.altChar(this.vm.isAltChar());
+        //
     }
 }

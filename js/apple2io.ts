@@ -2,6 +2,7 @@ import { CPU6502 } from '@whscullin/cpu6502';
 import { Card, Memory, MemoryPages, TapeData, byte, Restorable } from './types';
 import { debug, garbage } from './util';
 import { VideoModes } from './videomodes';
+import { VideoModeMix } from './apple2';
 
 export type slot = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type button = 0 | 1 | 2;
@@ -87,9 +88,11 @@ export default class Apple2IO
     private _tapeNext: number = 0;
     private _tapeCurrent = false;
 
+    private _oldVM: VideoModes;
+
     constructor(
         private readonly cpu: CPU6502,
-        private readonly vm: VideoModes
+        private vm: VideoModes
     ) {
         this.init();
     }
@@ -499,5 +502,24 @@ export default class Apple2IO
 
     cycles() {
         return this.cpu.getCycles();
+    }
+
+    switchVideoMode(videoModeMix: VideoModeMix) {
+        this._oldVM = this.vm;
+        this.vm = videoModeMix.vm;
+
+        this.vm.textMode = this._oldVM.textMode;
+        this.vm.text(this.vm.textMode);
+
+        this.vm.mixedMode = this._oldVM.mixedMode;
+        this.vm.mixed(this.vm.mixedMode);
+
+        this.vm.hiresMode = this._oldVM.hiresMode;
+        this.vm.hires(this.vm.hiresMode);
+
+        this.vm.pageMode = this._oldVM.pageMode;
+        this.vm.page(this.vm.pageMode);
+
+        //this._oldVM.reset();
     }
 }

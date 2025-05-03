@@ -985,7 +985,7 @@ function onLoaded(
     joystick = new JoyStick(io);
     options.addOptions(joystick);
 
-    screen = new Screen(vm);
+    screen = new Screen(apple2);
     options.addOptions(screen);
 
     audio = new Audio(io);

@@ -1,5 +1,5 @@
-import { VideoModes } from '../videomodes';
 import { BOOLEAN_OPTION, OptionHandler } from '../options';
+import { Apple2 } from 'js/apple2';
 
 export const SCREEN_MONO = 'mono_screen';
 export const SCREEN_FULL_PAGE = 'full_page';
@@ -16,7 +16,7 @@ declare global {
     }
 }
 export class Screen implements OptionHandler {
-    constructor(private vm: VideoModes) {}
+    constructor(private a2: Apple2) {}
 
     enterFullScreen = () => {
         const elem = document.getElementById('screen')!;
@@ -72,13 +72,16 @@ export class Screen implements OptionHandler {
     setOption(name: string, value: boolean) {
         switch (name) {
             case SCREEN_MONO:
-                this.vm.mono(value);
+                this.a2.getVideoModes().mono(value);
                 break;
             case SCREEN_FULL_PAGE:
                 this.setFullPage(value);
                 break;
             case SCREEN_SCANLINE:
-                this.vm.scanlines(value);
+                this.a2.getVideoModes().scanlines(value);
+                break;
+            case SCREEN_GL:
+                this.a2.switchRenderMode(value);
                 break;
         }
     }

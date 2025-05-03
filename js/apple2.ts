@@ -50,6 +50,14 @@ export interface State {
     ram: RAMState[] | undefined;
 }
 
+export interface VideoModeMix {
+    vm: VideoModes;
+    gr: LoresPage;
+    gr2: LoresPage;
+    hgr: HiresPage;
+    hgr2: HiresPage;
+}
+
 export class Apple2 implements Restorable<State>, DebuggerContainer {
     private paused = false;
 
@@ -58,6 +66,9 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
     private runTimer: number | null = null;
     private runAnimationFrame: number | null = null;
     private cpu: CPU6502;
+
+    private GL: VideoModeMix;
+    private CV: VideoModeMix;
 
     private gr: LoresPage;
     private gr2: LoresPage;
@@ -80,12 +91,19 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
     };
 
     public ready: Promise<void>;
+    private _options: Apple2Options;
+    //private _oldVm: VideoModes;
+    private initialized: boolean = false;
 
     constructor(options: Apple2Options) {
         this.ready = this.init(options);
+        this.ready.then(() => {
+            //this.initialized = true;
+        });
     }
 
     async init(options: Apple2Options) {
+        this._options = options;
         const romImportPromise = import(
             `./roms/system/${options.rom}`
         ) as Promise<{
@@ -95,14 +113,11 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
             `./roms/character/${options.characterRom}`
         ) as Promise<{ default: ReadonlyUint8Array }>;
 
-        const LoresPage = options.gl ? LoresPageGL : LoresPage2D;
-        const HiresPage = options.gl ? HiresPageGL : HiresPage2D;
-        const VideoModes = options.gl ? VideoModesGL : VideoModes2D;
-
         this.cpu = new CPU6502({
             flavor: options.enhanced ? FLAVOR_ROCKWELL_65C02 : FLAVOR_6502,
         });
-        this.vm = new VideoModes(options.gl ? options.canvas : options.canvas2, options.e);
+
+        this.createVideoMode(options);
 
         const [{ default: Apple2ROM }, { default: characterRom }] =
             await Promise.all([
@@ -118,33 +133,16 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
         if (options.e) {
             this.ram.push(new RAM(0x00, 0xbf));
         }
-        this.gr = new LoresPage(
-            this.vm,
-            1,
-            this.ram,
-            this.characterRom,
-            options.e
-        );
-        this.gr2 = new LoresPage(
-            this.vm,
-            2,
-            this.ram,
-            this.characterRom,
-            options.e
-        );
-        this.hgr = new HiresPage(this.vm, 1, this.ram);
-        this.hgr2 = new HiresPage(this.vm, 2, this.ram);
+
+        this.createVideoModeLink(options);
+
         this.io = new Apple2IO(this.cpu, this.vm);
         this.tick = options.tick;
 
         if (options.e) {
             this.mmu = new MMU(
                 this.cpu,
-                this.vm,
-                this.gr,
-                this.gr2,
-                this.hgr,
-                this.hgr2,
+                this._options.gl ? this.GL : this.CV,
                 this.io,
                 this.ram,
                 this.rom
@@ -158,6 +156,52 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
             this.cpu.addPageHandler(this.hgr2);
             this.cpu.addPageHandler(this.io);
             this.cpu.addPageHandler(this.rom);
+        }
+    }
+
+    createVideoMode(options: Apple2Options) {
+        const VideoModes = options.gl ? VideoModesGL : VideoModes2D;
+        this.vm = new VideoModes(options.gl ? options.canvas : options.canvas2, options.e);
+    }
+
+    createVideoModeLink(options: Apple2Options) {
+        if (options.gl && this.GL || !options.gl && this.CV) return;
+
+        const LoresPage = options.gl ? LoresPageGL : LoresPage2D;
+        const HiresPage = options.gl ? HiresPageGL : HiresPage2D;
+        this.gr = new LoresPage(
+            this.vm,
+            1,
+            this.ram as RAM[],
+            this.characterRom,
+            options.e
+        );
+        this.gr2 = new LoresPage(
+            this.vm,
+            2,
+            this.ram as RAM[],
+            this.characterRom,
+            options.e
+        );
+        this.hgr = new HiresPage(this.vm, 1, this.ram as RAM[]);
+        this.hgr2 = new HiresPage(this.vm, 2, this.ram as RAM[]);
+
+        if (options.gl) {
+            this.GL = {
+                vm: this.vm,
+                gr: this.gr,
+                gr2: this.gr2,
+                hgr: this.hgr,
+                hgr2: this.hgr2,
+            };
+        } else {
+            this.CV = {
+                vm: this.vm,
+                gr: this.gr,
+                gr2: this.gr2,
+                hgr: this.hgr,
+                hgr2: this.hgr2,
+            };
         }
     }
 
@@ -300,5 +344,52 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
 
     getDebugger() {
         return this.theDebugger;
+    }
+
+    switchRenderMode(value: boolean) {
+        console.log(this.vm, this.initialized);
+        if (!this.initialized) {
+            this.initialized = true;
+            return;
+        };
+
+        this._options.gl = value;
+
+        //this._oldVm = this.vm;
+        this.createVideoMode(this._options);
+        this.createVideoModeLink(this._options);
+
+        this.io.switchVideoMode(this._options.gl ? this.GL : this.CV);
+
+        /*if (this._options.e) {
+            this.mmu = new MMU(
+                this.cpu,
+                this.vm,
+                this.gr,
+                this.gr2,
+                this.hgr,
+                this.hgr2,
+                this.io,
+                this.ram as RAM[],
+                this.rom
+            );
+            this.cpu.addPageHandler(this.mmu);
+        } else {
+            this.cpu.addPageHandler(this.ram[0]);
+            this.cpu.addPageHandler(this.gr);
+            this.cpu.addPageHandler(this.gr2);
+            this.cpu.addPageHandler(this.hgr);
+            this.cpu.addPageHandler(this.hgr2);
+            this.cpu.addPageHandler(this.io);
+            this.cpu.addPageHandler(this.rom);
+        }*/
+        if (this.mmu) {
+            this.mmu.switchVideoMode(this._options.gl ? this.GL : this.CV)
+        } else {
+            this.cpu.addPageHandler(this.gr);
+            this.cpu.addPageHandler(this.gr2);
+            this.cpu.addPageHandler(this.hgr);
+            this.cpu.addPageHandler(this.hgr2);
+        }
     }
 }

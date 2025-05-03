@@ -231,18 +231,15 @@ th {
     display: block;
     pointer-events: none;
     border-radius: 12px;
-    background-image: repeating-linear-gradient(
-        to bottom,
-        transparent 0,
-        transparent 1px,
-        rgba(0, 0, 0, 0.5) 1px,
-        rgba(0, 0, 0, 0.5) 2px
-    );
+    background-image: url(../img/scanlines.png);
+    background-size: 100% 100%;
+    image-rendering: pixelated; /*crisp-edges; */
+    opacity: 0.51;
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    top: 4px;
+    left: 4px;
+    bottom: 4px;
+    right: 4px;
 }
 
 .full-page .scanlines:after {

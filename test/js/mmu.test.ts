@@ -5,6 +5,7 @@ import { HiresPage, LoresPage, VideoModes, VideoPage } from 'js/videomodes';
 import Apple2eROM from '../../js/roms/system/apple2e';
 import { MemoryPages } from 'js/types';
 import RAM from 'js/ram';
+import { VideoModeMix } from 'js/apple2';
 
 function newFakeMemoryPages() {
     return {} as unknown as MemoryPages;
@@ -31,24 +32,31 @@ function newFakeHiresPage(): HiresPage {
     return newFakeVideoPage() as unknown as HiresPage;
 }
 
-describe('MMU', () => {
+function newFakeVideoModeMix(): VideoModeMix {
     const fakeVideoModes = {} as unknown as VideoModes;
-    const fakeCPU = {} as unknown as CPU6502;
     const fakeLoResPage1 = newFakeLoresPage();
     const fakeLoResPage2 = newFakeLoresPage();
     const fakeHiResPage1 = newFakeHiresPage();
     const fakeHiResPage2 = newFakeHiresPage();
+    return {
+        vm: fakeVideoModes,
+        gr: fakeLoResPage1,
+        gr2: fakeLoResPage2,
+        hgr: fakeHiResPage1,
+        hgr2: fakeHiResPage2
+    }
+}
+
+describe('MMU', () => {
+    const fakeCPU = {} as unknown as CPU6502;
+    const fakeVideoModeMix = newFakeVideoModeMix();
     const fakeApple2IO = {} as unknown as Apple2IO;
     const ram = [new RAM(0x00, 0xbf), new RAM(0x00, 0xbf)];
 
     it('is constructable', () => {
         const mmu = new MMU(
             fakeCPU,
-            fakeVideoModes,
-            fakeLoResPage1,
-            fakeLoResPage2,
-            fakeHiResPage1,
-            fakeHiResPage2,
+            fakeVideoModeMix,
             fakeApple2IO,
             ram,
             new Apple2eROM()
@@ -59,11 +67,7 @@ describe('MMU', () => {
     it('requires prewrite to write to bank1', () => {
         const mmu = new MMU(
             fakeCPU,
-            fakeVideoModes,
-            fakeLoResPage1,
-            fakeLoResPage2,
-            fakeHiResPage1,
-            fakeHiResPage2,
+            fakeVideoModeMix,
             fakeApple2IO,
             ram,
             new Apple2eROM()
@@ -83,11 +87,7 @@ describe('MMU', () => {
     it('prewrite is reset on write access before write', () => {
         const mmu = new MMU(
             fakeCPU,
-            fakeVideoModes,
-            fakeLoResPage1,
-            fakeLoResPage2,
-            fakeHiResPage1,
-            fakeHiResPage2,
+            fakeVideoModeMix,
             fakeApple2IO,
             ram,
             new Apple2eROM()
@@ -105,11 +105,7 @@ describe('MMU', () => {
     it('write stays active with overzealous switching', () => {
         const mmu = new MMU(
             fakeCPU,
-            fakeVideoModes,
-            fakeLoResPage1,
-            fakeLoResPage2,
-            fakeHiResPage1,
-            fakeHiResPage2,
+            fakeVideoModeMix,
             fakeApple2IO,
             ram,
             new Apple2eROM()
