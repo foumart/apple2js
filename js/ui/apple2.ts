@@ -172,9 +172,7 @@ export function handleDragOver(_driveNo: number, event: DragEvent) {
 export function handleDragEnd(_driveNo: number, event: DragEvent) {
     const dt = event.dataTransfer!;
     if (dt.items) {
-        for (let i = 0; i < dt.items.length; i++) {
-            dt.items.remove(i);
-        }
+        dt.items.clear();
     } else {
         dt.clearData();
     }

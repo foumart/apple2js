@@ -892,6 +892,7 @@ export class VideoModes2D implements VideoModes {
     monoMode = false;
 
     context: CanvasRenderingContext2D;
+    public smoothed: boolean;
 
     constructor(
         private screen: HTMLCanvasElement,
@@ -1190,6 +1191,23 @@ export class VideoModes2D implements VideoModes {
                 parent.classList.remove('scanlines');
             }
         }
+    }
+
+    opacity(value: number) {
+        const parent = this.screen.parentElement;
+        if (parent) {
+            parent.style.setProperty('--after-opacity', String(value));
+        }
+    }
+
+    smoothing(on: boolean) {
+        this.smoothed = on;
+        if (this.screen.parentElement) {
+            console.log(on ? "2d crisp-edges" : "2d pixelated");
+            this.screen.parentElement.style.imageRendering = on ? "auto" : "pixelated";
+            this.screen.style.imageRendering = on ? "auto" : "pixelated";
+        }
+        window.dispatchEvent(new Event('resize'));
     }
 
     getText() {

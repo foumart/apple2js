@@ -81,6 +81,9 @@ export interface VideoModes extends Restorable<VideoModesState> {
 
     mono(on: boolean): void;
     scanlines(on: boolean): void;
+    opacity(value: number): void;
+    smoothing(on: boolean): void;
+    smoothed: boolean;
 
     getText(): string;
     getCanvasAsBlob(): Promise<Blob>;

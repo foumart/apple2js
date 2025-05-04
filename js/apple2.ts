@@ -92,7 +92,7 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
 
     public ready: Promise<void>;
     private _options: Apple2Options;
-    //private _oldVm: VideoModes;
+    private _oldVm: VideoModes;
     private initialized: boolean = false;
 
     constructor(options: Apple2Options) {
@@ -347,7 +347,6 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
     }
 
     switchRenderMode(value: boolean) {
-        console.log(this.vm, this.initialized);
         if (!this.initialized) {
             this.initialized = true;
             return;
@@ -355,34 +354,16 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
 
         this._options.gl = value;
 
+        console.log("Instant render mode switch not implemented yet!");
+        if (!this._oldVm) return;
+        //
+
         //this._oldVm = this.vm;
         this.createVideoMode(this._options);
         this.createVideoModeLink(this._options);
 
         this.io.switchVideoMode(this._options.gl ? this.GL : this.CV);
 
-        /*if (this._options.e) {
-            this.mmu = new MMU(
-                this.cpu,
-                this.vm,
-                this.gr,
-                this.gr2,
-                this.hgr,
-                this.hgr2,
-                this.io,
-                this.ram as RAM[],
-                this.rom
-            );
-            this.cpu.addPageHandler(this.mmu);
-        } else {
-            this.cpu.addPageHandler(this.ram[0]);
-            this.cpu.addPageHandler(this.gr);
-            this.cpu.addPageHandler(this.gr2);
-            this.cpu.addPageHandler(this.hgr);
-            this.cpu.addPageHandler(this.hgr2);
-            this.cpu.addPageHandler(this.io);
-            this.cpu.addPageHandler(this.rom);
-        }*/
         if (this.mmu) {
             this.mmu.switchVideoMode(this._options.gl ? this.GL : this.CV)
         } else {

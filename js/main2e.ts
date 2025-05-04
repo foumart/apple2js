@@ -83,3 +83,19 @@ apple2.ready
         initUI(apple2, disk2, smartport, printer, options.e, keyboardLayout);
     })
     .catch(console.error);
+
+
+window.addEventListener('resize', () => {
+    const scrollBar = window.innerWidth / window.innerHeight > 580 / 640;
+    document.body.style.overflowY = scrollBar ? "scroll" : "hidden";
+    const scrollerWidth = scrollBar ? (window.innerWidth - document.documentElement.clientWidth) / 2 : 0;
+    const width = 584 + (scrollBar ? scrollerWidth : 0);
+    const scale = +Math.min(2, Math.max(0.5, 1 + (window.innerWidth - width) / width)).toFixed(3);
+    document.documentElement.style.setProperty('--scale-factor', "" + scale);
+    (document.getElementsByClassName("outer")[0] as HTMLElement).style.transformOrigin = `${window.innerWidth - width < 0 ? "0%" : "50%"} 0%`;
+});
+
+requestAnimationFrame(() => {
+    apple2.getVideoModes().smoothing(true);
+    window.dispatchEvent(new Event('resize'));
+});

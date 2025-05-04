@@ -2,12 +2,13 @@ import Prefs from './prefs';
 
 export const BOOLEAN_OPTION = 'BOOLEAN_OPTION';
 export const SELECT_OPTION = 'SELECT_OPTION';
+export const SLIDER_OPTION = 'SLIDER_OPTION';
 
 export interface Option {
     name: string;
     label: string;
     type: string;
-    defaultVal: string | boolean;
+    defaultVal: string | boolean | number;
 }
 
 export interface BooleanOption extends Option {
@@ -21,6 +22,14 @@ export interface SelectOption extends Option {
     values: Array<{ name: string; value: string }>;
 }
 
+export interface SliderOption extends Option {
+    type: typeof SLIDER_OPTION;
+    defaultVal: number;
+    min: number;
+    max: number;
+    step: number;
+}
+
 export interface OptionSection {
     name: string;
     options: Option[];
@@ -28,7 +37,7 @@ export interface OptionSection {
 
 export interface OptionHandler {
     getOptions: () => OptionSection[];
-    setOption: (name: string, value: string | boolean) => void;
+    setOption: (name: string, value: string | boolean | number) => void;
 }
 
 export class Options {
@@ -54,7 +63,7 @@ export class Options {
         }
     }
 
-    getOption(name: string): string | boolean | undefined {
+    getOption(name: string): string | boolean | number | undefined {
         const option = this.options[name];
         if (option) {
             const { name, defaultVal, type } = option;
@@ -63,13 +72,15 @@ export class Options {
             switch (type) {
                 case BOOLEAN_OPTION:
                     return prefVal === 'true';
+                case SLIDER_OPTION:
+                    return Number(prefVal);
                 default:
                     return prefVal;
             }
         }
     }
 
-    setOption(name: string, value: string | boolean) {
+    setOption(name: string, value: string | boolean | number) {
         if (name in this.options) {
             const handler = this.handlers[name];
             const option = this.options[name];
@@ -77,6 +88,9 @@ export class Options {
             switch (option.type) {
                 case BOOLEAN_OPTION:
                     handler.setOption(name, Boolean(value));
+                    break;
+                case SLIDER_OPTION:
+                    handler.setOption(name, Number(value));
                     break;
                 default:
                     handler.setOption(name, String(value));

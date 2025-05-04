@@ -1,10 +1,12 @@
-import { BOOLEAN_OPTION, OptionHandler } from '../options';
+import { BOOLEAN_OPTION, OptionHandler, SLIDER_OPTION } from '../options';
 import { Apple2 } from 'js/apple2';
 
 export const SCREEN_MONO = 'mono_screen';
 export const SCREEN_FULL_PAGE = 'full_page';
 export const SCREEN_SCANLINE = 'show_scanlines';
+export const SCREEN_SCANLINE_SLIDE = 'scanlines_slide';
 export const SCREEN_GL = 'gl_canvas';
+export const SCREEN_SMOOTH = 'smoothing';
 
 declare global {
     interface Document {
@@ -42,21 +44,24 @@ export class Screen implements OptionHandler {
                 options: [
                     {
                         name: SCREEN_MONO,
-                        label: 'Mono Screen',
+                        label: 'Monochrome Screen',
                         type: BOOLEAN_OPTION,
                         defaultVal: false,
                     },
                     {
                         name: SCREEN_SCANLINE,
-                        label: 'Show Scanlines',
+                        label: 'Scanlines',
                         type: BOOLEAN_OPTION,
                         defaultVal: false,
                     },
                     {
-                        name: SCREEN_FULL_PAGE,
-                        label: 'Full Page',
-                        type: BOOLEAN_OPTION,
-                        defaultVal: false,
+                        name: SCREEN_SCANLINE_SLIDE,
+                        label: 'opacity',
+                        type: SLIDER_OPTION,
+                        min: 0,
+                        max: 1,
+                        step: 0.1,
+                        defaultVal: 0.5,
                     },
                     {
                         name: SCREEN_GL,
@@ -64,24 +69,45 @@ export class Screen implements OptionHandler {
                         type: BOOLEAN_OPTION,
                         defaultVal: true,
                     },
+                    {
+                        name: SCREEN_SMOOTH,
+                        label: 'Smoothing',
+                        type: BOOLEAN_OPTION,
+                        defaultVal: true,
+                    },
+                    {
+                        name: SCREEN_FULL_PAGE,
+                        label: 'Full Screen',
+                        type: BOOLEAN_OPTION,
+                        defaultVal: false,
+                    },
                 ],
             },
         ];
     }
 
-    setOption(name: string, value: boolean) {
+    setOption(name: string, value: boolean | number) {
         switch (name) {
-            case SCREEN_MONO:
-                this.a2.getVideoModes().mono(value);
-                break;
             case SCREEN_FULL_PAGE:
-                this.setFullPage(value);
+                this.setFullPage(value as boolean);
+                requestAnimationFrame(() => {
+                    window.dispatchEvent(new Event('resize'));
+                });
+                break;
+            case SCREEN_MONO:
+                this.a2.getVideoModes().mono(value as boolean);
                 break;
             case SCREEN_SCANLINE:
-                this.a2.getVideoModes().scanlines(value);
+                this.a2.getVideoModes().scanlines(value as boolean);
+                break;
+            case SCREEN_SCANLINE_SLIDE:
+                this.a2.getVideoModes().opacity(value as number);
                 break;
             case SCREEN_GL:
-                this.a2.switchRenderMode(value);
+                this.a2.switchRenderMode(value as boolean);
+                break;
+            case SCREEN_SMOOTH:
+                this.a2.getVideoModes().smoothing(value as boolean);
                 break;
         }
     }

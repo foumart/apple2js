@@ -26,6 +26,15 @@ body {
     border-radius: 14px;
 }
 
+.full-page .outer {
+    border: 0;
+}
+.full-page .outer #display .overscan #screen {
+    width: 560px;
+    height: 384px;
+    transform: scale(1);
+}
+
 .overscan {
     padding: 4px;
     margin: auto;
@@ -37,14 +46,11 @@ body {
 }
 
 .full-page {
-    background: black;
+    background: #222;
+    overflow-y: auto !important;
 }
 
 .full-page #display {
-    width: 100vw;
-    height: 68.5714vw; /* 384px / 560px * 100% */
-    max-height: 100vh;
-    max-width: 145.83vh; /* 560px / 384px * 100% */
     padding: 0;
     border: 0;
     position: fixed;
@@ -230,11 +236,10 @@ th {
     content: '';
     display: block;
     pointer-events: none;
-    border-radius: 12px;
     background-image: url(../img/scanlines.png);
     background-size: 100% 100%;
-    image-rendering: pixelated; /*crisp-edges; */
-    opacity: 0.51;
+    /*image-rendering: crisp-edges; pixelated; */
+    opacity: var(--after-opacity, 1);
     position: absolute;
     top: 4px;
     left: 4px;
@@ -243,13 +248,10 @@ th {
 }
 
 .full-page .scanlines:after {
-    background-image: repeating-linear-gradient(
-        to bottom,
-        transparent 0,
-        transparent 0.25vh,
-        rgba(0, 0, 0, 0.5) 0.25vh,
-        rgba(0, 0, 0, 0.5) 0.5vh
-    );
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 #screen {
@@ -829,12 +831,14 @@ a.button:hover {
 }
 
 .full-page #exit-fullscreen {
-    width: 100%;
     position: fixed;
-    top: 0;
-    left: 0;
+    width: 100%;
+    top: 400px;
     display: flex;
     justify-content: center;
-    padding: 5px;
     z-index: 1;
+}
+
+.full-page #exit-fullscreen button {
+    width: 100%;
 }

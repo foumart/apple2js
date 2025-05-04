@@ -576,6 +576,7 @@ export class VideoModesGL implements VideoModes {
     private _displayConfig: screenEmu.DisplayConfiguration;
     private _scanlines: boolean = false;
     private _refreshFlag: boolean = true;
+    private _opacity: number = 0.5;
     private _canvas: HTMLCanvasElement;
 
     public ready: Promise<void>;
@@ -593,6 +594,7 @@ export class VideoModesGL implements VideoModes {
     public monoMode: boolean = false;
 
     public context: CanvasRenderingContext2D;
+    public smoothed: boolean;
 
     constructor(
         private screen: HTMLCanvasElement,
@@ -683,7 +685,7 @@ export class VideoModesGL implements VideoModes {
         if (this._displayConfig) {
             this._displayConfig.videoWhiteOnly = this.textMode || this.monoMode;
             this._displayConfig.displayScanlineLevel = this._scanlines
-                ? 0.5
+                ? this._opacity
                 : 0;
             this._sv.displayConfiguration = this._displayConfig;
         }
@@ -929,6 +931,22 @@ export class VideoModesGL implements VideoModes {
 
     scanlines(on: boolean) {
         this._scanlines = on;
+        this._refresh();
+    }
+
+    opacity(value: number) {
+        this._opacity = value;
+        this._refresh();
+    }
+
+    smoothing(on: boolean) {
+        this.smoothed = on;
+        if (this.screen.parentElement) {
+            console.log(on ? "gl crisp-edges" : "gl pixelated");
+            this.screen.parentElement.style.imageRendering = on ? "auto" : "pixelated";
+            this.screen.style.imageRendering = on ? "auto" : "pixelated";
+        }
+        window.dispatchEvent(new Event('resize'));
         this._refresh();
     }
 

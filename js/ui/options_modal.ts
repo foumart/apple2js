@@ -4,6 +4,8 @@ import {
     SELECT_OPTION,
     Options,
     SelectOption,
+    SLIDER_OPTION,
+    SliderOption,
 } from '../options';
 
 export class OptionsModal {
@@ -72,6 +74,31 @@ export class OptionsModal {
                                     selectElement.appendChild(optionElement);
                                 }
                                 element = selectElement;
+                            }
+                            break;
+                        case SLIDER_OPTION:
+                            {
+                                const selectOption = option as SliderOption;
+                                const inputElement =
+                                    document.createElement('input');
+                                const value = this.options.getOption(
+                                    name
+                                ) as number;
+                                inputElement.setAttribute('type', 'range');
+                                inputElement.setAttribute(
+                                    'min',
+                                    selectOption.min?.toString() || '0'
+                                );
+                                inputElement.setAttribute(
+                                    'max',
+                                    selectOption.max?.toString() || '100'
+                                );
+                                inputElement.setAttribute(
+                                    'step',
+                                    selectOption.step?.toString() || '1'
+                                );
+                                inputElement.value = value.toString();
+                                element = inputElement;
                             }
                             break;
                         default: {
