@@ -17,9 +17,17 @@
     background-image: url('../../../css/green-on-16.png');
 }
 
+@font-face {
+    font-family: 'Scanline';
+    src: url('apple-2a-scanline.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 .diskLabel {
     color: #000;
-    font-family: sans-serif;
+    font-family: 'Scanline', sans-serif;
+    letter-spacing: -3px;
     font-weight: bold;
     margin-right: 0.5em;
     text-overflow: ellipsis;

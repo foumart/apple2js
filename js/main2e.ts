@@ -12,6 +12,7 @@ import Thunderclock from './cards/thunderclock';
 import Mouse from './cards/mouse';
 
 import { Apple2 } from './apple2';
+import { handleResize } from './resize';
 
 const prefs = new Prefs();
 const romVersion = prefs.readPref('computer_type2e');
@@ -85,16 +86,7 @@ apple2.ready
     .catch(console.error);
 
 
-window.addEventListener('resize', () => {
-    const scrollBar = window.innerWidth / window.innerHeight > 580 / 640;
-    document.body.style.overflowY = scrollBar ? "scroll" : "hidden";
-    const scrollerWidth = scrollBar ? (window.innerWidth - document.documentElement.clientWidth) / 2 : 0;
-    const width = 584 + (scrollBar ? scrollerWidth : 0);
-    const scale = +Math.min(2, Math.max(0.5, 1 + (window.innerWidth - width) / width)).toFixed(3);
-    document.documentElement.style.setProperty('--scale-factor', "" + scale);
-    (document.getElementsByClassName("outer")[0] as HTMLElement).style.transformOrigin = `${window.innerWidth - width < 0 ? "0%" : "50%"} 0%`;
-});
-
+window.addEventListener('resize', () => handleResize());
 requestAnimationFrame(() => {
     apple2.getVideoModes().smoothing(true);
     window.dispatchEvent(new Event('resize'));
