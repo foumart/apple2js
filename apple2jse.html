@@ -30,7 +30,6 @@
 <link rel="apple-touch-icon" size="72x72" href="img/webapp-ipad.png" />
 <link rel="shortcut icon" href="img/logoicon.png" />
 <link rel="stylesheet" type="text/css" href="css/apple2.css" />
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.2/css/all.css" />
 
 <!-- Disk Index -->
 <script type="text/javascript" src="json/disks/index.js"></script>
@@ -39,7 +38,7 @@
 <body class="apple2e" ondragover="Apple2.handleDragOver(0, event)" ondrop="Apple2.handleDrop(0, event)" ondragend="Apple2.handleDragEnd(0, event)">
   <div class="outer">
     <div id="exit-fullscreen">
-      <button onClick="Apple2.exitFullScreen();">Exit Full Page</button>
+      <button onClick="Apple2.exitFullScreen();">Exit full screen</button>
     </div>
     <div id="display">
       <div class="overscan">
@@ -58,7 +57,7 @@
         <div id="disk-label1" class="disk-label">Disk 1</div>
       </div>
     </div>
-    <div id="periphery" class="inset">
+    <div id="periphery" class="inset" style="display:none;">
       <div class="disk" ondragover="Apple2.handleDragOver(2, event)" ondrop="Apple2.handleDrop(2, event)" ondragend="Apple2.handleDragEnd(2, event)">
         <button title="Load Disk" onclick="Apple2.openLoad(2, event);">
           <i class="fas fa-folder-open"></i>
@@ -78,24 +77,28 @@
       </div>
     </div>
     <div id="reset-row">
+      <object id="logo" type="image/svg+xml" data="img/logo.svg"></object>
       <div id="controls" class="inset">
-        <button id="pause-run" onclick="Apple2.pauseRun()" title="Pause/Run">
-          <i class="fas fa-pause"></i>
+        <button id="toggle-fullscreen" onclick="Apple2.toggleFullscreen()" title="Toggle Fullscreen">
+          <i class="fas fa-fullscreen"></i>
         </button>
         <button id="toggle-sound" onclick="Apple2.toggleSound()" title="Toggle Sound">
           <i class="fas fa-volume-off"></i>
         </button>
+        <button id="pause-run" onclick="Apple2.pauseRun()" title="Pause/Run">
+          <i class="fas fa-pause"></i>
+        </button>
         <button id="toggle-printer" onclick="Apple2.openPrinterModal()" title="Toggle Printer">
           <i class="fas fa-print"></i>
         </button>
-        <!-- <div class="spacer short"></div> -->
+        <!-- <div class="spacer short"></div>
         <button onclick="Apple2.copy()" title="Copy">
           <i class="fas fa-copy"></i>
         </button>
         <button onclick="Apple2.paste()" title="Paste">
           <i class="fas fa-paste"></i>
         </button>
-          <!-- <div class="spacer"></div> -->
+          <div class="spacer"></div> -->
         <button id="toggle-info" onclick="window.open('https://github.com/whscullin/apple2js#readme', 'blank')" title="About">
           <i class="fas fa-info"></i>
         </button>

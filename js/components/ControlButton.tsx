@@ -30,7 +30,7 @@ export const ControlButton = ({
     ...props
 }: ControlButtonProps) => (
     <button
-        className={styles.iconButton}
+        className={cs(styles.iconButton, styles[icon])}
         onClick={onClick}
         title={title}
         {...props}

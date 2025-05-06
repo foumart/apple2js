@@ -608,6 +608,11 @@ export function toggleShowFPS() {
     showStats = ++showStats % 3;
 }
 
+export function toggleFullscreen() {
+    const fs = document.body.classList.contains('full-page');
+    options.setOption(SCREEN_FULL_PAGE, !fs);
+}
+
 export function toggleSound() {
     const on = !audio.isEnabled();
     options.setOption(SOUND_ENABLED_OPTION, on);

@@ -12,7 +12,7 @@ body {
     -webkit-touch-callout: none;
 }
 
-#toggle-printer, #toggle-info {
+#toggle-printer, #toggle-info, .fa-copy, .fa-paste {
     display: none;
 }
 
@@ -139,9 +139,13 @@ input[type='text'] {
     background-color: black;
 }
 
+#periphery:nth-of-type(1) .disk {
+    display: none;
+}
+
 #lights {
     float: left;
-    margin: 0 3px;
+    margin: 0 3px 0 0;
 }
 
 #lights > div {
@@ -149,18 +153,10 @@ input[type='text'] {
     width: 8px;
 }
 
-#periphery button {
-    width: 28px;
-}
-
 .disk {
     display: flex;
     flex-grow: 1;
 }
-
-/* .disk:nth-child(2) {
-    display: none;
-} */
 
 .disk-light {
     background-image: url(red-off-16.png);
@@ -182,7 +178,8 @@ input[type='text'] {
 }
 
 .disk-label {
-    max-width: 50px;
+    min-width: 80px;
+    max-width: 120px;
     color: #0f0;
     font-family: 'Scanline', sans-serif;
     letter-spacing: -1px;
@@ -228,7 +225,8 @@ th {
 }
 
 .inset button {
-    width: 28px;
+    width: 27px;
+    height: 25px;
     margin: 1px 0 1px 1px;
 }
 
@@ -408,7 +406,7 @@ th {
 .modal__close:active,
 .modal__close:hover {
     background: transparent;
-    padding: 3px;
+    padding: 5px;
 }
 
 .modal__header .modal__close:before {
@@ -429,25 +427,35 @@ th {
 
 button,
 a.button {
-    background: #84775c;
+    background: black;
     color: #fff;
-    border: 2px outset #66594e88;
+    border: 2px solid #55665588;
+    border-top-color: #88998866;
+    border-top-width: 1px;
+    border-left-color: #88998866;
+    border-left-width: 1px;
     border-radius: 4px;
-    font-size: 14px;
-    text-decoration: none;
     cursor: pointer;
+    padding: 0;
+    opacity: 0.85;
+    filter: grayscale(100%);
 }
 
 button:hover,
 a.button:hover {
-    background-color: #55473d;
-    border: 2px outset #66594e;
+    background-color: #22170d;
+    opacity: 1;
+    filter: none;
 }
 
 button:active,
 a.button:active {
-    background-color: #22150a;
-    border: 2px outset #44372c;
+    width: 26px;
+    height: 24px;
+    margin: 2px 0 0 2px;
+    border: 1px solid #66886688;
+    border-top-color: #55665566;
+    border-left-color: #55665566;
 }
 
 button:focus,
@@ -770,11 +778,10 @@ a.button:hover {
     border-radius: 8px;
     color: white;
     font: 9px Helvetica;
-    height: 28px;
-    padding: 0;
+    height: 27px;
+    padding: 0 3px;
     margin-left: 6px;
     margin-right: 6px;
-    width: 34px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -849,11 +856,69 @@ a.button:hover {
     position: fixed;
     width: 100%;
     top: 400px;
+    height: 24px;
     display: flex;
     justify-content: center;
     z-index: 1;
 }
 
 .full-page #exit-fullscreen button {
-    width: 100%;
+    width: 96%;
+    background-color: #544;
+}
+
+.fas {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-size: 16px;
+    margin: 3px;
+}
+
+.fa-folder-open {
+    background-image: url(../img/fa-folder-open.png);
+}
+
+.fa-save {
+    background-image: url(../img/fa-save.png);
+}
+
+.fa-pause {
+    background-image: url(../img/fa-pause.png);
+}
+.fa-play {
+    background-image: url(../img/fa-play.png);
+}
+
+.fa-volume-up {
+    background-image: url(../img/fa-volume-up.png);
+}
+.fa-volume-off {
+    background-image: url(../img/fa-volume-off.png);
+}
+
+.fa-copy {
+    background-image: url(../img/fa-copy.png);
+}
+
+.fa-paste {
+    background-image: url(../img/fa-paste.png);
+}
+
+.fa-cog {
+    background-image: url(../img/fa-cog.png);
+}
+
+.fa-fullscreen {
+    background-image: url(../img/fa-fullscreen.png);
+}
+
+#logo {
+    background-color: #443838;
+    width: 75px;
+    border-radius: 8px;
+    border: 3px inset #f0edd0;
+    height: 27px;
+    margin-right: 5px;
+    padding: 0 5px 1px 3px;
 }
