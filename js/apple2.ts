@@ -346,6 +346,10 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
         return this.theDebugger;
     }
 
+    isGL() {
+        return this._options.gl;
+    }
+
     switchRenderMode(value: boolean) {
         if (!this.initialized) {
             this.initialized = true;

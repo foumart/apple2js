@@ -4,14 +4,14 @@ export function handleResize(fullscreenClass = 'full-page') {
     document.body.style.overflowY = scrollBar ? "scroll" : "hidden";
 
     const scrollerWidth = scrollBar ? (window.innerWidth - document.documentElement.clientWidth) / 2 : 0;
-    const width = fullscreen ? 560 : 584 + (scrollBar ? scrollerWidth : 0);
+    const width = fullscreen ? 580 : 584 + (scrollBar ? scrollerWidth : 0);
 
     let min = 2;
     if (fullscreen) {
         if (window.innerWidth / window.innerHeight > 1120 / 768) {
             min = window.innerHeight / 384;
         } else {
-            min = window.innerWidth / 560;
+            min = window.innerWidth / 580;
         }
     }
 

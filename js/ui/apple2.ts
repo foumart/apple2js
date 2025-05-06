@@ -1028,8 +1028,11 @@ function onLoaded(
     /*
      * Input Handling
      */
-
-    const screenElement = document.querySelector('#screen')!;
+    const canvas = document.querySelector('#screen')! as HTMLElement;
+    const canvas2 = document.querySelector('#screen2')! as HTMLElement;
+    const isGL = apple2.isGL();
+    const screenElement = isGL ? canvas : canvas2;
+    (!isGL ? canvas : canvas2).style.display = "none";
 
     const doPaste = (event: Event) => {
         const paste = (event.clipboardData || window.clipboardData)!.getData(

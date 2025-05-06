@@ -37,14 +37,14 @@
 
 </head>
 <body class="apple2e" ondragover="Apple2.handleDragOver(0, event)" ondrop="Apple2.handleDrop(0, event)" ondragend="Apple2.handleDragEnd(0, event)">
-  <div class="outer" class="not-selectable">
+  <div class="outer">
     <div id="exit-fullscreen">
       <button onClick="Apple2.exitFullScreen();">Exit Full Page</button>
     </div>
     <div id="display">
       <div class="overscan">
-        <canvas id="screen" width="1120" height="768" tabindex="-1" class="not-selectable"></canvas>
-        <canvas id="screen2" width="560" height="384" tabindex="-1" class="not-selectable"></canvas>
+        <canvas id="screen" width="1120" height="768" tabindex="-1"></canvas>
+        <canvas id="screen2" width="560" height="384" tabindex="-1"></canvas>
       </div>
     </div>
     <div id="periphery" class="inset">

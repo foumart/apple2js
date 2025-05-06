@@ -47,10 +47,10 @@ switch (romVersion) {
 }
 
 const options = {
-    gl: prefs.readPref('gl_canvas', 'true') === 'true',
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     canvas: document.querySelector<HTMLCanvasElement>('#screen')!,
     canvas2: document.querySelector<HTMLCanvasElement>('#screen2')!,
+    gl: prefs.readPref('gl_canvas', 'true') === 'true',
     rom,
     characterRom,
     e: true,
@@ -65,7 +65,7 @@ apple2.ready
         const cpu = apple2.getCPU();
 
         const printer = new Printer('#printer-modal .paper');
-        const mouseUI = new MouseUI(options.canvas);
+        const mouseUI = new MouseUI(options.gl ? options.canvas : options.canvas2);
 
         const parallel = new Parallel(printer);
         const slinky = new RAMFactor(8 * 1024 * 1024);
