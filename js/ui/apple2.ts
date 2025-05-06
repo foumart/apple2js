@@ -245,6 +245,11 @@ function loadingStop() {
 }
 
 export function loadAjax(driveNo: DriveNumber, url: string) {
+    if (url.split('.').pop()?.toLowerCase() === "dsk") {
+        doLoadHTTP(driveNo, url);
+        return;
+    }
+
     loadingStart();
 
     fetch(url)
@@ -853,15 +858,13 @@ function processHash(hash: string) {
             continue;
         }
         if (file.indexOf('://') > 0) {
-            const parts = file.split('.');
-            const ext = parts[parts.length - 1].toLowerCase();
-            if (ext === 'json') {
+            if (file.split('.').pop()?.toLowerCase() === "json") {
                 loadAjax(drive, file);
             } else {
                 doLoadHTTP(drive, file);
             }
         } else if (file) {
-            loadAjax(drive, 'json/disks/' + file + '.json');
+            loadAjax(drive, ((file.includes(".")) ? file : 'json/disks/' + file + '.json') );
         }
     }
     oldHashFiles = files;
@@ -1094,6 +1097,9 @@ function onLoaded(
     if (hash) {
         _apple2.stop();
         processHash(hash);
+        if (hash.split('|').length > 1) {
+            (document.getElementsByClassName("periphery")[1] as HTMLElement).style.display = "block";
+        }
     } else {
         ready
             .then(() => {

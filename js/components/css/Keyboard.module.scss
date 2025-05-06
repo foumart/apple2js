@@ -178,18 +178,22 @@
 
 .key-OPEN_APPLE div {
     background-image: url('../../../img/open-apple32.png');
-    width: 24px;
-    height: 24px;
-    bottom: 1px;
-    left: 4px;
+    background-size: 20px;
+    width: 20px;
+    height: 20px;
+    bottom: 11px;
+    left: 1px;
+    filter: brightness(0) invert(1);
 }
 
 .key-CLOSED_APPLE div {
     background-image: url('../../../img/closed-apple32.png');
-    width: 24px;
-    height: 24px;
-    bottom: 1px;
-    left: 4px;
+    background-size: 20px;
+    width: 20px;
+    height: 20px;
+    bottom: 11px;
+    left: 1px;
+    filter: brightness(0) invert(1);
 }
 
 .key-OPEN_APPLE span {

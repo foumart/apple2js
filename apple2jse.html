@@ -46,36 +46,7 @@
         <canvas id="screen2" width="560" height="384" tabindex="-1"></canvas>
       </div>
     </div>
-    <div id="periphery" class="inset">
-      <div class="disk" ondragover="Apple2.handleDragOver(1, event)" ondrop="Apple2.handleDrop(1, event)" ondragend="Apple2.handleDragEnd(1, event)">
-        <button title="Load Disk" onclick="Apple2.openLoad(1, event);">
-          <i class="fas fa-folder-open"></i>
-        </button>
-        <button title="Save Disk" onclick="Apple2.openSave(1, event);">
-          <i class="fas fa-save"></i>
-        </button>
-        <div id="disk-label1" class="disk-label">Disk 1</div>
-      </div>
-    </div>
-    <div id="periphery" class="inset" style="display:none;">
-      <div class="disk" ondragover="Apple2.handleDragOver(2, event)" ondrop="Apple2.handleDrop(2, event)" ondragend="Apple2.handleDragEnd(2, event)">
-        <button title="Load Disk" onclick="Apple2.openLoad(2, event);">
-          <i class="fas fa-folder-open"></i>
-        </button>
-        <button title="Save Disk" onclick="Apple2.openSave(2, event);">
-          <i class="fas fa-save"></i>
-        </button>
-        <div id="disk-label2" class="disk-label">Disk 2</div>
-      </div>
-    </div>
-    <div id="lights">
-      <div class="inset">
-        <div class="disk-light" id="disk1"></div>
-      </div>
-      <div class="inset">
-        <div class="disk-light" id="disk2"></div>
-      </div>
-    </div>
+    
     <div id="reset-row">
       <object id="logo" type="image/svg+xml" data="img/logo.svg"></object>
       <div id="controls" class="inset">
@@ -111,6 +82,39 @@
         Reset
       </div>
     </div>
+
+    <div id="lights">
+      <div class="inset">
+        <div class="disk-light" id="disk1"></div>
+      </div>
+      <div class="inset">
+        <div class="disk-light" id="disk2"></div>
+      </div>
+    </div>
+
+    <div class="periphery inset">
+      <div class="disk" ondragover="Apple2.handleDragOver(1, event)" ondrop="Apple2.handleDrop(1, event)" ondragend="Apple2.handleDragEnd(1, event)">
+        <button title="Load Disk" onclick="Apple2.openLoad(1, event);">
+          <i class="fas fa-folder-open"></i>
+        </button>
+        <button title="Save Disk" onclick="Apple2.openSave(1, event);">
+          <i class="fas fa-save"></i>
+        </button>
+        <div id="disk-label1" class="disk-label">Disk 1</div>
+      </div>
+    </div>
+    <div class="periphery inset" style="display:none">
+      <div class="disk" ondragover="Apple2.handleDragOver(2, event)" ondrop="Apple2.handleDrop(2, event)" ondragend="Apple2.handleDragEnd(2, event)">
+        <button title="Load Disk" onclick="Apple2.openLoad(2, event);">
+          <i class="fas fa-folder-open"></i>
+        </button>
+        <button title="Save Disk" onclick="Apple2.openSave(2, event);">
+          <i class="fas fa-save"></i>
+        </button>
+        <div id="disk-label2" class="disk-label">Disk 2</div>
+      </div>
+    </div>
+
     <div class="inset" style="margin-bottom:6px;background-color:black;height:196px;">
       <div id="keyboard"></div>
     </div>
