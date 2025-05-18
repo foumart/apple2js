@@ -178,23 +178,23 @@ export function handleDragEnd(_driveNo: number, event: DragEvent) {
     }
 }
 
-export function handleDrop(driveNo: number, event: DragEvent) {
+export function handleDrop(_driveNo: number, event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
 
-    if (driveNo < 1) {
+    if (_driveNo < 1) {
         if (!_disk2.getMetadata(1)) {
-            driveNo = 1;
+            _driveNo = 1;
         } else if (!_disk2.getMetadata(2)) {
-            driveNo = 2;
+            _driveNo = 2;
         } else {
-            driveNo = 1;
+            _driveNo = 1;
         }
     }
     const dt = event.dataTransfer!;
     if (dt.files.length === 1) {
         const runOnLoad = event.shiftKey;
-        doLoadLocal(driveNo as DriveNumber, dt.files[0], { runOnLoad });
+        doLoadLocal(_driveNo as DriveNumber, dt.files[0], { runOnLoad });
     } else if (dt.files.length === 2) {
         doLoadLocal(1, dt.files[0]);
         doLoadLocal(2, dt.files[1]);
@@ -203,7 +203,7 @@ export function handleDrop(driveNo: number, event: DragEvent) {
             if (dt.items[idx].type === 'text/uri-list') {
                 dt.items[idx].getAsString(function (url) {
                     const parts = hup().split('|');
-                    parts[driveNo - 1] = url;
+                    parts[_driveNo - 1] = url;
                     document.location.hash = parts.join('|');
                 });
             }
@@ -244,15 +244,14 @@ function loadingStop() {
     }
 }
 
-export function loadAjax(driveNo: DriveNumber, url: string) {
+export async function loadAjax(_driveNo: DriveNumber, url: string) {
     if (url.split('.').pop()?.toLowerCase() === "dsk") {
-        doLoadHTTP(driveNo, url);
-        return;
+        return doLoadHTTP(_driveNo, url);
     }
 
     loadingStart();
 
-    fetch(url)
+    await fetch(url)
         .then(function (response: Response) {
             if (response.ok) {
                 return response.json();
@@ -264,7 +263,7 @@ export function loadAjax(driveNo: DriveNumber, url: string) {
             if (data.type === 'binary') {
                 loadBinary(data);
             } else if (includes(DISK_FORMATS, data.type)) {
-                loadDisk(driveNo, data);
+                loadDisk(_driveNo, data);
             }
             initGamepad(data.gamepad);
             loadingStop();
@@ -338,7 +337,7 @@ interface LoadOptions {
 }
 
 function doLoadLocal(
-    driveNo: DriveNumber,
+    _driveNo: DriveNumber,
     file: File,
     options: Partial<LoadOptions> = {}
 ) {
@@ -350,7 +349,7 @@ function doLoadLocal(
         [, type, aux] = matches;
     }
     if (includes(DISK_FORMATS, ext)) {
-        doLoadLocalDisk(driveNo, file);
+        doLoadLocalDisk(_driveNo, file);
     } else if (includes(TAPE_TYPES, ext)) {
         tape.doLoadLocalTape(file);
     } else if (BIN_TYPES.includes(ext) || type === '06' || options.address) {
@@ -397,7 +396,7 @@ function doLoadBinary(file: File, options: LoadOptions) {
     fileReader.readAsArrayBuffer(file);
 }
 
-function doLoadLocalDisk(driveNo: DriveNumber, file: File) {
+function doLoadLocalDisk(_driveNo: DriveNumber, file: File) {
     loadingStart();
     const fileReader = new FileReader();
     fileReader.onload = function () {
@@ -408,14 +407,14 @@ function doLoadLocalDisk(driveNo: DriveNumber, file: File) {
 
         // Remove any json file reference
         const files = hup().split('|');
-        files[driveNo - 1] = '';
+        files[_driveNo - 1] = '';
         document.location.hash = files.join('|');
 
         if (includes(DISK_FORMATS, ext)) {
             if (result.byteLength >= 800 * 1024) {
                 if (includes(BLOCK_FORMATS, ext)) {
                     _massStorage
-                        .setBinary(driveNo, name, ext, result)
+                        .setBinary(_driveNo, name, ext, result)
                         .then(() => initGamepad())
                         .catch((error) => {
                             console.error(error);
@@ -427,7 +426,7 @@ function doLoadLocalDisk(driveNo: DriveNumber, file: File) {
             } else {
                 if (includes(FLOPPY_FORMATS, ext)) {
                     _disk2
-                        .setBinary(driveNo, name, ext, result)
+                        .setBinary(_driveNo, name, ext, result)
                         .then(() => initGamepad())
                         .catch((error) => {
                             console.error(error);
@@ -443,124 +442,115 @@ function doLoadLocalDisk(driveNo: DriveNumber, file: File) {
     fileReader.readAsArrayBuffer(file);
 }
 
-function defaultLoadHttp(url: string, name: string, ext: string) {
-    fetch(url)
-        .then(function (response) {
-            if (response.ok) {
-                const reader = response.body!.getReader();
-                let received = 0;
-                const chunks: Uint8Array[] = [];
-                const contentLength = parseInt(
-                    response.headers.get('content-length')!,
-                    10
-                );
+async function defaultLoadHttp(
+    url: string,
+    name: string,
+    ext: string,
+    _driveNo: 1 | 2
+): Promise<void> {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Error loading: ' + response.statusText);
+        }
 
-                return reader
-                    .read()
-                    .then(function readChunk(result): Promise<ArrayBufferLike> {
-                        if (result.done) {
-                            const data = new Uint8Array(received);
-                            let offset = 0;
-                            for (let idx = 0; idx < chunks.length; idx++) {
-                                data.set(chunks[idx], offset);
-                                offset += chunks[idx].length;
-                            }
-                            return Promise.resolve(data.buffer);
-                        }
+        driveNo = _driveNo;
+        const reader = response.body!.getReader();
+        const chunks: Uint8Array[] = [];
+        let received = 0;
+        const contentLength = parseInt(
+            response.headers.get('content-length') || "0",
+            10
+        );
 
-                        received += result.value.length;
-                        if (contentLength) {
-                            loadingProgress(received, contentLength);
-                        }
-                        chunks.push(result.value);
-
-                        return reader.read().then(readChunk);
-                    });
-            } else {
-                throw new Error('Error loading: ' + response.statusText);
-            }
-        })
-        .then(function (data) {
-            if (includes(DISK_FORMATS, ext)) {
-                if (data.byteLength >= 800 * 1024) {
-                    if (includes(BLOCK_FORMATS, ext)) {
-                        _massStorage
-                            .setBinary(driveNo, name, ext, data)
-                            .then(() => initGamepad())
-                            .catch((error) => {
-                                console.error(error);
-                                openAlert(`Unable to load ${name}`);
-                            });
-                    }
-                } else {
-                    if (includes(FLOPPY_FORMATS, ext)) {
-                        _disk2
-                            .setBinary(driveNo, name, ext, data)
-                            .then(() => initGamepad())
-                            .catch((error) => {
-                                console.error(error);
-                                openAlert(`Unable to load ${name}`);
-                            });
-                    }
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            if (value) {
+                chunks.push(value);
+                received += value.length;
+                if (contentLength) {
+                    loadingProgress(received, contentLength);
                 }
-            } else {
-                throw new Error(`Extension ${ext} not recognized.`);
             }
-            loadingStop();
-        })
-        .catch((error: Error) => {
-            loadingStop();
-            openAlert(error.message);
-            console.error(error);
-        });
+        }
+
+        const data = new Uint8Array(received);
+        let offset = 0;
+        for (const chunk of chunks) {
+            data.set(chunk, offset);
+            offset += chunk.length;
+        }
+
+        // Handle the binary data
+        if (!includes(DISK_FORMATS, ext)) {
+            throw new Error(`Extension ${ext} not recognized.`);
+        }
+
+        if (data.byteLength >= 800 * 1024) {
+            if (includes(BLOCK_FORMATS, ext)) {
+                await _massStorage.setBinary(_driveNo, name, ext, data.buffer);
+            }
+        } else {
+            if (includes(FLOPPY_FORMATS, ext)) {
+                await _disk2.setBinary(_driveNo, name, ext, data.buffer);
+            }
+        }
+
+        initGamepad();
+    } catch (error: any) {
+        openAlert(error.message || "Unknown error");
+        console.error(error);
+    } finally {
+        loadingStop();
+    }
 }
 
-export function doLoadHTTP(driveNo: DriveNumber, url?: string) {
+export async function doLoadHTTP(_driveNo: DriveNumber, url?: string) {
     if (!url) {
         MicroModal.close('http-modal');
     }
 
     loadingStart();
-    const input = document.querySelector<HTMLInputElement>('#http_url')!;
-    url = url || input.value;
-    if (url) {
+
+    try {
+        const input = document.querySelector<HTMLInputElement>('#http_url')!;
+        url = url || input.value;
+        if (!url) throw new Error("URL is empty");
+
         const urlParts = url.split('/');
         const file = urlParts.pop()!;
         const fileParts = file.split('.');
         const ext = fileParts.pop()!.toLowerCase();
         const name = decodeURIComponent(fileParts.join('.'));
-        fetch(url, { method: 'HEAD' })
-            .then((head) => {
-                const contentLength = parseInt(
-                    head.headers.get('content-length') || '0',
-                    10
+
+        try {
+            const head = await fetch(url, { method: 'HEAD' });
+            const contentLength = parseInt(head.headers.get('content-length') || '0', 10);
+            const hasByteRange = head.headers.get('accept-ranges') === 'bytes';
+
+            if (
+                hasByteRange &&
+                includes(BLOCK_FORMATS, ext) &&
+                contentLength >= 800 * 1024 &&
+                isBlockStorage(_massStorage)
+            ) {
+                await _massStorage.setBlockDisk(
+                    _driveNo,
+                    new HttpBlockDisk(name, contentLength, url)
                 );
-                const hasByteRange =
-                    head.headers.get('accept-ranges') === 'bytes';
-                if (
-                    hasByteRange &&
-                    includes(BLOCK_FORMATS, ext) &&
-                    contentLength >= 800 * 1024 &&
-                    isBlockStorage(_massStorage)
-                ) {
-                    _massStorage
-                        .setBlockDisk(
-                            driveNo,
-                            new HttpBlockDisk(name, contentLength, url)
-                        )
-                        .catch((error: Error) => {
-                            openAlert(error.message);
-                            console.error(error);
-                        });
-                    loadingStop();
-                } else {
-                    defaultLoadHttp(url, name, ext);
-                }
-            })
-            .catch((error: Error) => {
-                console.warn('HEAD failed', error);
-                defaultLoadHttp(url, name, ext);
-            });
+            } else {
+                await defaultLoadHttp(url, name, ext, _driveNo);
+            }
+        } catch (headError) {
+            console.warn('HEAD request failed', headError);
+            await defaultLoadHttp(url, name, ext, _driveNo);
+        }
+    } catch (error: any) {
+        openAlert(error.message || "Unknown error");
+        console.error(error);
+    } finally {
+        loadingStop();
     }
 }
 
@@ -639,11 +629,11 @@ function updateSoundButton(on: boolean) {
     }
 }
 
-function dumpDisk(driveNo: DriveNumber) {
+function dumpDisk(_driveNo: DriveNumber) {
     const wind = window.open('', '_blank')!;
-    wind.document.title = driveLights.label(driveNo);
+    wind.document.title = driveLights.label(_driveNo);
     wind.document.write('<pre>');
-    wind.document.write(_disk2.getJSON(driveNo, true));
+    wind.document.write(_disk2.getJSON(_driveNo, true));
     wind.document.write('</pre>');
     wind.document.close();
 }
@@ -697,7 +687,7 @@ export function clickDisk(event: MouseEvent | KeyboardEvent) {
 }
 
 /** Called to load disks from the local catalog. */
-function loadDisk(driveNo: DriveNumber, disk: JSONDisk) {
+function loadDisk(_driveNo: DriveNumber, disk: JSONDisk) {
     let name = disk.name;
     const category = disk.category!; // all disks in the local catalog have a category
 
@@ -705,10 +695,10 @@ function loadDisk(driveNo: DriveNumber, disk: JSONDisk) {
         name += ' - ' + disk.disk;
     }
 
-    disk_cur_cat[driveNo] = category;
-    disk_cur_name[driveNo] = name;
+    disk_cur_cat[_driveNo] = category;
+    disk_cur_name[_driveNo] = name;
 
-    _disk2.setDisk(driveNo, disk);
+    _disk2.setDisk(_driveNo, disk);
     initGamepad(disk.gamepad);
 }
 
@@ -752,18 +742,18 @@ type LocalDiskIndex = {
     [name: string]: string;
 };
 
-function saveLocalStorage(driveNo: DriveNumber, name: string) {
+function saveLocalStorage(_driveNo: DriveNumber, name: string) {
     const diskIndex = JSON.parse(
         window.localStorage.getItem('diskIndex') || '{}'
     ) as LocalDiskIndex;
 
-    const json = _disk2.getJSON(driveNo);
+    const json = _disk2.getJSON(_driveNo);
     diskIndex[name] = json;
 
     window.localStorage.setItem('diskIndex', JSON.stringify(diskIndex));
 
-    driveLights.label(driveNo, name);
-    driveLights.dirty(driveNo, false);
+    driveLights.label(_driveNo, name);
+    driveLights.dirty(_driveNo, false);
     updateLocalStorage();
 }
 
@@ -779,14 +769,14 @@ function deleteLocalStorage(name: string) {
     updateLocalStorage();
 }
 
-function loadLocalStorage(driveNo: DriveNumber, name: string) {
+function loadLocalStorage(_driveNo: DriveNumber, name: string) {
     const diskIndex = JSON.parse(
         window.localStorage.getItem('diskIndex') || '{}'
     ) as LocalDiskIndex;
     if (diskIndex[name]) {
-        _disk2.setJSON(driveNo, diskIndex[name]);
-        driveLights.label(driveNo, name);
-        driveLights.dirty(driveNo, false);
+        _disk2.setJSON(_driveNo, diskIndex[name]);
+        driveLights.label(_driveNo, name);
+        driveLights.dirty(_driveNo, false);
     }
 }
 
@@ -846,25 +836,26 @@ function buildDiskIndex() {
  * `disk1|disk2` where each disk is the name of a local image OR
  * a URL.
  */
-function processHash(hash: string) {
+async function processHash(hash: string) {
     const files = hash.split('|');
     for (let idx = 0; idx < Math.min(2, files.length); idx++) {
         const drive = idx + 1;
         if (!includes(DRIVE_NUMBERS, drive)) {
             break;
         }
-        const file = files[idx];
+        let file = files[idx];
         if (file === oldHashFiles[idx]) {
             continue;
         }
-        if (file.indexOf('://') > 0) {
-            if (file.split('.').pop()?.toLowerCase() === "json") {
-                loadAjax(drive, file);
-            } else {
-                doLoadHTTP(drive, file);
-            }
-        } else if (file) {
-            loadAjax(drive, ((file.includes(".")) ? file : 'json/disks/' + file + '.json') );
+        
+        if (!file.includes('.')) {
+            file = 'json/disks/' + file + '.json';
+        }
+
+        if (file.split('.').pop()?.toLowerCase() === "json") {
+            await loadAjax(drive, file);
+        } else {
+            await doLoadHTTP(drive, file);
         }
     }
     oldHashFiles = files;
@@ -966,7 +957,7 @@ function hup() {
     else return results[1];
 }
 
-function onLoaded(
+async function onLoaded(
     apple2: Apple2,
     disk2: DiskII,
     massStorage: MassStorage<BlockFormat>,
@@ -1096,16 +1087,18 @@ function onLoaded(
     const hash = gup('disk') || hup();
     if (hash) {
         _apple2.stop();
-        processHash(hash);
-        if (hash.split('|').length > 1) {
-            (document.getElementsByClassName("periphery")[1] as HTMLElement).style.display = "block";
+        await processHash(hash);
+        const drives = hash.split('|').length;
+
+        if (drives > 1) {
+            for (let i = 1; i < drives; i++) {
+                const periphery = document.getElementsByClassName("periphery");
+                (periphery[i] as HTMLElement).style.display = "flex";
+            }
         }
     } else {
-        ready
-            .then(() => {
-                _apple2.run();
-            })
-            .catch(console.error);
+        await ready;
+        _apple2.run();
     }
 
     document

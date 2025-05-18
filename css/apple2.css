@@ -32,8 +32,8 @@ body {
     border: 0;
 }
 .full-page .outer #display .overscan #screen {
-    width: 560px;
-    height: 384px;
+    width: 560px; /* width: 2240px;560px; */
+    height: 384px; /*height: 1536px;384px; */
     transform: scale(1);
 }
 
@@ -166,6 +166,7 @@ input[type='text'] {
 
 .disk-label {
     min-width: 80px;
+    max-width: 162px;
     color: #0f0;
     font-family: 'Scanline', sans-serif;
     letter-spacing: -1px;
@@ -222,6 +223,7 @@ th {
     min-width: 100px;
     max-width: 230px;
     margin-left: 6px;
+    margin-bottom: 4px;
     background-color: black;
 }
 
@@ -275,11 +277,11 @@ th {
 
 #screen {
     cursor: crosshair;
-    width: 1120px;
-    height: 768px;
+    width: 2240px; /*1120px; */
+    height: 1536px; /*768px;*/
     touch-action: manipulation;
     user-select: none;
-    transform: scale(0.5);
+    transform: scale(0.25);
     transform-origin: 0 0;
     position: absolute;
 }

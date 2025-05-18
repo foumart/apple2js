@@ -942,7 +942,7 @@ export class VideoModesGL implements VideoModes {
     smoothing(on: boolean) {
         this.smoothed = on;
         if (this.screen.parentElement) {
-            console.log(on ? "gl crisp-edges" : "gl pixelated");
+            //console.log(on ? "gl crisp-edges" : "gl pixelated");
             this.screen.parentElement.style.imageRendering = on ? "auto" : "pixelated";
             this.screen.style.imageRendering = on ? "auto" : "pixelated";
         }

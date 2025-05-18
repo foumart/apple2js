@@ -1203,7 +1203,7 @@ export class VideoModes2D implements VideoModes {
     smoothing(on: boolean) {
         this.smoothed = on;
         if (this.screen.parentElement) {
-            console.log(on ? "2d crisp-edges" : "2d pixelated");
+            //console.log(on ? "2d crisp-edges" : "2d pixelated");
             this.screen.parentElement.style.imageRendering = on ? "auto" : "pixelated";
             this.screen.style.imageRendering = on ? "auto" : "pixelated";
         }

@@ -8,7 +8,7 @@ export function handleResize(fullscreenClass = 'full-page') {
 
     let min = 2;
     if (fullscreen) {
-        if (window.innerWidth / window.innerHeight > 1120 / 768) {
+        if (window.innerWidth / window.innerHeight > 2240 / 1536) {
             min = window.innerHeight / 384;
         } else {
             min = window.innerWidth / 580;
