@@ -91,7 +91,7 @@ apple2.ready
         const slinky = new RAMFactor(8 * 1024 * 1024);
         const disk2 = new DiskII(io, driveLights, sectors);
         const clock = new Thunderclock();
-        const smartport = new SmartPort(cpu, null, { block: true });
+        const smartport = new SmartPort(cpu, driveLights, { block: true });
 
         io.setSlot(0, lc);
         io.setSlot(1, parallel);

@@ -71,7 +71,7 @@ apple2.ready
         const slinky = new RAMFactor(8 * 1024 * 1024);
         const disk2 = new DiskII(io, driveLights);
         const clock = new Thunderclock();
-        const smartport = new SmartPort(cpu, null, { block: !enhanced });
+        const smartport = new SmartPort(cpu, driveLights, { block: !enhanced });
         const mouse = new Mouse(cpu, mouseUI);
 
         io.setSlot(1, parallel);

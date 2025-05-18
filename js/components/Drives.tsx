@@ -127,10 +127,14 @@ export const Drives = ({ cpu, io, sectors, enhanced, ready }: DrivesProps) => {
                             })
                         );
                     } else {
-                        const url = isHttp
-                            ? hashPart
-                            : `json/disks/${hashPart}.json`;
-                        loadJSON(disk2, driveNo, url).catch((e) => setError(e));
+                        const isExt = isHttp || (hashPart.includes(".") && hashPart.includes("/"))
+                        const url = isExt ? hashPart : `json/disks/${hashPart}.json`;
+
+                        if (isExt) {
+                            loadHttpUnknownFile(smartStorageBroker, driveNo, url).catch((e) => setError(e));
+                        } else {
+                            loadJSON(disk2, driveNo, url).catch((e) => setError(e));
+                        }
                     }
                 }
             }
