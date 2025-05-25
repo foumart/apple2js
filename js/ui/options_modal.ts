@@ -125,6 +125,7 @@ export class OptionsModal {
                 content.appendChild(list);
             }
             const reloadElement = document.createElement('i');
+            reloadElement.style.marginLeft = '20px';
             reloadElement.textContent = '* Reload page to take effect';
             content.append(reloadElement);
         } else {

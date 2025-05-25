@@ -52,6 +52,8 @@ export interface VideoModes extends Restorable<VideoModesState> {
 
     context: CanvasRenderingContext2D;
 
+    colorPalette: number;
+
     page(pageNo: number): void;
 
     blit(altData?: ImageData): boolean;
@@ -83,6 +85,8 @@ export interface VideoModes extends Restorable<VideoModesState> {
     scanlines(on: boolean): void;
     opacity(value: number): void;
     smoothing(on: boolean): void;
+    palette(value: number): void;
+    composite(value: boolean): void;
     smoothed: boolean;
 
     getText(): string;

@@ -15,32 +15,51 @@ const dim = (c: Color): Color => {
 };
 
 // hires colors
-const orangeCol: Color = [255, 106, 60];
-const greenCol: Color = [20, 245, 60];
-const blueCol: Color = [20, 207, 253];
-const violetCol: Color = [255, 68, 253];
-const whiteCol: Color = [255, 255, 255];
-const blackCol: Color = [0, 0, 0];
+let orangeCol: Color;
+let greenCol: Color;
+let blueCol: Color;
+let violetCol: Color;
+let whiteCol: Color;
+let blackCol: Color;
+
+let _colors: Color[];
+let dcolors: Color[];
+
+setColors(0);
+
+function setColors(colorPalette: number) {
+    orangeCol = colorPalette ? [0xff, 0x65, 0x00] : [255, 106, 60];
+    greenCol = colorPalette ? [0x00, 0xff, 0x00] : [20, 245, 60];
+    blueCol = colorPalette ? [0x09, 0x2a, 0xff] : [20, 207, 253];
+    violetCol = colorPalette ? [0xc9, 0x39, 0xc7] : [255, 68, 253];
+    whiteCol = colorPalette ? [0xff, 0xff, 0xff] : [255, 255, 255];
+    blackCol = colorPalette ? [0x00, 0x00, 0x00] : [0, 0, 0];
+
+    _colors = setLColors(colorPalette);
+    dcolors = setDColors(colorPalette);
+}
 
 // lores colors
-const _colors: Color[] = [
-    [0, 0, 0], // 0x0 black
-    [227, 30, 96], // 0x1 deep red
-    [96, 78, 189], // 0x2 dark blue
-    [255, 68, 253], // 0x3 purple
-    [0, 163, 96], // 0x4 dark green
-    [156, 156, 156], // 0x5 dark gray
-    [20, 207, 253], // 0x6 medium blue
-    [208, 195, 255], // 0x7 light blue
-    [96, 114, 3], // 0x8 brown
-    [255, 106, 60], // 0x9 orange
-    [156, 156, 156], // 0xa light gray
-    [255, 160, 208], // 0xb pink
-    [20, 245, 60], // 0xc green
-    [208, 221, 141], // 0xd yellow
-    [114, 255, 208], // 0xe aquamarine
-    [255, 255, 255], // 0xf white
-];
+function setLColors(colorPalette: number): Color[] {
+    return [
+        colorPalette ? [0x00,0x00,0x00] : [0, 0, 0],  // black
+        colorPalette ? [0xdd,0x00,0x33] : [227, 30, 96],  // 0x1 deep red
+        colorPalette ? [0x00,0x00,0x99] : [96, 78, 189],  // 0x2 dark blue
+        colorPalette ? [0xdd,0x00,0xdd] : [255, 68, 253],  // 0x3 purple
+        colorPalette ? [0x00,0x77,0x00] : [0, 163, 96],  // 0x4 dark green
+        colorPalette ? [0x55,0x55,0x55] : [156, 156, 156],  // 0x5 dark gray
+        colorPalette ? [0x23,0x22,0xff] : [20, 207, 253],  // 0x6 medium blue
+        colorPalette ? [0x66,0xaa,0xff] : [208, 195, 255],  // 0x7 light blue
+        colorPalette ? [0x88,0x55,0x22] : [96, 114, 3],  // 0x8 brown
+        colorPalette ? [0xff,0x66,0x00] : [255, 106, 60],  // 0x9 orange
+        colorPalette ? [0xaa,0xaa,0xaa] : [156, 156, 156],  // 0xa light gray
+        colorPalette ? [0xff,0x99,0x88] : [255, 160, 208],  // 0xb pink
+        colorPalette ? [0x00,0xdd,0x00] : [20, 245, 60],  // 0xc green
+        colorPalette ? [0xff,0xff,0x00] : [208, 221, 141],  // 0xd yellow
+        colorPalette ? [0x00,0xff,0x99] : [114, 255, 208],  // 0xe aquamarine
+        colorPalette ? [0xff,0xff,0xff] : [255, 255, 255] // 0xf white
+    ]
+}
 
 //
 const r4 = [
@@ -65,24 +84,26 @@ const r4 = [
     15, // White
 ] as const;
 
-const dcolors: Color[] = [
-    [0, 0, 0], // 0x0 black
-    [227, 30, 96], // 0x1 deep red
-    [96, 78, 189], // 0x2 dark blue
-    [255, 68, 253], // 0x3 purple
-    [0, 163, 96], // 0x4 dark green
-    [156, 156, 156], // 0x5 dark gray
-    [20, 207, 253], // 0x6 medium blue
-    [208, 195, 255], // 0x7 light blue
-    [96, 114, 3], // 0x8 brown
-    [255, 106, 60], // 0x9 orange
-    [156, 156, 156], // 0xa light gray
-    [255, 160, 208], // 0xb pink
-    [20, 245, 60], // 0xc green
-    [208, 221, 141], // 0xd yellow
-    [114, 255, 208], // 0xe aquamarine
-    [255, 255, 255], // 0xf white
-];
+function setDColors(colorPalette: number): Color[] {
+    return [
+        colorPalette ? [0x00,0x00,0x00] : [0, 0, 0],  // black
+        colorPalette ? [0xdd,0x00,0x33] : [227, 30, 96],  // 0x1 deep red
+        colorPalette ? [0x00,0x00,0x99] : [96, 78, 189],  // 0x2 dark blue
+        colorPalette ? [0xdd,0x00,0xdd] : [255, 68, 253],  // 0x3 purple
+        colorPalette ? [0x00,0x77,0x00] : [0, 163, 96],  // 0x4 dark green
+        colorPalette ? [0x55,0x55,0x55] : [156, 156, 156],  // 0x5 dark gray
+        colorPalette ? [0x23,0x22,0xff] : [20, 207, 253],  // 0x6 medium blue
+        colorPalette ? [0x66,0xaa,0xff] : [208, 195, 255],  // 0x7 light blue
+        colorPalette ? [0x88,0x55,0x22] : [96, 114, 3],  // 0x8 brown
+        colorPalette ? [0xff,0x66,0x00] : [255, 106, 60],  // 0x9 orange
+        colorPalette ? [0xaa,0xaa,0xaa] : [156, 156, 156],  // 0xa light gray
+        colorPalette ? [0xff,0x99,0x88] : [255, 160, 208],  // 0xb pink
+        colorPalette ? [0x00,0xdd,0x00] : [20, 245, 60],  // 0xc green
+        colorPalette ? [0xff,0xff,0x00] : [208, 221, 141],  // 0xd yellow
+        colorPalette ? [0x00,0xff,0x99] : [114, 255, 208],  // 0xe aquamarine
+        colorPalette ? [0xff,0xff,0xff] : [255, 255, 255]  // 0xf white
+    ]
+};
 
 const notDirty: Region = {
     top: 193,
@@ -891,6 +912,8 @@ export class VideoModes2D implements VideoModes {
     flag = 0;
     monoMode = false;
 
+    colorPalette = 0;
+
     context: CanvasRenderingContext2D;
     public smoothed: boolean;
 
@@ -1200,6 +1223,10 @@ export class VideoModes2D implements VideoModes {
         }
     }
 
+    composite(value: boolean) {
+        if (value) console.log("Composite idealized not implemented yet!", value);
+    }
+
     smoothing(on: boolean) {
         this.smoothed = on;
         if (this.screen.parentElement) {
@@ -1208,6 +1235,15 @@ export class VideoModes2D implements VideoModes {
             this.screen.style.imageRendering = on ? "auto" : "pixelated";
         }
         window.dispatchEvent(new Event('resize'));
+    }
+
+    palette(value: number) {
+        const parent = this.screen.parentElement;
+        if (parent) {
+            this.colorPalette = value;
+            setColors(this.colorPalette);
+            this.refresh();
+        }
     }
 
     getText() {

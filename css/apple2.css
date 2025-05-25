@@ -428,6 +428,11 @@ th {
     user-select: none;
 }
 
+.modal__warning {
+    width: 180px;
+    float: left;
+}
+
 button,
 a.button {
     background: black;

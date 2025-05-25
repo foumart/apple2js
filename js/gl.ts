@@ -596,6 +596,8 @@ export class VideoModesGL implements VideoModes {
     public context: CanvasRenderingContext2D;
     public smoothed: boolean;
 
+    public colorPalette = 0;
+
     constructor(
         private screen: HTMLCanvasElement,
         private e: boolean
@@ -623,7 +625,7 @@ export class VideoModesGL implements VideoModes {
         this._sv.displayConfiguration = this._displayConfig;
     }
 
-    // Composite display
+    // Composite display setup
     private defaultMonitor(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
@@ -654,8 +656,39 @@ export class VideoModesGL implements VideoModes {
         return config;
     }
 
-    private monitorII(): screenEmu.DisplayConfiguration {
-        // Custom values for Monochrome monitor
+    // RGB monitor setup
+    private defaultMonitor2(): screenEmu.DisplayConfiguration {
+        const config = new screenEmu.DisplayConfiguration();
+        config.displayResolution = new screenEmu.Size(
+            this.screen.width,
+            this.screen.height
+        );
+        config.displayScanlineLevel = 0.5;
+        config.videoWhiteOnly = false;
+        config.videoSaturation = 1;
+        config.videoSize = new screenEmu.Size(1.34, 1.25);
+        config.videoCenter = new screenEmu.Point(0.01, 0.026);
+        config.videoDecoder = "CANVAS_YUV";
+        config.videoBrightness = -0.1;
+        config.videoContrast = 1.1;
+        config.videoHue = 0;
+        config.videoLumaBandwidth = 2500000;
+        config.videoChromaBandwidth = 1200000;
+        config.videoBandwidth = 6000000;
+        config.displayPixelDensity = 72;
+        config.displayBarrel = 0;
+        config.displayShadowMaskLevel = 0.05;
+        config.displayShadowMaskDotPitch = 0.5;
+        config.displayShadowMask = "SHADOWMASK_TRIAD";
+        config.displayPersistence = 0;
+        config.displayCenterLighting = 1;
+        config.displayLuminanceGain = 1;
+
+        return config;
+    }
+
+    // Monochrome green setup
+    private monochromeMonitor(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
             this.screen.width,
@@ -925,7 +958,7 @@ export class VideoModesGL implements VideoModes {
 
     mono(on: boolean) {
         this.monoMode = on;
-        this._displayConfig = on ? this.monitorII() : this.defaultMonitor();
+        this._displayConfig = on ? this.monochromeMonitor() : this.defaultMonitor();
         this._refresh();
     }
 
@@ -939,6 +972,10 @@ export class VideoModesGL implements VideoModes {
         this._refresh();
     }
 
+    composite(value: boolean) {
+        if (value) console.log("Composite idealized not available for GL renderer", value);
+    }
+
     smoothing(on: boolean) {
         this.smoothed = on;
         if (this.screen.parentElement) {
@@ -947,6 +984,12 @@ export class VideoModesGL implements VideoModes {
             this.screen.style.imageRendering = on ? "auto" : "pixelated";
         }
         window.dispatchEvent(new Event('resize'));
+        this._refresh();
+    }
+
+    palette(value: number) {
+        this.colorPalette = value;
+        this._displayConfig = value ? this.defaultMonitor2() : this.defaultMonitor();
         this._refresh();
     }
 
