@@ -976,14 +976,14 @@ async function onLoaded(
     _printer = printer;
     _e = e;
 
-    system = new System(io, e);
+    system = new System(apple2, io, e);
     options.addOptions(system);
-
-    joystick = new JoyStick(io);
-    options.addOptions(joystick);
 
     screen = new Screen(apple2);
     options.addOptions(screen);
+
+    joystick = new JoyStick(io);
+    options.addOptions(joystick);
 
     audio = new Audio(io);
     options.addOptions(audio);

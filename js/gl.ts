@@ -687,6 +687,28 @@ export class VideoModesGL implements VideoModes {
         return config;
     }
 
+    // Black and White setup
+    private blackAndWhiteMonitor(): screenEmu.DisplayConfiguration {
+        const config = new screenEmu.DisplayConfiguration();
+        config.displayResolution = new screenEmu.Size(
+            this.screen.width,
+            this.screen.height
+        );
+        config.videoDecoder = 'CANVAS_MONOCHROME';
+        config.videoBrightness = 0;
+        config.videoContrast = 1;
+        config.videoSaturation = 1;
+        config.videoHue = 1;
+        config.videoCenter = new screenEmu.Point(0.01, 0.026);
+        config.videoSize = new screenEmu.Size(1.34, 1.25);
+        config.videoBandwidth = 9000000;
+        config.displayBarrel = 0;
+        config.displayScanlineLevel = 0.5;
+        config.displayCenterLighting = 1;
+        config.displayLuminanceGain = 1.5;
+        return config;
+    }
+
     // Monochrome green setup
     private monochromeMonitor(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
@@ -989,7 +1011,7 @@ export class VideoModesGL implements VideoModes {
 
     palette(value: number) {
         this.colorPalette = value;
-        this._displayConfig = value ? this.defaultMonitor2() : this.defaultMonitor();
+        this._displayConfig = value == 2 ? this.blackAndWhiteMonitor() : value ? this.defaultMonitor2() : this.defaultMonitor();
         this._refresh();
     }
 

@@ -259,7 +259,7 @@ th {
     pointer-events: none;
     background-image: url(../img/scanlines.png);
     background-size: 100% 100%;
-    image-rendering: pixelated;
+    image-rendering: var(--image-rendering, pixelated);
     opacity: var(--after-opacity, 1);
     position: absolute;
     top: 4px;

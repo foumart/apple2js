@@ -7,10 +7,8 @@ export const SCREEN_SCANLINE = 'show_scanlines';
 export const SCREEN_SCANLINE_SLIDE = 'scanlines_slide';
 export const SCREEN_GL = 'gl_canvas';
 export const SCREEN_SMOOTH = 'smoothing';
-export const COMPOSITE = 'composite';
+//export const COMPOSITE = 'composite';
 export const COLOR_PALETTE = 'palette';
-
-export let shouldRestart: boolean = true;
 
 declare global {
     interface Document {
@@ -54,7 +52,7 @@ export class Screen implements OptionHandler {
                     },
                     {
                         name: SCREEN_MONO,
-                        label: 'Color Monitor',
+                        label: 'Color Display',
                         type: BOOLEAN_OPTION,
                         defaultVal: true,
                     },
@@ -63,7 +61,7 @@ export class Screen implements OptionHandler {
                         label: 'Composite',
                         type: SLIDER_OPTION,
                         min: 0,
-                        max: 1,
+                        max: 2,
                         step: 1,
                         defaultVal: 0,
                     },
@@ -82,12 +80,12 @@ export class Screen implements OptionHandler {
                         step: 0.1,
                         defaultVal: 0.5,
                     },
-                    {
+                    /*{
                         name: COMPOSITE,
                         label: 'Idealized',
                         type: BOOLEAN_OPTION,
                         defaultVal: false,
-                    },
+                    },*/
                     {
                         name: SCREEN_SMOOTH,
                         label: 'Smoothing',
@@ -140,24 +138,25 @@ export class Screen implements OptionHandler {
         switch (name) {
             case SCREEN_GL:
                 this.a2.switchRenderMode(value as boolean);
-                shouldRestart = !shouldRestart;
-                const elementIds = ["mono_screen", "palette", "show_scanlines", "scanlines_slide", "composite", "smoothing"];
+                this.a2.shouldRestartScreen = !this.a2.shouldRestartScreen;
+                const elementIds = ["mono_screen", "palette", "show_scanlines", "scanlines_slide", "smoothing"]; // "composite",
                 elementIds.forEach(id => {
                     if (id == "palette") {
                         this.isChecked("mono_screen").then((checked: boolean)=>{
-                            this.modifyDisabledAttribute(id, shouldRestart || !checked);
+                            this.modifyDisabledAttribute(id, this.a2.shouldRestartScreen || !checked);
                         });
                     } else if (id == "scanlines_slide") {
                         this.isChecked("show_scanlines").then((checked: boolean)=>{
-                            this.modifyDisabledAttribute(id, shouldRestart || !checked);
+                            this.modifyDisabledAttribute(id, this.a2.shouldRestartScreen || !checked);
                         });
                     } else {
-                        this.modifyDisabledAttribute(id, shouldRestart);
+                        this.modifyDisabledAttribute(id, this.a2.shouldRestartScreen);
                     }
                 });
                 this.getElement("options-modal-warning").then((element: HTMLElement) => {
                     const divs = element.getElementsByTagName("div");
-                    divs[0].innerHTML = shouldRestart ? "*** Reload Pending ***" : "";
+                    if (!this.a2.shouldRestart) divs[0].innerHTML = "";
+                    else if (this.a2.shouldRestartScreen) divs[0].innerHTML = "*** Restart Pending ***";
                 });
                 break;
             case SCREEN_MONO:
@@ -165,16 +164,16 @@ export class Screen implements OptionHandler {
                 this.a2.getVideoModes().mono(mono);
                 this.modifyDisabledAttribute("palette", mono);
                 this.waitForParentElement("mono_screen").then((element: HTMLElement) => {
-                    element.getElementsByTagName("label")[0].innerHTML = `${this.a2.isGL() ? "Color Monitor" : "Video Card"}`;
-                    this.modifyDisabledAttribute("composite", this.a2.isGL());
+                    element.getElementsByTagName("label")[0].innerHTML = `Color Display ${this.a2.isGL() ? "(Monitor)" : "(Video Card)"}`;
+                    //this.modifyDisabledAttribute("composite", this.a2.isGL());
                 });
                 break;
             case COLOR_PALETTE:
                 this.a2.getVideoModes().palette(value as number);
                 this.waitForParentElement("palette").then((element: HTMLElement) => {
                     element.getElementsByTagName("label")[0].innerHTML = this.a2.isGL()
-                        ? `${value ? "RGB" : "Composite"}`
-                        : `${value ? "IIGS" : "NTSC"}`
+                        ? `${value == 2 ? "B/W" : value ? "RGB" : "CRT"}`
+                        : `${value == 2 ? "1 BIT" : value ? "IIGS" : "NTSC"}`
                 });
                 break;
             case SCREEN_SCANLINE:
@@ -191,10 +190,11 @@ export class Screen implements OptionHandler {
             case SCREEN_SMOOTH:
                 this.a2.getVideoModes().smoothing(value as boolean);
                 break;
-            case COMPOSITE:
+            /*case COMPOSITE:
                 this.a2.getVideoModes().composite(value as boolean);
                 // TODO
-                break;
+                //this.modifyDisabledAttribute("composite", true);
+                break;*/
             case SCREEN_FULL_PAGE:
                 this.setFullPage(value as boolean);
                 requestAnimationFrame(() => {

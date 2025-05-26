@@ -28,38 +28,46 @@ let dcolors: Color[];
 setColors(0);
 
 function setColors(colorPalette: number) {
-    orangeCol = colorPalette ? [0xff, 0x65, 0x00] : [255, 106, 60];
-    greenCol = colorPalette ? [0x00, 0xff, 0x00] : [20, 245, 60];
-    blueCol = colorPalette ? [0x09, 0x2a, 0xff] : [20, 207, 253];
-    violetCol = colorPalette ? [0xc9, 0x39, 0xc7] : [255, 68, 253];
-    whiteCol = colorPalette ? [0xff, 0xff, 0xff] : [255, 255, 255];
-    blackCol = colorPalette ? [0x00, 0x00, 0x00] : [0, 0, 0];
+    orangeCol = colorPalette == 2 ? [148, 148, 148] : colorPalette ? [0xff, 0x65, 0x00] : [255, 106, 60];
+    greenCol = colorPalette == 2 ? [92, 92, 92] : colorPalette ? [0x00, 0xff, 0x00] : [20, 245, 60];
+    blueCol = colorPalette == 2 ? [128, 128, 128] : colorPalette ? [0x09, 0x2a, 0xff] : [20, 207, 253];
+    violetCol = colorPalette == 2 ? [172, 172, 172] : colorPalette ? [0xc9, 0x39, 0xc7] : [255, 68, 253];
+    whiteCol = colorPalette == 2 ? [0xff, 0xff, 0xff] : colorPalette ? [0xff, 0xff, 0xff] : [255, 255, 255];
+    blackCol = colorPalette == 2 ? [0x00, 0x00, 0x00] : colorPalette ? [0x00, 0x00, 0x00] : [0, 0, 0];
 
     _colors = setLColors(colorPalette);
     dcolors = setDColors(colorPalette);
 }
 
+function get16Colors(colorPalette: number): Color[] {
+    return [
+        colorPalette === 2 ? [0, 0, 0] : colorPalette ? [0x00, 0x00, 0x00] : [0, 0, 0], // 0x0 black
+        colorPalette === 2 ? [92, 92, 92] : colorPalette ? [0xdd, 0x00, 0x33] : [227, 30, 96], // 0x1 deep red
+        colorPalette === 2 ? [64, 64, 64] : colorPalette ? [0x00, 0x00, 0x99] : [96, 78, 189], // 0x2 dark blue
+        colorPalette === 2 ? [172, 172, 172] : colorPalette ? [0xdd, 0x00, 0xdd] : [255, 68, 253], // 0x3 purple
+        colorPalette === 2 ? [80, 80, 80] : colorPalette ? [0x00, 0x77, 0x00] : [0, 163, 96], // 0x4 dark green
+        colorPalette === 2 ? [128, 128, 128] : colorPalette ? [0x55, 0x55, 0x55] : [156, 156, 156], // 0x5 dark gray
+        colorPalette === 2 ? [144, 144, 144] : colorPalette ? [0x23, 0x22, 0xff] : [20, 207, 253], // 0x6 medium blue
+        colorPalette === 2 ? [180, 180, 180] : colorPalette ? [0x66, 0xaa, 0xff] : [208, 195, 255], // 0x7 light blue
+        colorPalette === 2 ? [112, 112, 112] : colorPalette ? [0x88, 0x55, 0x22] : [96, 114, 3], // 0x8 brown
+        colorPalette === 2 ? [160, 160, 160] : colorPalette ? [0xff, 0x66, 0x00] : [255, 106, 60], // 0x9 orange
+        colorPalette === 2 ? [132, 132, 132] : colorPalette ? [0xaa, 0xaa, 0xaa] : [156, 156, 156], // 0xa light gray
+        colorPalette === 2 ? [192, 192, 192] : colorPalette ? [0xff, 0x99, 0x88] : [255, 160, 208], // 0xb pink
+        colorPalette === 2 ? [128, 128, 128] : colorPalette ? [0x00, 0xdd, 0x00] : [20, 245, 60], // 0xc green
+        colorPalette === 2 ? [232, 232, 232] : colorPalette ? [0xff, 0xff, 0x00] : [208, 221, 141], // 0xd yellow
+        colorPalette === 2 ? [212, 212, 212] : colorPalette ? [0x00, 0xff, 0x99] : [114, 255, 208], // 0xe aquamarine
+        colorPalette === 2 ? [255, 255, 255] : colorPalette ? [0xff, 0xff, 0xff] : [255, 255, 255]  // 0xf white
+    ];
+}
+
 // lores colors
 function setLColors(colorPalette: number): Color[] {
-    return [
-        colorPalette ? [0x00,0x00,0x00] : [0, 0, 0],  // black
-        colorPalette ? [0xdd,0x00,0x33] : [227, 30, 96],  // 0x1 deep red
-        colorPalette ? [0x00,0x00,0x99] : [96, 78, 189],  // 0x2 dark blue
-        colorPalette ? [0xdd,0x00,0xdd] : [255, 68, 253],  // 0x3 purple
-        colorPalette ? [0x00,0x77,0x00] : [0, 163, 96],  // 0x4 dark green
-        colorPalette ? [0x55,0x55,0x55] : [156, 156, 156],  // 0x5 dark gray
-        colorPalette ? [0x23,0x22,0xff] : [20, 207, 253],  // 0x6 medium blue
-        colorPalette ? [0x66,0xaa,0xff] : [208, 195, 255],  // 0x7 light blue
-        colorPalette ? [0x88,0x55,0x22] : [96, 114, 3],  // 0x8 brown
-        colorPalette ? [0xff,0x66,0x00] : [255, 106, 60],  // 0x9 orange
-        colorPalette ? [0xaa,0xaa,0xaa] : [156, 156, 156],  // 0xa light gray
-        colorPalette ? [0xff,0x99,0x88] : [255, 160, 208],  // 0xb pink
-        colorPalette ? [0x00,0xdd,0x00] : [20, 245, 60],  // 0xc green
-        colorPalette ? [0xff,0xff,0x00] : [208, 221, 141],  // 0xd yellow
-        colorPalette ? [0x00,0xff,0x99] : [114, 255, 208],  // 0xe aquamarine
-        colorPalette ? [0xff,0xff,0xff] : [255, 255, 255] // 0xf white
-    ]
+    return get16Colors(colorPalette);
 }
+
+function setDColors(colorPalette: number): Color[] {
+    return get16Colors(colorPalette);
+};
 
 //
 const r4 = [
@@ -83,27 +91,6 @@ const r4 = [
     13, // Yellow
     15, // White
 ] as const;
-
-function setDColors(colorPalette: number): Color[] {
-    return [
-        colorPalette ? [0x00,0x00,0x00] : [0, 0, 0],  // black
-        colorPalette ? [0xdd,0x00,0x33] : [227, 30, 96],  // 0x1 deep red
-        colorPalette ? [0x00,0x00,0x99] : [96, 78, 189],  // 0x2 dark blue
-        colorPalette ? [0xdd,0x00,0xdd] : [255, 68, 253],  // 0x3 purple
-        colorPalette ? [0x00,0x77,0x00] : [0, 163, 96],  // 0x4 dark green
-        colorPalette ? [0x55,0x55,0x55] : [156, 156, 156],  // 0x5 dark gray
-        colorPalette ? [0x23,0x22,0xff] : [20, 207, 253],  // 0x6 medium blue
-        colorPalette ? [0x66,0xaa,0xff] : [208, 195, 255],  // 0x7 light blue
-        colorPalette ? [0x88,0x55,0x22] : [96, 114, 3],  // 0x8 brown
-        colorPalette ? [0xff,0x66,0x00] : [255, 106, 60],  // 0x9 orange
-        colorPalette ? [0xaa,0xaa,0xaa] : [156, 156, 156],  // 0xa light gray
-        colorPalette ? [0xff,0x99,0x88] : [255, 160, 208],  // 0xb pink
-        colorPalette ? [0x00,0xdd,0x00] : [20, 245, 60],  // 0xc green
-        colorPalette ? [0xff,0xff,0x00] : [208, 221, 141],  // 0xd yellow
-        colorPalette ? [0x00,0xff,0x99] : [114, 255, 208],  // 0xe aquamarine
-        colorPalette ? [0xff,0xff,0xff] : [255, 255, 255]  // 0xf white
-    ]
-};
 
 const notDirty: Region = {
     top: 193,
@@ -1233,6 +1220,7 @@ export class VideoModes2D implements VideoModes {
             //console.log(on ? "2d crisp-edges" : "2d pixelated");
             this.screen.parentElement.style.imageRendering = on ? "auto" : "pixelated";
             this.screen.style.imageRendering = on ? "auto" : "pixelated";
+            this.screen.parentElement.style.setProperty('--image-rendering', on ? "auto" : "pixelated");
         }
         window.dispatchEvent(new Event('resize'));
     }

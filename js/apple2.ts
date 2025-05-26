@@ -95,6 +95,10 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
     private _oldVm: VideoModes;
     private initialized: boolean = false;
 
+    public _shouldRestartTypeDefault: string;
+    public _shouldRestartType: string = "apple2enh";
+    public _shouldRestartScreen: boolean = true;
+
     constructor(options: Apple2Options) {
         this.ready = this.init(options);
         this.ready.then(() => {
@@ -348,6 +352,28 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
 
     isGL() {
         return this._options.gl;
+    }
+
+    get shouldRestartType() {
+        return this._shouldRestartType;
+    }
+    get shouldRestartScreen() {
+        return this._shouldRestartScreen;
+    }
+    get shouldRestart() {
+        return this._shouldRestartType != this._shouldRestartTypeDefault || this._shouldRestartScreen;
+    }
+    set shouldRestartTypeDefault(value: string) {
+        this._shouldRestartTypeDefault = value;
+    }
+    set shouldRestartType(value: string) {
+        if (!this._shouldRestartTypeDefault) {
+            this._shouldRestartTypeDefault = value;
+        }
+        this._shouldRestartType = value;
+    }
+    set shouldRestartScreen(value: boolean) {
+        this._shouldRestartScreen = value;
     }
 
     switchRenderMode(value: boolean) {

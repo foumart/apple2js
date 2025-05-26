@@ -55,14 +55,14 @@ export const ControlStrip = ({
             setIO(io);
             setVM(vm);
 
-            const system = new System(io, e);
+            const system = new System(apple2, io, e);
             options.addOptions(system);
-
-            const joystick = new JoyStick(io);
-            options.addOptions(joystick);
 
             const screen = new Screen(apple2);
             options.addOptions(screen);
+
+            const joystick = new JoyStick(io);
+            options.addOptions(joystick);
         }
     }, [apple2, e, options]);
 
