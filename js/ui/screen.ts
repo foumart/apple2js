@@ -52,13 +52,13 @@ export class Screen implements OptionHandler {
                     },
                     {
                         name: SCREEN_MONO,
-                        label: 'Color Display',
+                        label: 'Color Display (Video Card)',
                         type: BOOLEAN_OPTION,
                         defaultVal: true,
                     },
                     {
                         name: COLOR_PALETTE,
-                        label: 'Composite',
+                        label: 'NTSC',
                         type: SLIDER_OPTION,
                         min: 0,
                         max: 2,

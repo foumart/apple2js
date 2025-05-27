@@ -95,7 +95,7 @@ export class System implements OptionHandler {
                         label: '1 mHz',
                         type: SLIDER_OPTION,
                         min: 1,
-                        max: 10,
+                        max: 8,
                         step: 1,
                         defaultVal: 1,
                     },

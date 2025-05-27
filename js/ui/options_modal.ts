@@ -116,7 +116,28 @@ export class OptionsModal {
                     listItem.appendChild(element);
                     const labelElement = document.createElement('label');
 
-                    labelElement.textContent = label;
+                    // TODO: to be improved
+                    if (name == "accelerator_toggle") {
+                        const value = this.options.getOption("accelerator_toggle") as string;
+                        labelElement.textContent = `${value} mHz`;
+                    } else if (name == "mono_screen") {
+                        const gl = this.options.getOption("gl_canvas") as boolean;
+                        labelElement.textContent = gl ? "Color Display (Monitor)" : "Color Display (Video Card)";
+                    }  else if (name == "palette") {
+                        const gl = this.options.getOption("gl_canvas") as boolean;
+                        const value = this.options.getOption("palette") as number;
+                        labelElement.textContent = value == 2 ? gl ? "B/W" : "1 BIT" : value ? gl ? "RGB" : "IIGS" : gl ? "CRT" : "NTSC";
+                        const disabled = !this.options.getOption("mono_screen") as boolean;
+                        (element as HTMLInputElement).disabled = disabled;
+                    } else if (name == "scanlines_slide") {
+                        const value = this.options.getOption("scanlines_slide") as number;
+                        labelElement.textContent = `Opacity: ${value}`;
+                        const disabled = !this.options.getOption("show_scanlines") as boolean;
+                        (element as HTMLInputElement).disabled = disabled;
+                    } else {
+                        labelElement.textContent = label;
+                    }
+
                     labelElement.setAttribute('for', name);
                     listItem.appendChild(labelElement);
 
