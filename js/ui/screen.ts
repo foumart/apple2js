@@ -52,16 +52,16 @@ export class Screen implements OptionHandler {
                     },
                     {
                         name: SCREEN_MONO,
-                        label: 'Color Display (Video Card)',
+                        label: '',
                         type: BOOLEAN_OPTION,
                         defaultVal: true,
                     },
                     {
                         name: COLOR_PALETTE,
-                        label: 'NTSC',
+                        label: '',
                         type: SLIDER_OPTION,
                         min: 0,
-                        max: 2,
+                        max: 3,
                         step: 1,
                         defaultVal: 0,
                     },
@@ -73,7 +73,7 @@ export class Screen implements OptionHandler {
                     },
                     {
                         name: SCREEN_SCANLINE_SLIDE,
-                        label: 'Opacity: 0.5',
+                        label: '',
                         type: SLIDER_OPTION,
                         min: 0,
                         max: 1,
@@ -164,7 +164,7 @@ export class Screen implements OptionHandler {
                 this.a2.getVideoModes().mono(mono);
                 this.modifyDisabledAttribute("palette", mono);
                 this.waitForParentElement("mono_screen").then((element: HTMLElement) => {
-                    element.getElementsByTagName("label")[0].innerHTML = `Color Display ${this.a2.isGL() ? "(Monitor)" : "(Video Card)"}`;
+                    element.getElementsByTagName("label")[0].innerHTML = `Color ${this.a2.isGL() ? "Monitor" : "Video Card"}`;
                     //this.modifyDisabledAttribute("composite", this.a2.isGL());
                 });
                 break;
@@ -172,8 +172,8 @@ export class Screen implements OptionHandler {
                 this.a2.getVideoModes().palette(value as number);
                 this.waitForParentElement("palette").then((element: HTMLElement) => {
                     element.getElementsByTagName("label")[0].innerHTML = this.a2.isGL()
-                        ? `${value == 2 ? "B/W" : value ? "RGB" : "CRT"}`
-                        : `${value == 2 ? "1 BIT" : value ? "IIGS" : "NTSC"}`
+                        ? `${value == 3 ? "B/W" : value == 2 ? "OPTIMIZED" : value ? "RGB" : "CRT"}`
+                        : `${value == 3 ? "4 BIT" : value == 2 ? "CONTRAST" : value ? "IIGS" : "NTSC"}`
                 });
                 break;
             case SCREEN_SCANLINE:

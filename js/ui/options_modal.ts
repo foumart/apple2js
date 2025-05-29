@@ -122,11 +122,11 @@ export class OptionsModal {
                         labelElement.textContent = `${value} mHz`;
                     } else if (name == "mono_screen") {
                         const gl = this.options.getOption("gl_canvas") as boolean;
-                        labelElement.textContent = gl ? "Color Display (Monitor)" : "Color Display (Video Card)";
+                        labelElement.textContent = gl ? "Color Monitor" : "Color Video Card";
                     }  else if (name == "palette") {
                         const gl = this.options.getOption("gl_canvas") as boolean;
                         const value = this.options.getOption("palette") as number;
-                        labelElement.textContent = value == 2 ? gl ? "B/W" : "1 BIT" : value ? gl ? "RGB" : "IIGS" : gl ? "CRT" : "NTSC";
+                        labelElement.textContent = value == 3 ? gl ? "B/W" : "4 BIT" : value == 2 ? gl ? "OPTIMIZED" : "CONTRAST" : value ? gl ? "RGB" : "IIGS" : gl ? "CRT" : "NTSC";
                         const disabled = !this.options.getOption("mono_screen") as boolean;
                         (element as HTMLInputElement).disabled = disabled;
                     } else if (name == "scanlines_slide") {

@@ -657,7 +657,7 @@ export class VideoModesGL implements VideoModes {
     }
 
     // RGB monitor setup
-    private defaultMonitor2(): screenEmu.DisplayConfiguration {
+    private defaultMonitor1(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
             this.screen.width,
@@ -687,6 +687,37 @@ export class VideoModesGL implements VideoModes {
         return config;
     }
 
+    // NEW monitor setup
+    private defaultMonitor2(): screenEmu.DisplayConfiguration {
+        const config = new screenEmu.DisplayConfiguration();
+        config.displayResolution = new screenEmu.Size(
+            this.screen.width,
+            this.screen.height
+        );
+        config.displayScanlineLevel = 0.5;
+        config.videoWhiteOnly = false;
+        config.videoSaturation = 1;
+        config.videoSize = new screenEmu.Size(1.34, 1.25);
+        config.videoCenter = new screenEmu.Point(0.01, 0.026);
+        config.videoDecoder = "CANVAS_CXA2025AS";
+        config.videoBrightness = 0;
+        config.videoContrast = 1;
+        config.videoHue = 0;
+        config.videoLumaBandwidth = 5427393;
+        config.videoChromaBandwidth = 1372687;
+        config.videoBandwidth = 6000000;
+        config.displayPixelDensity = 72;
+        config.displayBarrel = 0;
+        config.displayShadowMaskLevel = 0.05;
+        config.displayShadowMaskDotPitch = 0.5;
+        config.displayShadowMask = "SHADOWMASK_TRIAD";
+        config.displayPersistence = 0;
+        config.displayCenterLighting = 1;
+        config.displayLuminanceGain = 1;
+
+        return config;
+    }
+
     // Black and White setup
     private blackAndWhiteMonitor(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
@@ -694,18 +725,18 @@ export class VideoModesGL implements VideoModes {
             this.screen.width,
             this.screen.height
         );
+        config.displayScanlineLevel = 0.5;
         config.videoDecoder = 'CANVAS_MONOCHROME';
         config.videoBrightness = 0;
         config.videoContrast = 1;
-        config.videoSaturation = 1;
+        config.videoSaturation = 0;
         config.videoHue = 1;
         config.videoCenter = new screenEmu.Point(0.01, 0.026);
         config.videoSize = new screenEmu.Size(1.34, 1.25);
         config.videoBandwidth = 9000000;
         config.displayBarrel = 0;
-        config.displayScanlineLevel = 0.5;
         config.displayCenterLighting = 1;
-        config.displayLuminanceGain = 1.5;
+        config.displayLuminanceGain = 1;
         return config;
     }
 
@@ -1011,7 +1042,7 @@ export class VideoModesGL implements VideoModes {
 
     palette(value: number) {
         this.colorPalette = value;
-        this._displayConfig = value == 2 ? this.blackAndWhiteMonitor() : value ? this.defaultMonitor2() : this.defaultMonitor();
+        this._displayConfig = value == 3 ? this.blackAndWhiteMonitor() : value == 2 ? this.defaultMonitor2() : value ? this.defaultMonitor1() : this.defaultMonitor();
         this._refresh();
     }
 
