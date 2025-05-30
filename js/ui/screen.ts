@@ -172,7 +172,7 @@ export class Screen implements OptionHandler {
                 this.a2.getVideoModes().palette(value as number);
                 this.waitForParentElement("palette").then((element: HTMLElement) => {
                     element.getElementsByTagName("label")[0].innerHTML = this.a2.isGL()
-                        ? `${value == 3 ? "B/W" : value == 2 ? "OPTIMIZED" : value ? "RGB" : "CRT"}`
+                        ? `${value == 3 ? "B/W" : value == 2 ? "CHROMA" : value ? "RGB" : "CRT"}`
                         : `${value == 3 ? "4 BIT" : value == 2 ? "CONTRAST" : value ? "IIGS" : "NTSC"}`
                 });
                 break;

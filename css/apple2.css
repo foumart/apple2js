@@ -32,9 +32,10 @@ body {
     border: 0;
 }
 .full-page .outer #display .overscan #screen {
-    width: 560px; /* width: 2240px;560px; */
-    height: 384px; /*height: 1536px;384px; */
-    transform: scale(1);
+    width: 2240px;
+    height: 1536px;
+    transform: scale(0.25);
+    transform-origin: center;
 }
 
 .overscan {
@@ -259,7 +260,7 @@ th {
     pointer-events: none;
     background-image: url(../img/scanlines.png);
     background-size: 100% 100%;
-    image-rendering: var(--image-rendering, pixelated);
+    image-rendering: pixelated;
     opacity: var(--after-opacity, 1);
     position: absolute;
     top: 4px;
