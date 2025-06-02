@@ -88,6 +88,7 @@ export interface VideoModes extends Restorable<VideoModesState> {
     palette(value: number): void;
     composite(value: boolean): void;
     smoothed: boolean;
+    composited: boolean
 
     getText(): string;
     getCanvasAsBlob(): Promise<Blob>;

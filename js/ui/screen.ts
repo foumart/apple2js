@@ -7,7 +7,7 @@ export const SCREEN_SCANLINE = 'show_scanlines';
 export const SCREEN_SCANLINE_SLIDE = 'scanlines_slide';
 export const SCREEN_GL = 'gl_canvas';
 export const SCREEN_SMOOTH = 'smoothing';
-//export const COMPOSITE = 'composite';
+export const COMPOSITE = 'composite';
 export const COLOR_PALETTE = 'palette';
 
 declare global {
@@ -52,7 +52,7 @@ export class Screen implements OptionHandler {
                     },
                     {
                         name: SCREEN_MONO,
-                        label: '',
+                        label: 'Color Display',
                         type: BOOLEAN_OPTION,
                         defaultVal: true,
                     },
@@ -80,12 +80,12 @@ export class Screen implements OptionHandler {
                         step: 0.1,
                         defaultVal: 0.5,
                     },
-                    /*{
+                    {
                         name: COMPOSITE,
                         label: 'Idealized',
                         type: BOOLEAN_OPTION,
                         defaultVal: false,
-                    },*/
+                    },
                     {
                         name: SCREEN_SMOOTH,
                         label: 'Smoothing',
@@ -190,11 +190,11 @@ export class Screen implements OptionHandler {
             case SCREEN_SMOOTH:
                 this.a2.getVideoModes().smoothing(value as boolean);
                 break;
-            /*case COMPOSITE:
+            case COMPOSITE:
                 this.a2.getVideoModes().composite(value as boolean);
                 // TODO
                 //this.modifyDisabledAttribute("composite", true);
-                break;*/
+                break;
             case SCREEN_FULL_PAGE:
                 this.setFullPage(value as boolean);
                 requestAnimationFrame(() => {

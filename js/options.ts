@@ -56,7 +56,7 @@ export class Options {
                 this.options[name] = option;
                 const value = this.getOption(name);
                 if (value != null) {
-                    handler.setOption(name, value);
+                    handler.setOption(name, isNaN(Number(value)) ? 1 : value);
                 }
             }
             this.sections.push(section);

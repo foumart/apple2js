@@ -595,6 +595,7 @@ export class VideoModesGL implements VideoModes {
 
     public context: CanvasRenderingContext2D;
     public smoothed: boolean;
+    public composited: boolean;
 
     public colorPalette = 0;
 
@@ -1026,15 +1027,16 @@ export class VideoModesGL implements VideoModes {
     }
 
     composite(value: boolean) {
+        this.composited = value;
         if (value) console.log("Composite idealized not available for GL renderer", value);
     }
 
-    smoothing(on: boolean) {
-        this.smoothed = on;
+    smoothing(value: boolean) {
+        this.smoothed = value;
         if (this.screen.parentElement) {
             //console.log(on ? "gl crisp-edges" : "gl pixelated");
-            this.screen.parentElement.style.imageRendering = on ? "auto" : "pixelated";
-            this.screen.style.imageRendering = on ? "auto" : "pixelated";
+            this.screen.parentElement.style.imageRendering = value ? "auto" : "pixelated";
+            this.screen.style.imageRendering = value ? "auto" : "pixelated";
         }
         window.dispatchEvent(new Event('resize'));
         this._refresh();

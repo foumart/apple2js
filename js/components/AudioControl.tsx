@@ -27,7 +27,7 @@ export const AudioControl = ({ apple2 }: AudioControlProps) => {
     useEffect(() => {
         if (apple2) {
             const io = apple2.getIO();
-            const audio = new Audio(io);
+            const audio = new Audio(io, doToggleSound);
             options.addOptions(audio);
             setAudio(audio);
             setAudioEnabled(audio.isEnabled());

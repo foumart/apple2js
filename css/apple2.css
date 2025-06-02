@@ -49,7 +49,7 @@ body {
 }
 
 .full-page {
-    background: #222;
+    background: #c4c1a0;
     overflow-y: auto !important;
 }
 
@@ -83,10 +83,66 @@ body {
     height: 100%;
 }
 
-.full-page #header,
-.full-page .inset,
-.full-page #reset {
+.full-page #header {
     display: none;
+}
+
+.full-page .outer #reset {
+    margin-right: 0;
+    margin-left: 3px;
+}
+
+.full-page .outer #reset-row {
+    position: fixed;
+    top: 388px;
+    right: 5px;
+}
+
+.full-page .outer #lights {
+    position: fixed;
+    top: 388px;
+    left: 256px;
+}
+
+.full-page .outer #periphery1 {
+    position: fixed;
+    top: 388px;
+    left: 0;
+    width: auto;
+}
+
+.full-page .outer #periphery2 {
+    position: relative;
+    top: 425px;
+    float: left;
+    width: auto;
+}
+
+.full-page .outer #periphery3 {
+    position: fixed;
+    top: 462px;
+    left: 5px;
+}
+
+#exit-fullscreen {
+    display: none;
+}
+
+.full-page #exit-fullscreen {
+    background-color: #222;
+    position: fixed;
+    margin-right: 1px;
+    width: 563px;
+    top: 425px;
+    right: 5px;
+    display: flex;
+    justify-content: center;
+    z-index: 1;
+}
+
+.full-page #exit-fullscreen button {
+    width: 100%;
+    background-color: #544;
 }
 
 #header {
@@ -260,7 +316,7 @@ th {
     pointer-events: none;
     background-image: url(../img/scanlines.png);
     background-size: 100% 100%;
-    image-rendering: pixelated;
+    image-rendering: var(--image-rendering, pixelated);
     opacity: var(--after-opacity, 1);
     position: absolute;
     top: 4px;
@@ -840,25 +896,6 @@ a.button:hover {
 #alert-modal-content {
     min-width: 200px;
     min-height: 50px;
-}
-
-#exit-fullscreen {
-    display: none;
-}
-
-.full-page #exit-fullscreen {
-    position: fixed;
-    width: 100%;
-    top: 400px;
-    height: 24px;
-    display: flex;
-    justify-content: center;
-    z-index: 1;
-}
-
-.full-page #exit-fullscreen button {
-    width: 96%;
-    background-color: #544;
 }
 
 .fas {

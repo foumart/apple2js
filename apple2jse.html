@@ -37,7 +37,7 @@
 </head>
 <body class="apple2e" ondragover="Apple2.handleDragOver(0, event)" ondrop="Apple2.handleDrop(0, event)" ondragend="Apple2.handleDragEnd(0, event)">
   <div class="outer">
-    <div id="exit-fullscreen">
+    <div id="exit-fullscreen" class="inset">
       <button onClick="Apple2.exitFullScreen();">Exit full screen</button>
     </div>
     <div id="display">
@@ -94,7 +94,7 @@
       </div>
     </div>
 
-    <div class="periphery inset">
+    <div id="periphery1" class="periphery inset">
       <div class="disk" ondragover="Apple2.handleDragOver(1, event)" ondrop="Apple2.handleDrop(1, event)" ondragend="Apple2.handleDragEnd(1, event)">
         <button title="Load Disk" onclick="Apple2.openLoad(1, event);">
           <i class="fas fa-folder-open"></i>
@@ -105,7 +105,7 @@
         <div id="disk-label1" class="disk-label">Disk 1</div>
       </div>
     </div>
-    <div class="periphery inset" style="display:none">
+    <div id="periphery2" class="periphery inset" style="display:none">
       <div class="disk" ondragover="Apple2.handleDragOver(2, event)" ondrop="Apple2.handleDrop(2, event)" ondragend="Apple2.handleDragEnd(2, event)">
         <button title="Load Disk" onclick="Apple2.openLoad(2, event);">
           <i class="fas fa-folder-open"></i>
@@ -117,7 +117,7 @@
       </div>
     </div>
 
-    <div class="inset" style="margin-bottom:6px;background-color:black;height:196px;">
+    <div id="periphery3" class="inset" style="margin-bottom:6px;background-color:black;height:196px;">
       <div id="keyboard"></div>
     </div>
   </div>

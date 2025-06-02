@@ -31,7 +31,7 @@ export class Audio implements OptionHandler {
 
     ready: Promise<void>;
 
-    constructor(io: Apple2IO) {
+    constructor(io: Apple2IO, private updateIcon: Function) {
         this.audioContext = new AudioContext({
             sampleRate: SAMPLE_RATE,
         });
@@ -155,6 +155,7 @@ export class Audio implements OptionHandler {
         switch (name) {
             case SOUND_ENABLED_OPTION:
                 this.sound = value;
+                this.updateIcon();
         }
     };
 }

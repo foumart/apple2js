@@ -985,7 +985,7 @@ async function onLoaded(
     joystick = new JoyStick(io);
     options.addOptions(joystick);
 
-    audio = new Audio(io);
+    audio = new Audio(io, initSoundToggle);
     options.addOptions(audio);
     initSoundToggle();
 
@@ -1094,6 +1094,7 @@ async function onLoaded(
             for (let i = 1; i < drives; i++) {
                 const periphery = document.getElementsByClassName("periphery");
                 (periphery[i] as HTMLElement).style.display = "flex";
+                (document.getElementById("exit-fullscreen") as HTMLElement).style.width = "292px";
             }
         }
     } else {
