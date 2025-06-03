@@ -10,9 +10,17 @@ import {
     pageNo,
 } from './videomodes';
 
-const dim = (c: Color): Color => {
-    return [(c[0] * 0.75) & 0xff, (c[1] * 0.75) & 0xff, (c[2] * 0.75) & 0xff];
-};
+const dim = (c: Color, alpha = 0.75): Color => [
+    (c[0] * alpha) & 255,
+    (c[1] * alpha) & 255,
+    (c[2] * alpha) & 255
+];
+
+const mix = (c1: Color, c2: Color, ratio = 0.5): Color => [
+    Math.min(255, Math.max(0, (c1[0] * ratio + c2[0] * (1 - ratio)) | 0)),
+    Math.min(255, Math.max(0, (c1[1] * ratio + c2[1] * (1 - ratio)) | 0)),
+    Math.min(255, Math.max(0, (c1[2] * ratio + c2[2] * (1 - ratio)) | 0))
+];
 
 // hires colors
 let orangeCol: Color;
@@ -33,15 +41,15 @@ let colorMapLookup: Record<number, Color>;
 // Composite pseudo display - dimming parts of the colored pixels
 const colorMap = [
     [0, 0, 0, 0], // Black
-    [0,.2,.8, 1], // Red
-    [1,.8,.2, 0], // Dark Blue
-    [1,.2,.5, 1], // Purple
-    [.8,1,.5, 0], // Dark Green
+    [0, 0,.6, 1], // Red
+    [1,.8, 0, 0], // Dark Blue
+    [1,.6,.8, 1], // Purple
+    [.6,1,.8,.5], // Dark Green
     [1, 1, 1,.8], // Gray 1
-    [1, 1,.8,.2], // Medium Blue
+    [1, 1,.8,.6], // Medium Blue
     [1, 1,.8, 1], // Light Blue
-    [0,.5, 1,.8], // Brown
-    [.2,.8,1, 1], // Orange
+    [.5,.6,1,.6], // Brown
+    [.6,.8,1, 1], // Orange
     [.8,1, 1, 1], // Gray 2
     [1,.8, 1, 1], // Pink
     [1, 1, 1,.8], // Light Green
@@ -60,13 +68,13 @@ function setColors(colorPalette: number) {
     whiteCol = colorPalette === 2  ? [0xff, 0xff, 0xff] : colorPalette === 3 ? [0xff, 0xff, 0xff] : colorPalette ? [0xff, 0xff, 0xff] : [0xff, 0xff, 0xff];
     blackCol = colorPalette === 2  ? [0x00, 0x00, 0x00] : colorPalette === 3 ? [0x00, 0x00, 0x00] : colorPalette ? [0x00, 0x00, 0x00] : [0x00, 0x00, 0x00];
     lightCol = colorPalette === 3 ? [0x99, 0x99, 0x99] : [0x88, 0x88, 0x88];
-    greyCol = colorPalette === 3 ? [0x55, 0x55, 0x55] : [0x44, 0x44, 0x44];
+    greyCol = colorPalette === 3 ? [0x77, 0x77, 0x77] : [0x66, 0x66, 0x66];
     shadeCol = colorPalette === 3 ? [0x33, 0x33, 0x33] : [0x22, 0x22, 0x22];
 
     colorMapLookup = {
         0.8: lightCol,
-        0.5: greyCol,
-        0.2: shadeCol,
+        0.6: greyCol,
+        0.5: shadeCol,
         0: blackCol
     };
 
@@ -782,18 +790,15 @@ export class HiresPage2D implements HiresPage {
                         } else if (this.colorDHRMode) {
                             const clr = this.vm.composited ? colorMap[r4[c[idx]]][jdx] : 1;
 
-                            let pixelColor = colorMapLookup[clr] ?? dcolor;
+                            let pixelColor;
 
                             if (clr === 0) {
                                 pixelColor = blackCol;
                             } else if (clr === 1) {
                                 pixelColor = dcolor;
                             } else {
-                                pixelColor = [
-                                    Math.round((dcolor[0] * (1 - clr) + pixelColor[0] * clr) / 2),
-                                    Math.round((dcolor[1] * (1 - clr) + pixelColor[1] * clr) / 2),
-                                    Math.round((dcolor[2] * (1 - clr) + pixelColor[2] * clr) / 2),
-                                ];
+                                // pseudo composite pixel
+                                pixelColor = dim(mix(dcolor, colorMapLookup[clr], 1 - clr), clr);
                             }
 
                             this._drawHalfPixel(data, offset, pixelColor as Color);
