@@ -33,28 +33,23 @@ let blackCol: Color;
 let _colors: Color[];
 let dcolors: Color[];
 
-let greyCol: Color;
-let shadeCol: Color;
-let lightCol: Color;
-let colorMapLookup: Record<number, Color>;
-
 // Composite pseudo display - dimming parts of the colored pixels
 const colorMap = [
     [0, 0, 0, 0], // Black
-    [0, 0,.6, 1], // Red
-    [1,.8, 0, 0], // Dark Blue
-    [1,.6,.8, 1], // Purple
-    [.6,1,.8,.5], // Dark Green
-    [1, 1, 1,.8], // Gray 1
-    [1, 1,.8,.6], // Medium Blue
-    [1, 1,.8, 1], // Light Blue
-    [.5,.6,1,.6], // Brown
-    [.6,.8,1, 1], // Orange
-    [.8,1, 1, 1], // Gray 2
-    [1,.8, 1, 1], // Pink
-    [1, 1, 1,.8], // Light Green
-    [.8,1, 1, 1], // Yellow
-    [1, 1, 1,.8], // Aqua
+    [0, 0,.5, 1], // Red
+    [1,.7, 0, 0], // Dark Blue
+    [1,.4,.6, 1], // Purple
+    [.7,1,.6, 0], // Dark Green
+    [1, 1, 1,.7], // Gray 1
+    [1, 1,.7,.5], // Medium Blue
+    [1, 1,.7,.6], // Light Blue
+    [0,.6, 1,.7], // Brown
+    [.5,.7,1, 1], // Orange
+    [.7,1, 1, 1], // Gray 2
+    [1,.7, 1, 1], // Pink
+    [.9,1, 1,.5], // Light Green
+    [.7,1, 1, 1], // Yellow
+    [1, 1, 1,.7], // Aqua
     [1, 1, 1, 1], // White
 ];
 
@@ -67,16 +62,6 @@ function setColors(colorPalette: number) {
     violetCol = colorPalette === 2 ? [0xff, 0x38, 0xff] : colorPalette === 3 ? [0xac, 0xac, 0xac] : colorPalette ? [0xc9, 0x39, 0xc7] : [0xff, 0x44, 0xfd];
     whiteCol = colorPalette === 2  ? [0xff, 0xff, 0xff] : colorPalette === 3 ? [0xff, 0xff, 0xff] : colorPalette ? [0xff, 0xff, 0xff] : [0xff, 0xff, 0xff];
     blackCol = colorPalette === 2  ? [0x00, 0x00, 0x00] : colorPalette === 3 ? [0x00, 0x00, 0x00] : colorPalette ? [0x00, 0x00, 0x00] : [0x00, 0x00, 0x00];
-    lightCol = colorPalette === 3 ? [0x99, 0x99, 0x99] : [0x88, 0x88, 0x88];
-    greyCol = colorPalette === 3 ? [0x77, 0x77, 0x77] : [0x66, 0x66, 0x66];
-    shadeCol = colorPalette === 3 ? [0x33, 0x33, 0x33] : [0x22, 0x22, 0x22];
-
-    colorMapLookup = {
-        0.8: lightCol,
-        0.6: greyCol,
-        0.5: shadeCol,
-        0: blackCol
-    };
 
     _colors = setLColors(colorPalette);
     dcolors = setDColors(colorPalette);
@@ -790,16 +775,11 @@ export class HiresPage2D implements HiresPage {
                         } else if (this.colorDHRMode) {
                             const clr = this.vm.composited ? colorMap[r4[c[idx]]][jdx] : 1;
 
+                            // pseudo composite half-pixels imitation
                             let pixelColor;
-
-                            if (clr === 0) {
-                                pixelColor = blackCol;
-                            } else if (clr === 1) {
-                                pixelColor = dcolor;
-                            } else {
-                                // pseudo composite pixel
-                                pixelColor = dim(mix(dcolor, colorMapLookup[clr], 1 - clr), clr);
-                            }
+                            if (clr * 10 % 2) pixelColor = dim(dcolor, clr);
+                            else if (clr < 1) pixelColor = dim(mix(dcolor, [clr*160, clr*160, clr*160], 1 - clr), clr);
+                            else pixelColor = dcolor;
 
                             this._drawHalfPixel(data, offset, pixelColor as Color);
                         } else if (
