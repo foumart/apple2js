@@ -66,6 +66,12 @@ export class Screen implements OptionHandler {
                         defaultVal: 0,
                     },
                     {
+                        name: COMPOSITE,
+                        label: 'Composite Idealized',
+                        type: BOOLEAN_OPTION,
+                        defaultVal: false,
+                    },
+                    {
                         name: SCREEN_SCANLINE,
                         label: 'Scanlines',
                         type: BOOLEAN_OPTION,
@@ -79,12 +85,6 @@ export class Screen implements OptionHandler {
                         max: 1,
                         step: 0.1,
                         defaultVal: 0.5,
-                    },
-                    {
-                        name: COMPOSITE,
-                        label: 'Idealized',
-                        type: BOOLEAN_OPTION,
-                        defaultVal: false,
                     },
                     {
                         name: SCREEN_SMOOTH,
@@ -139,7 +139,7 @@ export class Screen implements OptionHandler {
             case SCREEN_GL:
                 this.a2.switchRenderMode(value as boolean);
                 this.a2.shouldRestartScreen = !this.a2.shouldRestartScreen;
-                const elementIds = ["mono_screen", "palette", "show_scanlines", "scanlines_slide", "smoothing"]; // "composite",
+                const elementIds = ["mono_screen", "palette", "show_scanlines", "scanlines_slide", "composite", "smoothing"];
                 elementIds.forEach(id => {
                     if (id == "palette") {
                         this.isChecked("mono_screen").then((checked: boolean)=>{
@@ -163,6 +163,7 @@ export class Screen implements OptionHandler {
                 const mono = !(value as boolean);
                 this.a2.getVideoModes().mono(mono);
                 this.modifyDisabledAttribute("palette", mono);
+                this.modifyDisabledAttribute("composite", mono);
                 this.waitForParentElement("mono_screen").then((element: HTMLElement) => {
                     element.getElementsByTagName("label")[0].innerHTML = `Color ${this.a2.isGL() ? "Monitor" : "Video Card"}`;
                     //this.modifyDisabledAttribute("composite", this.a2.isGL());

@@ -123,7 +123,7 @@ export class OptionsModal {
                     } else if (name == "mono_screen") {
                         const gl = this.options.getOption("gl_canvas") as boolean;
                         labelElement.textContent = gl ? "Color Monitor" : "Color Video Card";
-                    }  else if (name == "palette") {
+                    } else if (name == "palette") {
                         const gl = this.options.getOption("gl_canvas") as boolean;
                         const value = this.options.getOption("palette") as number;
                         labelElement.textContent = value == 3 ? gl ? "B/W" : "4 BIT" : value == 2 ? gl ? "CHROMA" : "CONTRAST" : value ? gl ? "RGB" : "IIGS" : gl ? "CRT" : "NTSC";
@@ -134,6 +134,10 @@ export class OptionsModal {
                         labelElement.textContent = `Opacity: ${value}`;
                         const disabled = !this.options.getOption("show_scanlines") as boolean;
                         (element as HTMLInputElement).disabled = disabled;
+                    } else if (name == "composite") {
+                        const disabled = this.options.getOption("gl_canvas") as boolean;
+                        (element as HTMLInputElement).disabled = disabled;
+                        labelElement.textContent = label;
                     } else {
                         labelElement.textContent = label;
                     }
