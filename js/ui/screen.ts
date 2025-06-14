@@ -141,7 +141,11 @@ export class Screen implements OptionHandler {
                 this.a2.shouldRestartScreen = !this.a2.shouldRestartScreen;
                 const elementIds = ["mono_screen", "palette", "show_scanlines", "scanlines_slide", "composite", "smoothing"];
                 elementIds.forEach(id => {
-                    if (id == "palette") {
+                    if (id == "composite") {
+                        this.isChecked("gl_canvas").then((checked: boolean)=>{
+                            this.modifyDisabledAttribute(id, this.a2.shouldRestartScreen || checked);
+                        });
+                    } else if (id == "palette") {
                         this.isChecked("mono_screen").then((checked: boolean)=>{
                             this.modifyDisabledAttribute(id, this.a2.shouldRestartScreen || !checked);
                         });

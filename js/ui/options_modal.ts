@@ -122,7 +122,7 @@ export class OptionsModal {
                         labelElement.textContent = `${value} mHz`;
                     } else if (name == "mono_screen") {
                         const gl = this.options.getOption("gl_canvas") as boolean;
-                        labelElement.textContent = gl ? "Color Monitor" : "Color Video Card";
+                        labelElement.textContent = gl ? "Color Monitor" : "Digital Output";
                     } else if (name == "palette") {
                         const gl = this.options.getOption("gl_canvas") as boolean;
                         const value = this.options.getOption("palette") as number;
