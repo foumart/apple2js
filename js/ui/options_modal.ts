@@ -126,7 +126,7 @@ export class OptionsModal {
                     } else if (name == "palette") {
                         const gl = this.options.getOption("gl_canvas") as boolean;
                         const value = this.options.getOption("palette") as number;
-                        labelElement.textContent = value == 3 ? gl ? "B/W" : "4 BIT" : value == 2 ? gl ? "CHROMA" : "CONTRAST" : value ? gl ? "RGB" : "IIGS" : gl ? "CRT" : "NTSC";
+                        labelElement.textContent = value == 3 ? gl ? "B/W" : "4 BIT" : value == 2 ? gl ? "GREY" : "GREY" : value ? gl ? "RGB" : "IIGS" : gl ? "CRT" : "NTSC";
                         const disabled = !this.options.getOption("mono_screen") as boolean;
                         (element as HTMLInputElement).disabled = disabled;
                     } else if (name == "scanlines_slide") {

@@ -622,12 +622,12 @@ export class VideoModesGL implements VideoModes {
     async init() {
         await this._sv.initOpenGL();
 
-        this._displayConfig = this.defaultMonitor();
+        this._displayConfig = this.monitorComposite();
         this._sv.displayConfiguration = this._displayConfig;
     }
 
     // Composite display setup
-    private defaultMonitor(): screenEmu.DisplayConfiguration {
+    private monitorComposite(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
             this.screen.width,
@@ -658,7 +658,7 @@ export class VideoModesGL implements VideoModes {
     }
 
     // RGB monitor setup
-    private defaultMonitor1(): screenEmu.DisplayConfiguration {
+    private monitorRGB(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
             this.screen.width,
@@ -688,8 +688,8 @@ export class VideoModesGL implements VideoModes {
         return config;
     }
 
-    // NEW monitor setup
-    private defaultMonitor2(): screenEmu.DisplayConfiguration {
+    // GREY monitor setup
+    private monitorGreyscale(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
             this.screen.width,
@@ -697,30 +697,30 @@ export class VideoModesGL implements VideoModes {
         );
         config.displayScanlineLevel = 0.5;
         config.videoWhiteOnly = false;
-        config.videoSaturation = 1;
+        config.videoSaturation = 0;
         config.videoSize = new screenEmu.Size(1.34, 1.25);
         config.videoCenter = new screenEmu.Point(0.01, 0.026);
-        config.videoDecoder = "CANVAS_CXA2025AS";
+        config.videoDecoder = "CANVAS_RGB";
         config.videoBrightness = 0;
         config.videoContrast = 1;
         config.videoHue = 0;
-        config.videoLumaBandwidth = 5427393;
-        config.videoChromaBandwidth = 1372687;
-        config.videoBandwidth = 6000000;
+        config.videoLumaBandwidth = 0;
+        config.videoChromaBandwidth = 0;
+        config.videoBandwidth = 2380330;
         config.displayPixelDensity = 72;
         config.displayBarrel = 0;
-        config.displayShadowMaskLevel = 0.05;
-        config.displayShadowMaskDotPitch = 0.5;
-        config.displayShadowMask = "SHADOWMASK_TRIAD";
+        config.displayShadowMaskLevel = 0.32;
+        config.displayShadowMaskDotPitch = 0.46;
+        config.displayShadowMask = "SHADOWMASK_BAYER";
         config.displayPersistence = 0;
         config.displayCenterLighting = 1;
-        config.displayLuminanceGain = 1;
+        config.displayLuminanceGain = 1.32;
 
         return config;
     }
 
     // Black and White setup
-    private blackAndWhiteMonitor(): screenEmu.DisplayConfiguration {
+    private monitorBlackAndWhite(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
             this.screen.width,
@@ -742,7 +742,7 @@ export class VideoModesGL implements VideoModes {
     }
 
     // Monochrome green setup
-    private monochromeMonitor(): screenEmu.DisplayConfiguration {
+    private monitorMonochrome(): screenEmu.DisplayConfiguration {
         const config = new screenEmu.DisplayConfiguration();
         config.displayResolution = new screenEmu.Size(
             this.screen.width,
@@ -1012,7 +1012,7 @@ export class VideoModesGL implements VideoModes {
 
     mono(on: boolean) {
         this.monoMode = on;
-        this._displayConfig = on ? this.monochromeMonitor() : this.defaultMonitor();
+        this._displayConfig = on ? this.monitorMonochrome() : this.monitorComposite();
         this._refresh();
     }
 
@@ -1044,7 +1044,7 @@ export class VideoModesGL implements VideoModes {
 
     palette(value: number) {
         this.colorPalette = value;
-        this._displayConfig = value == 3 ? this.blackAndWhiteMonitor() : value == 2 ? this.defaultMonitor2() : value ? this.defaultMonitor1() : this.defaultMonitor();
+        this._displayConfig = value == 3 ? this.monitorBlackAndWhite() : value == 2 ? this.monitorGreyscale() : value ? this.monitorRGB() : this.monitorComposite();
         this._refresh();
     }
 
