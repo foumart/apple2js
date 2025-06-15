@@ -154,8 +154,9 @@ export class Audio implements OptionHandler {
     setOption = (name: string, value: boolean) => {
         switch (name) {
             case SOUND_ENABLED_OPTION:
+                const oldValue = this.sound;
                 this.sound = value;
-                this.updateIcon();
+                if (oldValue != value) this.updateIcon();
         }
     };
 }
