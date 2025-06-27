@@ -72,6 +72,13 @@ const Select = ({ option, value, setValue }: SelectProps) => {
         [name, setValue]
     );
 
+    const onInput = useCallback(
+        (event: JSX.TargetedInputEvent<HTMLSelectElement>) => {
+            setValue(name, event.currentTarget.value);
+        },
+        [name, setValue]
+    );
+
     const makeOption = (option: { name: string; value: string }) => (
         <option selected={option.value === value} value={option.value}>
             {option.name}
@@ -80,7 +87,7 @@ const Select = ({ option, value, setValue }: SelectProps) => {
 
     return (
         <li>
-            <select onChange={onChange}>{option.values.map(makeOption)}</select>
+            <select onChange={onChange} onInput={onInput}>{option.values.map(makeOption)}</select>
             <label>{label}</label>
         </li>
     );

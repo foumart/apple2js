@@ -27,6 +27,11 @@ export class OptionsModal {
                 const list = document.createElement('ul');
                 for (const option of options) {
                     const { name, label, type } = option;
+                    const onInput = (
+                        evt: InputEvent & { target: HTMLInputElement }
+                    ) => {
+                        this.options.setOption(name, Number(evt.target.value));
+                    }
                     const onChange = (
                         evt: InputEvent & { target: HTMLInputElement }
                     ) => {
@@ -112,6 +117,7 @@ export class OptionsModal {
                         }
                     }
                     element.id = name;
+                    element.addEventListener('input', onInput);
                     element.addEventListener('change', onChange);
                     listItem.appendChild(element);
                     const labelElement = document.createElement('label');
