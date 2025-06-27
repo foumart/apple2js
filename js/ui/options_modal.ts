@@ -30,7 +30,9 @@ export class OptionsModal {
                     const onInput = (
                         evt: InputEvent & { target: HTMLInputElement }
                     ) => {
-                        this.options.setOption(name, Number(evt.target.value));
+                        if (["accelerator_toggle", "palette", "scanlines_slide"].includes(evt.target.id)) {
+                            this.options.setOption(name, Number(evt.target.value));
+                        }
                     }
                     const onChange = (
                         evt: InputEvent & { target: HTMLInputElement }
