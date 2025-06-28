@@ -5,6 +5,10 @@
 /coverage
 /node_modules
 /tmp
+/img
+/json
 /dist_bckp
 /dist
+/emulator
+/submodules
 __diff_output__
