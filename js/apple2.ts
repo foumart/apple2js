@@ -165,7 +165,14 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
 
     createVideoMode(options: Apple2Options) {
         const VideoModes = options.gl ? VideoModesGL : VideoModes2D;
-        this.vm = new VideoModes(options.gl ? options.canvas : options.canvas2, options.e);
+        try {
+            this.vm = new VideoModes(options.gl ? options.canvas : options.canvas2, options.e);
+        } catch (e) {
+            if (e.message.includes("OES_texture_float")) {
+                this.switchRenderMode(false);
+                console.log(e);
+            }
+        }
     }
 
     createVideoModeLink(options: Apple2Options) {

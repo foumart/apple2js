@@ -614,7 +614,16 @@ export class VideoModesGL implements VideoModes {
         this._canvas.width = width;
         this._canvas.height = height;
         this.context = context;
-        this._sv = new screenEmu.ScreenView(this.screen);
+
+        try {
+            this._sv = new screenEmu.ScreenView(this.screen);
+        } catch (e) {
+            if (e.message.includes("OES_texture_float")) {
+                //
+            }
+
+            throw e;
+        }
 
         this.ready = this.init();
     }

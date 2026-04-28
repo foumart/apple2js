@@ -8,6 +8,7 @@ body {
     font-family: sans-serif;
     overflow-x: hidden;
     overflow-y: hidden;
+    overflow: hidden;
     margin: 0;
     -webkit-touch-callout: none;
 }
@@ -18,7 +19,9 @@ body {
 
 .outer {
     margin: auto;
-    width: 580px;
+    overflow-y: hidden;
+    overflow: hidden;
+    /*width: 580px;*/
     transform: scale(var(--scale-factor));
     transform-origin: 50% 0%;
     background-color: #c4c1a0;
@@ -39,6 +42,8 @@ body {
 }
 
 .overscan {
+    overflow-y: hidden;
+    overflow: hidden;
     padding: 4px;
     margin: auto;
     position: relative;
@@ -50,10 +55,14 @@ body {
 
 .full-page {
     background: #c4c1a0;
-    overflow-y: auto !important;
+    overflow-y: hidden;
+    overflow: hidden;
+    /*overflow-y: auto !important;*/
 }
 
 .full-page #display {
+    overflow-y: hidden;
+    overflow: hidden;
     padding: 0;
     border: 0;
     position: fixed;
@@ -67,6 +76,8 @@ body {
 }
 
 .full-page .overscan {
+    overflow-y: hidden;
+    overflow: hidden;
     margin: initial;
     padding: 0;
     width: initial;
