@@ -78,6 +78,7 @@
 
 .screen:global(.mouseMode) {
     cursor: none;
+    touch-action: none;
 }
 
 :global(.full-page) .screen {
