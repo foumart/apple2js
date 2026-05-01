@@ -22,8 +22,6 @@ export function handleResize(embedded = false, fullscreenClass = 'full-page') {
     const scale = +Math.min(min, Math.max(0.5, 1 + (window.innerWidth - width) / width)).toFixed(3);
     document.documentElement.style.setProperty('--scale-factor', "" + scale);
 
-    if (!embedded) {
-        const outer = document.getElementsByClassName("outer")[0] as HTMLElement;
-        outer.style.transformOrigin = `${window.innerWidth - width < 0 ? "0%" : "50%"} 0%`;
-    }
+    const outer = document.getElementsByClassName("outer")[0] as HTMLElement;
+    outer.style.transformOrigin = `${window.innerWidth - width < 0 ? embedded ? "-5%" : "0%" : "50%"} 0%`;
 }

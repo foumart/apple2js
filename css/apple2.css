@@ -21,7 +21,7 @@ body {
     margin: auto;
     overflow-y: hidden;
     overflow: hidden;
-    /*width: 580px;*/
+    width: 580px;
     transform: scale(var(--scale-factor));
     transform-origin: 50% 0%;
     background-color: #c4c1a0;
