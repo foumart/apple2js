@@ -210,10 +210,13 @@ export class Screen implements OptionHandler {
     }
 
     private setFullPage(on: boolean) {
+        // @ts-ignore
+        const classList = this.a2._options.embedded ? 'embedded-page' : 'full-page';
+
         if (on) {
-            document.body.classList.add('full-page');
+            document.body.classList.add(classList);
         } else {
-            document.body.classList.remove('full-page');
+            document.body.classList.remove(classList);
         }
     }
 }

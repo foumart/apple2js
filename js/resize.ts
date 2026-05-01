@@ -1,4 +1,4 @@
-export function handleResize(fullscreenClass = 'full-page') {
+export function handleResize(embedded = false, fullscreenClass = 'full-page') {
     const fullscreen = document.body.classList.contains(fullscreenClass);
     //const scrollBar = window.innerWidth / window.innerHeight > 580 / 640 && !fullscreen;
     //document.body.style.overflowY = scrollBar ? "scroll" : "hidden";
@@ -7,6 +7,8 @@ export function handleResize(fullscreenClass = 'full-page') {
     //const scrollerWidth = scrollBar ? (window.innerWidth - document.documentElement.clientWidth) / 2 : 0;
     //const width = fullscreen ? 580 : 584 + (scrollBar ? scrollerWidth : 0);
     const width = 560;
+
+    //const display = document.querySelector('body .outer #display') as HTMLElement | null;
 
     let min = 2;
     if (fullscreen) {
@@ -20,6 +22,8 @@ export function handleResize(fullscreenClass = 'full-page') {
     const scale = +Math.min(min, Math.max(0.5, 1 + (window.innerWidth - width) / width)).toFixed(3);
     document.documentElement.style.setProperty('--scale-factor', "" + scale);
 
-    const outer = document.getElementsByClassName("outer")[0] as HTMLElement;
-    outer.style.transformOrigin = `${window.innerWidth - width < 0 ? "0%" : "50%"} 0%`;
+    if (!embedded) {
+        const outer = document.getElementsByClassName("outer")[0] as HTMLElement;
+        outer.style.transformOrigin = `${window.innerWidth - width < 0 ? "0%" : "50%"} 0%`;
+    }
 }

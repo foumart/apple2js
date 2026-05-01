@@ -70,6 +70,7 @@ const options = {
     canvas: document.querySelector<HTMLCanvasElement>('#screen')!,
     canvas2: document.querySelector<HTMLCanvasElement>('#screen2')!,
     gl: prefs.readPref('gl_canvas', 'true') === 'true',
+    embedded: prefs.readPref('embedded', 'true') === 'true',
     rom,
     characterRom,
     e: false,
@@ -108,7 +109,7 @@ apple2.ready
     .catch(console.error);
 
     
-window.addEventListener('resize', () => handleResize());
+window.addEventListener('resize', () => handleResize(options.embedded));
 requestAnimationFrame(() => {
     apple2.getVideoModes().smoothing(true);
     window.dispatchEvent(new Event('resize'));

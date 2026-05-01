@@ -53,6 +53,21 @@ body {
     border-radius: 10px;
 }
 
+.embedded-page {
+    overflow-y: hidden;
+    overflow: hidden;
+}
+
+.embedded-page #display {
+    overflow-y: hidden;
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    justify-content: center;
+    align-items: center;
+    margin: auto !important;
+}
+
 .full-page {
     background: #c4c1a0;
     overflow-y: hidden;
