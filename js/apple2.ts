@@ -58,6 +58,8 @@ export interface VideoModeMix {
     hgr2: HiresPage;
 }
 
+const PAUSED_BODY_CLASS = 'apple2-paused';
+
 export class Apple2 implements Restorable<State>, DebuggerContainer {
     private paused = false;
 
@@ -216,6 +218,12 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
         }
     }
 
+    private syncPausedBodyClass() {
+        if (typeof document !== 'undefined') {
+            document.body.classList.toggle(PAUSED_BODY_CLASS, this.paused);
+        }
+    }
+
     /**
      * Runs the emulator. If the emulator is already running, this does
      * nothing. When this function exits either `runTimer` or
@@ -223,6 +231,7 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
      */
     run() {
         this.paused = false;
+        this.syncPausedBodyClass();
         if (this.runTimer || this.runAnimationFrame) {
             return; // already running
         }
@@ -283,6 +292,7 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
 
     stop() {
         this.paused = true;
+        this.syncPausedBodyClass();
         if (this.runTimer) {
             clearInterval(this.runTimer);
         }

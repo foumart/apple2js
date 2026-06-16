@@ -384,6 +384,11 @@ th {
     cursor: none;
 }
 
+body.apple2-paused #screen.mouseMode,
+body.apple2-paused #screen2.mouseMode {
+    cursor: auto;
+}
+
 #screen:-webkit-full-screen, #screen2:-webkit-full-screen {
     background-color: black;
     top: 0;

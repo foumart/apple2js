@@ -645,8 +645,8 @@ export class VideoModesGL implements VideoModes {
         config.displayScanlineLevel = 0.5;
         config.videoWhiteOnly = false;
         config.videoSaturation = 0.85;
-        config.videoSize = new screenEmu.Size(1.35, 1.25);
-        config.videoCenter = new screenEmu.Point(0.011, 0.026);
+        config.videoSize = new screenEmu.Size(1.345, 1.25);
+        config.videoCenter = new screenEmu.Point(0.0105, 0.026);
         config.videoDecoder = "CANVAS_YUV";
         config.videoBrightness = 0;
         config.videoContrast = 1;
@@ -676,8 +676,8 @@ export class VideoModesGL implements VideoModes {
         config.displayScanlineLevel = 0.5;
         config.videoWhiteOnly = false;
         config.videoSaturation = 1;
-        config.videoSize = new screenEmu.Size(1.35, 1.25);
-        config.videoCenter = new screenEmu.Point(0.011, 0.026);
+        config.videoSize = new screenEmu.Size(1.345, 1.25);
+        config.videoCenter = new screenEmu.Point(0.0105, 0.026);
         config.videoDecoder = "CANVAS_YUV";
         config.videoBrightness = -0.1;
         config.videoContrast = 1.1;
@@ -707,8 +707,8 @@ export class VideoModesGL implements VideoModes {
         config.displayScanlineLevel = 0.5;
         config.videoWhiteOnly = false;
         config.videoSaturation = 0;
-        config.videoSize = new screenEmu.Size(1.35, 1.25);
-        config.videoCenter = new screenEmu.Point(0.011, 0.026);
+        config.videoSize = new screenEmu.Size(1.345, 1.25);
+        config.videoCenter = new screenEmu.Point(0.0105, 0.026);
         config.videoDecoder = "CANVAS_RGB";
         config.videoBrightness = 0;
         config.videoContrast = 1;
@@ -741,8 +741,8 @@ export class VideoModesGL implements VideoModes {
         config.videoContrast = 1;
         config.videoSaturation = 0;
         config.videoHue = 1;
-        config.videoSize = new screenEmu.Size(1.35, 1.25);
-        config.videoCenter = new screenEmu.Point(0.011, 0.026);
+        config.videoSize = new screenEmu.Size(1.345, 1.25);
+        config.videoCenter = new screenEmu.Point(0.0105, 0.026);
         config.videoBandwidth = 9000000;
         config.displayBarrel = 0;
         config.displayCenterLighting = 1;
@@ -762,8 +762,8 @@ export class VideoModesGL implements VideoModes {
         config.videoContrast = 0.75;
         config.videoSaturation = 1.5;
         config.videoHue = 0.35;
-        config.videoSize = new screenEmu.Size(1.35, 1.25);
-        config.videoCenter = new screenEmu.Point(0.011, 0.026);
+        config.videoSize = new screenEmu.Size(1.345, 1.25);
+        config.videoCenter = new screenEmu.Point(0.0105, 0.026);
         config.videoBandwidth = 9000000;
         config.displayBarrel = 0;
         config.displayScanlineLevel = 0.5;
