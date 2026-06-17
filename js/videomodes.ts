@@ -58,6 +58,8 @@ export interface VideoModes extends Restorable<VideoModesState> {
 
     blit(altData?: ImageData): boolean;
 
+    refresh(): void;
+
     reset(): void;
 
     setLoresPage(page: pageNo, lores: LoresPage): void;

@@ -959,21 +959,13 @@ export default class MMU implements Memory, Restorable<MMUState> {
     }
 
     public switchVideoMode(videoModeMix: VideoModeMix) {
-        //this._oldVM = this.vm;
-        //this.vm = videoModeMix.vm;
-        //this.lores1 = videoModeMix.gr;
-        //this.lores2 = videoModeMix.gr2;
-        //this.hires1 = videoModeMix.hgr;
-        //this.hires2 = videoModeMix.hgr2;
-
+        // Re-point the page handlers at the new renderer's lores/hires pages
+        // (which share the same RAM), then rebuild the read/write bank tables
+        // from the *current* soft-switch state. The video soft switches
+        // themselves are transferred separately by Apple2 via vm.setState(),
+        // so we must not read/apply them off the freshly-activated vm here.
         this.applyVideoModeMix(videoModeMix);
         this.init();
-
-        if (!this.__80store) this.vm.page(this._page2 ? 2 : 1);
-        this.vm.doubleHires(this._iouDisable);
-
-        this.vm._80col(this.vm.is80Col());
-        this.vm.altChar(this.vm.isAltChar());
-        //
+        this._updateBanks();
     }
 }

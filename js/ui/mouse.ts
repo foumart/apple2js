@@ -28,8 +28,51 @@ function isTouchDerivedMouseEvent(e: MouseEvent): boolean {
 
 export class MouseUI {
     private mouse: Mouse;
+    private canvas!: HTMLCanvasElement;
+    private detachListeners: Array<() => void> = [];
 
-    constructor(private canvas: HTMLCanvasElement) {
+    constructor(canvas: HTMLCanvasElement) {
+        this.attach(canvas);
+    }
+
+    // Re-point all input handlers at a different canvas element. Used when the
+    // active renderer (WebGL <-> 2D) is switched live, since each renderer owns
+    // its own canvas.
+    setCanvas(canvas: HTMLCanvasElement) {
+        if (this.canvas === canvas) {
+            return;
+        }
+        const mouseModeOn =
+            this.canvas?.classList.contains('mouseMode') ?? false;
+        this.detach();
+        this.attach(canvas);
+        if (mouseModeOn) {
+            this.canvas.classList.add('mouseMode');
+        }
+    }
+
+    private detach() {
+        for (const off of this.detachListeners) {
+            off();
+        }
+        this.detachListeners = [];
+    }
+
+    private attach(canvas: HTMLCanvasElement) {
+        this.canvas = canvas;
+
+        const add = <E extends Event>(
+            type: string,
+            handler: (e: E) => void,
+            opts?: AddEventListenerOptions
+        ) => {
+            const h = handler as EventListener;
+            this.canvas.addEventListener(type, h, opts);
+            this.detachListeners.push(() =>
+                this.canvas.removeEventListener(type, h, opts)
+            );
+        };
+
         /**
          * While a touch/pen gesture is active, ignore compatibility mouse
          * events — they often carry wrong offsetX/Y (~0) and would overwrite
@@ -83,7 +126,7 @@ export class MouseUI {
         if (typeof window.PointerEvent !== 'undefined') {
             const peOpts: AddEventListenerOptions = { passive: false };
 
-            this.canvas.addEventListener(
+            add(
                 'pointermove',
                 (e: PointerEvent) => {
                     if (!isCoarsePointer(e)) {
@@ -95,7 +138,7 @@ export class MouseUI {
                 peOpts
             );
 
-            this.canvas.addEventListener(
+            add(
                 'pointerdown',
                 (e: PointerEvent) => {
                     if (!isCoarsePointer(e) || e.button !== 0) {
@@ -129,8 +172,8 @@ export class MouseUI {
                 touchLikeGestureActive = false;
             };
 
-            this.canvas.addEventListener('pointerup', pointerUpLike, peOpts);
-            this.canvas.addEventListener('pointercancel', pointerUpLike, peOpts);
+            add('pointerup', pointerUpLike, peOpts);
+            add('pointercancel', pointerUpLike, peOpts);
 
             /**
              * Safari still delivers touch scrolling alongside Pointer events.
@@ -142,11 +185,7 @@ export class MouseUI {
                     e.preventDefault();
                 }
             };
-            this.canvas.addEventListener(
-                'touchmove',
-                blockTouchScrollIfMouseMode,
-                touchBlockOpts
-            );
+            add('touchmove', blockTouchScrollIfMouseMode, touchBlockOpts);
         } else if ('ontouchstart' in window) {
             const touchOpts: AddEventListenerOptions = { passive: false };
 
@@ -158,7 +197,7 @@ export class MouseUI {
                 setFromClient(touch.clientX, touch.clientY);
             };
 
-            this.canvas.addEventListener(
+            add(
                 'touchmove',
                 (event: TouchEventWithTarget) => {
                     updateTouchXY(event);
@@ -167,7 +206,7 @@ export class MouseUI {
                 touchOpts
             );
 
-            this.canvas.addEventListener(
+            add(
                 'touchstart',
                 (event: TouchEventWithTarget) => {
                     touchLikeGestureActive = true;
@@ -178,7 +217,7 @@ export class MouseUI {
                 touchOpts
             );
 
-            this.canvas.addEventListener(
+            add(
                 'touchend',
                 (event: TouchEventWithTarget) => {
                     updateTouchXY(event);
@@ -188,7 +227,7 @@ export class MouseUI {
                 touchOpts
             );
 
-            this.canvas.addEventListener(
+            add(
                 'touchcancel',
                 (event: TouchEventWithTarget) => {
                     updateTouchXY(event);
@@ -199,7 +238,7 @@ export class MouseUI {
             );
         }
 
-        this.canvas.addEventListener(
+        add(
             'mousemove',
             (event: MouseEvent & { target: HTMLCanvasElement }) => {
                 if (
@@ -221,7 +260,7 @@ export class MouseUI {
             }
         );
 
-        this.canvas.addEventListener('mousedown', (event: MouseEvent) => {
+        add('mousedown', (event: MouseEvent) => {
             if (
                 event.button !== 0 ||
                 event.target !== this.canvas ||
@@ -233,7 +272,7 @@ export class MouseUI {
             this.mouse.setMouseDown(true);
         });
 
-        this.canvas.addEventListener('mouseup', (event: MouseEvent) => {
+        add('mouseup', (event: MouseEvent) => {
             if (
                 event.button !== 0 ||
                 event.target !== this.canvas ||

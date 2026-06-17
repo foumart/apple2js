@@ -58,6 +58,12 @@ export interface VideoModeMix {
     hgr2: HiresPage;
 }
 
+// Minimal interface for input handlers (e.g. the mouse UI) that need to be
+// re-pointed at a different canvas element when the active renderer changes.
+export interface CanvasRebindable {
+    setCanvas(canvas: HTMLCanvasElement): void;
+}
+
 const PAUSED_BODY_CLASS = 'apple2-paused';
 
 export class Apple2 implements Restorable<State>, DebuggerContainer {
@@ -69,8 +75,13 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
     private runAnimationFrame: number | null = null;
     private cpu: CPU6502;
 
-    private GL: VideoModeMix;
+    private GL: VideoModeMix | undefined;
     private CV: VideoModeMix;
+
+    private glVm: VideoModes | undefined;
+    private cvVm: VideoModes;
+    private glAvailable = true;
+    private mouseUI: CanvasRebindable | undefined;
 
     private gr: LoresPage;
     private gr2: LoresPage;
@@ -94,12 +105,11 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
 
     public ready: Promise<void>;
     private _options: Apple2Options;
-    private _oldVm: VideoModes;
     private initialized: boolean = false;
 
     public _shouldRestartTypeDefault: string;
     public _shouldRestartType: string = "apple2enh";
-    public _shouldRestartScreen: boolean = true;
+    public _shouldRestartScreen: boolean = false;
 
     constructor(options: Apple2Options) {
         this.ready = this.init(options);
@@ -123,13 +133,17 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
             flavor: options.enhanced ? FLAVOR_ROCKWELL_65C02 : FLAVOR_6502,
         });
 
-        this.createVideoMode(options);
+        // Build both renderer backends up front so we can switch between them on the fly.
+        // The 2D backend is always available (and is the fallback when WebGL is missing);
+        // the GL backend may fail to initialize.
+        this.createVideoModes(options);
 
         const [{ default: Apple2ROM }, { default: characterRom }] =
             await Promise.all([
                 romImportPromise,
                 characterRomImportPromise,
-                this.vm.ready,
+                this.glVm?.ready ?? Promise.resolve(),
+                this.cvVm.ready,
             ]);
 
         this.rom = new Apple2ROM();
@@ -140,7 +154,10 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
             this.ram.push(new RAM(0x00, 0xbf));
         }
 
-        this.createVideoModeLink(options);
+        // Both page stacks bind to the *same* RAM (via shared subarray views),
+        // so memory stays consistent regardless of which renderer is active.
+        this.createVideoModeLinks(options);
+        this.activateVideoMode(this._options.gl);
 
         this.io = new Apple2IO(this.cpu, this.vm);
         this.tick = options.tick;
@@ -148,7 +165,7 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
         if (options.e) {
             this.mmu = new MMU(
                 this.cpu,
-                this._options.gl ? this.GL : this.CV,
+                this._options.gl ? (this.GL as VideoModeMix) : this.CV,
                 this.io,
                 this.ram,
                 this.rom
@@ -156,66 +173,79 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
             this.cpu.addPageHandler(this.mmu);
         } else {
             this.cpu.addPageHandler(this.ram[0]);
-            this.cpu.addPageHandler(this.gr);
-            this.cpu.addPageHandler(this.gr2);
-            this.cpu.addPageHandler(this.hgr);
-            this.cpu.addPageHandler(this.hgr2);
+            this.addVideoPageHandlers();
             this.cpu.addPageHandler(this.io);
             this.cpu.addPageHandler(this.rom);
         }
     }
 
-    createVideoMode(options: Apple2Options) {
-        const VideoModes = options.gl ? VideoModesGL : VideoModes2D;
+    // Construct the video mode backends (canvas contexts). The 2D backend is
+    // always created; the GL backend is attempted and may be unavailable on
+    // machines lacking the required WebGL extensions. If GL is requested but
+    // unavailable we fall back to 2D.
+    private createVideoModes(options: Apple2Options) {
+        this.cvVm = new VideoModes2D(options.canvas2, options.e);
+
         try {
-            this.vm = new VideoModes(options.gl ? options.canvas : options.canvas2, options.e);
+            this.glVm = new VideoModesGL(options.canvas, options.e);
+            this.glAvailable = true;
         } catch (e) {
-            if (e.message.includes("OES_texture_float")) {
-                this.switchRenderMode(false);
-                console.log(e);
+            this.glVm = undefined;
+            this.glAvailable = false;
+            console.log(e);
+            if (options.gl) {
+                this._options.gl = false;
             }
         }
     }
 
-    createVideoModeLink(options: Apple2Options) {
-        if (options.gl && this.GL || !options.gl && this.CV) return;
-
-        const LoresPage = options.gl ? LoresPageGL : LoresPage2D;
-        const HiresPage = options.gl ? HiresPageGL : HiresPage2D;
-        this.gr = new LoresPage(
-            this.vm,
+    private createMix(
+        vm: VideoModes,
+        gl: boolean,
+        options: Apple2Options
+    ): VideoModeMix {
+        const LoresPage = gl ? LoresPageGL : LoresPage2D;
+        const HiresPage = gl ? HiresPageGL : HiresPage2D;
+        const gr = new LoresPage(
+            vm,
             1,
             this.ram as RAM[],
             this.characterRom,
             options.e
         );
-        this.gr2 = new LoresPage(
-            this.vm,
+        const gr2 = new LoresPage(
+            vm,
             2,
             this.ram as RAM[],
             this.characterRom,
             options.e
         );
-        this.hgr = new HiresPage(this.vm, 1, this.ram as RAM[]);
-        this.hgr2 = new HiresPage(this.vm, 2, this.ram as RAM[]);
+        const hgr = new HiresPage(vm, 1, this.ram as RAM[]);
+        const hgr2 = new HiresPage(vm, 2, this.ram as RAM[]);
+        return { vm, gr, gr2, hgr, hgr2 };
+    }
 
-        if (options.gl) {
-            this.GL = {
-                vm: this.vm,
-                gr: this.gr,
-                gr2: this.gr2,
-                hgr: this.hgr,
-                hgr2: this.hgr2,
-            };
-        } else {
-            this.CV = {
-                vm: this.vm,
-                gr: this.gr,
-                gr2: this.gr2,
-                hgr: this.hgr,
-                hgr2: this.hgr2,
-            };
-        }
+    private createVideoModeLinks(options: Apple2Options) {
+        this.CV = this.createMix(this.cvVm, false, options);
+        this.GL = this.glVm
+            ? this.createMix(this.glVm, true, options)
+            : undefined;
+    }
+
+    private activateVideoMode(gl: boolean) {
+        const mix = gl && this.GL ? this.GL : this.CV;
+        this.vm = mix.vm;
+        this.gr = mix.gr;
+        this.gr2 = mix.gr2;
+        this.hgr = mix.hgr;
+        this.hgr2 = mix.hgr2;
+    }
+
+    private addVideoPageHandlers() {
+        this.cpu.addPageHandler(this.gr);
+        this.cpu.addPageHandler(this.gr2);
+        this.cpu.addPageHandler(this.hgr);
+        this.cpu.addPageHandler(this.hgr2);
     }
 
     private syncPausedBodyClass() {
@@ -224,11 +254,8 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
         }
     }
 
-    /**
-     * Runs the emulator. If the emulator is already running, this does
-     * nothing. When this function exits either `runTimer` or
-     * `runAnimationFrame` will be non-null.
-     */
+    // Runs the emulator. If the emulator is already running, this does nothing.
+    // When this function exits either `runTimer` or `runAnimationFrame` will be non-null.
     run() {
         this.paused = false;
         this.syncPausedBodyClass();
@@ -393,31 +420,79 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
         this._shouldRestartScreen = value;
     }
 
-    switchRenderMode(value: boolean) {
+    isGLAvailable() {
+        return this.glAvailable;
+    }
+
+    setMouseUI(mouseUI: CanvasRebindable) {
+        this.mouseUI = mouseUI;
+    }
+
+    // Switch the active renderer (WebGL <-> 2D) live, without restarting the
+    // emulator. Both renderer stacks share the same RAM, so only the rendered
+    // representation needs to be rebuilt. All video soft-switch flags are
+    // transferred to the newly activated renderer.
+    switchRenderMode(value: boolean): boolean {
+        // The options layer applies the stored preference once at startup; the
+        // renderer already matches it, so swallow that initial invocation.
         if (!this.initialized) {
             this.initialized = true;
-            return;
-        };
+            return false;
+        }
+
+        // Can't enable GL when it isn't available, and ignore no-op switches.
+        if (value && !this.GL) {
+            return false;
+        }
+        if (value === this._options.gl) {
+            return false;
+        }
+
+        const wasRunning = this.isRunning();
+        if (wasRunning) {
+            this.stop();
+        }
+
+        // Capture the complete video state so every soft switch (text, mixed,
+        // hires, page, 80col, altchar, an3) carries over to the new renderer.
+        const vmState = this.vm.getState();
 
         this._options.gl = value;
+        const mix = value ? (this.GL as VideoModeMix) : this.CV;
 
-        console.log("Instant render mode switch not implemented yet!");
-        if (!this._oldVm) return;
-        //
+        this.vm = mix.vm;
+        this.gr = mix.gr;
+        this.gr2 = mix.gr2;
+        this.hgr = mix.hgr;
+        this.hgr2 = mix.hgr2;
 
-        //this._oldVm = this.vm;
-        this.createVideoMode(this._options);
-        this.createVideoModeLink(this._options);
-
-        this.io.switchVideoMode(this._options.gl ? this.GL : this.CV);
-
+        this.io.switchVideoMode(mix);
         if (this.mmu) {
-            this.mmu.switchVideoMode(this._options.gl ? this.GL : this.CV)
+            this.mmu.switchVideoMode(mix);
         } else {
-            this.cpu.addPageHandler(this.gr);
-            this.cpu.addPageHandler(this.gr2);
-            this.cpu.addPageHandler(this.hgr);
-            this.cpu.addPageHandler(this.hgr2);
+            this.addVideoPageHandlers();
+        }
+
+        this.vm.setState(vmState);
+
+        this.swapCanvas(value);
+        this.vm.refresh();
+
+        if (wasRunning) {
+            this.run();
+        }
+
+        return true;
+    }
+
+    private swapCanvas(gl: boolean) {
+        const active = gl ? this._options.canvas : this._options.canvas2;
+        const inactive = gl ? this._options.canvas2 : this._options.canvas;
+        inactive.style.display = 'none';
+        active.style.display = '';
+        this.mouseUI?.setCanvas(active);
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('resize'));
         }
     }
 }

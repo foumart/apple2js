@@ -20,7 +20,15 @@ declare global {
     }
 }
 export class Screen implements OptionHandler {
-    constructor(private a2: Apple2) {}
+    constructor(private a2: Apple2) {
+        // If WebGL isn't available, the renderer is locked to 2D; disable the
+        // toggle so the user can't pick an unsupported mode.
+        void this.a2.ready.then(() => {
+            if (!this.a2.isGLAvailable()) {
+                void this.modifyDisabledAttribute(SCREEN_GL, true);
+            }
+        });
+    }
 
     enterFullScreen = () => {
         const elem = document.getElementById('screen')!;
@@ -134,34 +142,60 @@ export class Screen implements OptionHandler {
         return inputElement.checked;
     }
 
+    async getInputValue(id: string): Promise<string> {
+        const parentElement = await this.waitForParentElement(id);
+        const inputElement = parentElement.querySelector("input") as HTMLInputElement;
+        return inputElement.value;
+    }
+
+    // After a live renderer switch, the newly activated VideoModes starts with
+    // default display settings. Re-apply the current UI option values (read
+    // from the option inputs, which mirror the stored prefs) and refresh the
+    // labels/controls that depend on which renderer is active.
+    private async reapplyScreenOptions() {
+        const vm = this.a2.getVideoModes();
+        const isGL = this.a2.isGL();
+
+        const mono = !(await this.isChecked(SCREEN_MONO));
+        vm.mono(mono);
+
+        const paletteVal = Number(await this.getInputValue(COLOR_PALETTE));
+        if (!mono) {
+            vm.palette(paletteVal);
+        }
+
+        const scanlines = await this.isChecked(SCREEN_SCANLINE);
+        vm.scanlines(scanlines);
+        vm.opacity(Number(await this.getInputValue(SCREEN_SCANLINE_SLIDE)));
+
+        vm.smoothing(await this.isChecked(SCREEN_SMOOTH));
+
+        if (!isGL) {
+            vm.composite(await this.isChecked(COMPOSITE));
+        }
+
+        void this.waitForParentElement(SCREEN_MONO).then((element: HTMLElement) => {
+            element.getElementsByTagName("label")[0].innerHTML = `Color ${isGL ? "Monitor" : "Video Card"}`;
+        });
+        void this.waitForParentElement(COLOR_PALETTE).then((element: HTMLElement) => {
+            element.getElementsByTagName("label")[0].innerHTML = isGL
+                ? `${paletteVal == 3 ? "B/W" : paletteVal == 2 ? "GREY" : paletteVal ? "RGB" : "CRT"}`
+                : `${paletteVal == 3 ? "4 BIT" : paletteVal == 2 ? "GREY" : paletteVal ? "IIGS" : "NTSC"}`;
+        });
+
+        void this.modifyDisabledAttribute(COLOR_PALETTE, mono);
+        void this.modifyDisabledAttribute(COMPOSITE, mono || isGL);
+        void this.modifyDisabledAttribute(SCREEN_SCANLINE_SLIDE, !scanlines);
+    }
+
     setOption(name: string, value: boolean | number) {
         switch (name) {
             case SCREEN_GL:
-                this.a2.switchRenderMode(value as boolean);
-                this.a2.shouldRestartScreen = !this.a2.shouldRestartScreen;
-                const elementIds = ["mono_screen", "palette", "show_scanlines", "scanlines_slide", "composite", "smoothing"];
-                elementIds.forEach(id => {
-                    if (id == "composite") {
-                        this.isChecked("gl_canvas").then((checked: boolean)=>{
-                            this.modifyDisabledAttribute(id, this.a2.shouldRestartScreen || checked);
-                        });
-                    } else if (id == "palette") {
-                        this.isChecked("mono_screen").then((checked: boolean)=>{
-                            this.modifyDisabledAttribute(id, this.a2.shouldRestartScreen || !checked);
-                        });
-                    } else if (id == "scanlines_slide") {
-                        this.isChecked("show_scanlines").then((checked: boolean)=>{
-                            this.modifyDisabledAttribute(id, this.a2.shouldRestartScreen || !checked);
-                        });
-                    } else {
-                        this.modifyDisabledAttribute(id, this.a2.shouldRestartScreen);
-                    }
-                });
-                this.getElement("options-modal-warning").then((element: HTMLElement) => {
-                    const divs = element.getElementsByTagName("div");
-                    if (!this.a2.shouldRestart) divs[0].innerHTML = "";
-                    else if (this.a2.shouldRestartScreen) divs[0].innerHTML = "*** Restart Pending ***";
-                });
+                if (this.a2.switchRenderMode(value as boolean)) {
+                    // Renderer changed live; re-sync the display options onto
+                    // the newly activated renderer and refresh dependent labels.
+                    void this.reapplyScreenOptions();
+                }
                 break;
             case SCREEN_MONO:
                 const mono = !(value as boolean);

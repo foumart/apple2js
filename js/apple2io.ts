@@ -88,8 +88,6 @@ export default class Apple2IO
     private _tapeNext: number = 0;
     private _tapeCurrent = false;
 
-    private _oldVM: VideoModes;
-
     constructor(
         private readonly cpu: CPU6502,
         private vm: VideoModes
@@ -505,21 +503,10 @@ export default class Apple2IO
     }
 
     switchVideoMode(videoModeMix: VideoModeMix) {
-        this._oldVM = this.vm;
+        // Re-point at the new renderer.
+        // The full video state (text/mixed/hires/page/80col/altchar/an3)
+        // is transferred by Apple2 via vm.setState() right after this call,
+        // so no per-flag copying is needed here.
         this.vm = videoModeMix.vm;
-
-        this.vm.textMode = this._oldVM.textMode;
-        this.vm.text(this.vm.textMode);
-
-        this.vm.mixedMode = this._oldVM.mixedMode;
-        this.vm.mixed(this.vm.mixedMode);
-
-        this.vm.hiresMode = this._oldVM.hiresMode;
-        this.vm.hires(this.vm.hiresMode);
-
-        this.vm.pageMode = this._oldVM.pageMode;
-        this.vm.page(this.vm.pageMode);
-
-        //this._oldVM.reset();
     }
 }

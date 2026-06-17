@@ -66,7 +66,8 @@ apple2.ready
         const cpu = apple2.getCPU();
 
         const printer = new Printer('#printer-modal .paper');
-        const mouseUI = new MouseUI(options.gl ? options.canvas : options.canvas2);
+        const mouseUI = new MouseUI(apple2.isGL() ? options.canvas : options.canvas2);
+        apple2.setMouseUI(mouseUI);
 
         const parallel = new Parallel(printer);
         const slinky = new RAMFactor(8 * 1024 * 1024);
