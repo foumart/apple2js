@@ -143,8 +143,11 @@ export class OptionsModal {
                         const disabled = !this.options.getOption("show_scanlines") as boolean;
                         (element as HTMLInputElement).disabled = disabled;
                     } else if (name == "composite") {
-                        const disabled = this.options.getOption("gl_canvas") as boolean;
-                        (element as HTMLInputElement).disabled = disabled;
+                        const gl = this.options.getOption("gl_canvas") as boolean;
+                        const mono = !this.options.getOption("mono_screen") as boolean;
+                        // Composite idealization only applies to the 2D color renderer
+                        // (only takes visible effect in Double Hi-Res mode)
+                        (element as HTMLInputElement).disabled = gl || mono;
                         labelElement.textContent = label;
                     } else {
                         labelElement.textContent = label;

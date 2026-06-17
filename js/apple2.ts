@@ -289,17 +289,7 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
             if (this.mmu) {
                 this.mmu.resetVB();
             }
-            if (this.io.annunciator(0)) {
-                const imageData = this.io.blit();
-                if (imageData) {
-                    this.vm.blit(imageData);
-                    this.stats.renderedFrames++;
-                }
-            } else {
-                if (this.vm.blit()) {
-                    this.stats.renderedFrames++;
-                }
-            }
+            this.renderFrame();
             this.stats.cycles = this.cpu.getCycles();
             this.stats.frames++;
             this.io.tick();
@@ -314,6 +304,22 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
             this.runAnimationFrame = requestAnimationFrame(runFn);
         } else {
             this.runTimer = window.setInterval(runFn, interval);
+        }
+    }
+
+     // Render a single frame from the active renderer. Used by the run loop and
+     // for one-shot repaints (e.g. after a live renderer switch while paused).
+    private renderFrame() {
+        if (this.io.annunciator(0)) {
+            const imageData = this.io.blit();
+            if (imageData) {
+                this.vm.blit(imageData);
+                this.stats.renderedFrames++;
+            }
+        } else {
+            if (this.vm.blit()) {
+                this.stats.renderedFrames++;
+            }
         }
     }
 
@@ -477,6 +483,11 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
 
         this.swapCanvas(value);
         this.vm.refresh();
+
+        // Paint the newly activated renderer immediately. While running the run
+        // loop would repaint anyway, but when paused nothing else would, leaving
+        // the freshly-shown canvas blank.
+        this.renderFrame();
 
         if (wasRunning) {
             this.run();

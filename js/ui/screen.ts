@@ -75,7 +75,7 @@ export class Screen implements OptionHandler {
                     },
                     {
                         name: COMPOSITE,
-                        label: 'Composite Idealized',
+                        label: 'Composite Idealized (DHGR)',
                         type: BOOLEAN_OPTION,
                         defaultVal: false,
                     },
