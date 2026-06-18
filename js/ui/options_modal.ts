@@ -2,8 +2,10 @@ import MicroModal from 'micromodal';
 import {
     BOOLEAN_OPTION,
     SELECT_OPTION,
+    RADIO_OPTION,
     Options,
     SelectOption,
+    RadioOption,
     SLIDER_OPTION,
     SliderOption,
 } from '../options';
@@ -83,6 +85,32 @@ export class OptionsModal {
                                 element = selectElement;
                             }
                             break;
+                        case RADIO_OPTION:
+                            {
+                                const radioOption = option as RadioOption;
+                                const selected = this.options.getOption(
+                                    name
+                                ) as string;
+                                const container =
+                                    document.createElement('span');
+                                container.classList.add('radio-group');
+                                for (const value of radioOption.values) {
+                                    const radioElement =
+                                        document.createElement('input');
+                                    radioElement.setAttribute('type', 'radio');
+                                    radioElement.setAttribute('name', name);
+                                    radioElement.value = value.value;
+                                    radioElement.checked =
+                                        value.value === String(selected);
+                                    const radioLabel =
+                                        document.createElement('label');
+                                    radioLabel.textContent = value.name;
+                                    container.appendChild(radioElement);
+                                    container.appendChild(radioLabel);
+                                }
+                                element = container;
+                            }
+                            break;
                         case SLIDER_OPTION:
                             {
                                 const selectOption = option as SliderOption;
@@ -129,22 +157,14 @@ export class OptionsModal {
                         const value = this.options.getOption("accelerator_toggle") as string;
                         labelElement.textContent = `${value} mHz`;
                     } else if (name == "palette") {
-                        const gl = this.options.getOption("gl_canvas") as boolean;
                         const value = this.options.getOption("palette") as number;
-                        // The top slider position (4) selects monochrome.
-                        labelElement.textContent = value == 4 ? "MONO" : value == 3 ? gl ? "B/W" : "4 BIT" : value == 2 ? "GREY" : value ? gl ? "RGB" : "IIGS" : gl ? "CRT" : "NTSC";
+                        // CRT / RGB / GREY / B&W / MONO (same labels for both renderers).
+                        labelElement.textContent = value == 4 ? "MONO" : value == 3 ? "B&W" : value == 2 ? "GREY" : value ? "RGB" : "CRT";
                     } else if (name == "scanlines_slide") {
                         const value = this.options.getOption("scanlines_slide") as number;
                         labelElement.textContent = `Opacity: ${value}`;
                         const disabled = !this.options.getOption("show_scanlines") as boolean;
                         (element as HTMLInputElement).disabled = disabled;
-                    } else if (name == "composite") {
-                        const gl = this.options.getOption("gl_canvas") as boolean;
-                        const mono = this.options.getOption("palette") == 4;
-                        // Composite idealization only applies to the 2D color renderer
-                        // (only takes visible effect in Double Hi-Res mode)
-                        (element as HTMLInputElement).disabled = gl || mono;
-                        labelElement.textContent = label;
                     } else {
                         labelElement.textContent = label;
                     }

@@ -1,4 +1,4 @@
-import { BOOLEAN_OPTION, OptionHandler, SLIDER_OPTION } from '../options';
+import { BOOLEAN_OPTION, OptionHandler, RADIO_OPTION, SLIDER_OPTION } from '../options';
 import { Apple2 } from 'js/apple2';
 
 export const SCREEN_FULL_PAGE = 'full_page';
@@ -6,7 +6,6 @@ export const SCREEN_SCANLINE = 'show_scanlines';
 export const SCREEN_SCANLINE_SLIDE = 'scanlines_slide';
 export const SCREEN_GL = 'gl_canvas';
 export const SCREEN_SMOOTH = 'smoothing';
-export const COMPOSITE = 'composite';
 export const COLOR_PALETTE = 'palette';
 
 declare global {
@@ -53,9 +52,13 @@ export class Screen implements OptionHandler {
                 options: [
                     {
                         name: SCREEN_GL,
-                        label: 'GL Renderer *',
-                        type: BOOLEAN_OPTION,
-                        defaultVal: true,
+                        label: '',
+                        type: RADIO_OPTION,
+                        defaultVal: 'true',
+                        values: [
+                            { name: 'GL Renderer', value: 'true' },
+                            { name: 'Canvas', value: 'false' },
+                        ],
                     },
                     {
                         name: COLOR_PALETTE,
@@ -65,12 +68,6 @@ export class Screen implements OptionHandler {
                         max: 4,
                         step: 1,
                         defaultVal: 0,
-                    },
-                    {
-                        name: COMPOSITE,
-                        label: 'Composite Idealized (DHGR)',
-                        type: BOOLEAN_OPTION,
-                        defaultVal: false,
                     },
                     {
                         name: SCREEN_SCANLINE,
@@ -141,39 +138,39 @@ export class Screen implements OptionHandler {
         return inputElement.value;
     }
 
-    // The palette slider doubles as the display-mode selector. The highest
-    // position (4) is monochrome ("MONO"); the lower positions pick a color
-    // palette. Labels differ between the GL and 2D renderers.
-    private paletteLabel(value: number, isGL: boolean): string {
+    private paletteLabel(value: number): string {
         if (value === 4) {
             return 'MONO';
         }
         if (value === 3) {
-            return isGL ? 'B/W' : '4 BIT';
+            return 'B&W';
         }
         if (value === 2) {
             return 'GREY';
         }
         if (value === 1) {
-            return isGL ? 'RGB' : 'IIGS';
+            return 'RGB';
         }
-        return isGL ? 'CRT' : 'NTSC';
+        return 'CRT';
     }
 
     private applyPalette(value: number) {
         const vm = this.a2.getVideoModes();
         const isMono = value === 4;
+
         vm.mono(isMono);
         if (!isMono) {
-            vm.palette(value);
+            if (this.a2.isGL()) {
+                vm.palette(value);
+            } else {
+                vm.composite(value === 0 || value === 3);
+                vm.palette(value <= 1 ? 0 : 2);
+            }
         }
         this.repaint();
-        void this.modifyDisabledAttribute(COMPOSITE, isMono || this.a2.isGL());
         void this.waitForParentElement(COLOR_PALETTE).then((element: HTMLElement) => {
-            element.getElementsByTagName('label')[0].innerHTML = this.paletteLabel(
-                value,
-                this.a2.isGL()
-            );
+            element.getElementsByTagName('label')[0].innerHTML =
+                this.paletteLabel(value);
         });
     }
 
@@ -192,8 +189,8 @@ export class Screen implements OptionHandler {
     // labels/controls that depend on which renderer is active.
     private async reapplyScreenOptions() {
         const vm = this.a2.getVideoModes();
-        const isGL = this.a2.isGL();
 
+        // applyPalette handles the renderer-specific color/composite mapping.
         this.applyPalette(Number(await this.getInputValue(COLOR_PALETTE)));
 
         const scanlines = await this.isChecked(SCREEN_SCANLINE);
@@ -202,17 +199,13 @@ export class Screen implements OptionHandler {
 
         vm.smoothing(await this.isChecked(SCREEN_SMOOTH));
 
-        if (!isGL) {
-            vm.composite(await this.isChecked(COMPOSITE));
-        }
-
         void this.modifyDisabledAttribute(SCREEN_SCANLINE_SLIDE, !scanlines);
     }
 
-    setOption(name: string, value: boolean | number) {
+    setOption(name: string, value: boolean | number | string) {
         switch (name) {
             case SCREEN_GL:
-                if (this.a2.switchRenderMode(value as boolean)) {
+                if (this.a2.switchRenderMode(value === 'true' || value === true)) {
                     // Renderer changed live; re-sync the display options onto
                     // the newly activated renderer and refresh dependent labels.
                     void this.reapplyScreenOptions();
@@ -236,10 +229,6 @@ export class Screen implements OptionHandler {
                 break;
             case SCREEN_SMOOTH:
                 this.a2.getVideoModes().smoothing(value as boolean);
-                this.repaint();
-                break;
-            case COMPOSITE:
-                this.a2.getVideoModes().composite(value as boolean);
                 this.repaint();
                 break;
             case SCREEN_FULL_PAGE:

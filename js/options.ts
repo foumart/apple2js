@@ -3,6 +3,7 @@ import Prefs from './prefs';
 export const BOOLEAN_OPTION = 'BOOLEAN_OPTION';
 export const SELECT_OPTION = 'SELECT_OPTION';
 export const SLIDER_OPTION = 'SLIDER_OPTION';
+export const RADIO_OPTION = 'RADIO_OPTION';
 
 export interface Option {
     name: string;
@@ -18,6 +19,12 @@ export interface BooleanOption extends Option {
 
 export interface SelectOption extends Option {
     type: typeof SELECT_OPTION;
+    defaultVal: string;
+    values: Array<{ name: string; value: string }>;
+}
+
+export interface RadioOption extends Option {
+    type: typeof RADIO_OPTION;
     defaultVal: string;
     values: Array<{ name: string; value: string }>;
 }
