@@ -197,6 +197,8 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
                 this._options.gl = false;
             }
         }
+
+        this.vm = this._options.gl && this.glVm ? this.glVm : this.cvVm;
     }
 
     private createMix(
@@ -308,8 +310,9 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
     }
 
      // Render a single frame from the active renderer. Used by the run loop and
-     // for one-shot repaints (e.g. after a live renderer switch while paused).
-    private renderFrame() {
+     // for one-shot repaints (e.g. after a live renderer switch or a display
+     // option change while paused)
+    renderFrame() {
         if (this.io.annunciator(0)) {
             const imageData = this.io.blit();
             if (imageData) {

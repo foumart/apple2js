@@ -1,7 +1,6 @@
 import { BOOLEAN_OPTION, OptionHandler, SLIDER_OPTION } from '../options';
 import { Apple2 } from 'js/apple2';
 
-export const SCREEN_MONO = 'mono_screen';
 export const SCREEN_FULL_PAGE = 'full_page';
 export const SCREEN_SCANLINE = 'show_scanlines';
 export const SCREEN_SCANLINE_SLIDE = 'scanlines_slide';
@@ -59,17 +58,11 @@ export class Screen implements OptionHandler {
                         defaultVal: true,
                     },
                     {
-                        name: SCREEN_MONO,
-                        label: 'Color Display',
-                        type: BOOLEAN_OPTION,
-                        defaultVal: true,
-                    },
-                    {
                         name: COLOR_PALETTE,
                         label: '',
                         type: SLIDER_OPTION,
                         min: 0,
-                        max: 3,
+                        max: 4,
                         step: 1,
                         defaultVal: 0,
                     },
@@ -148,6 +141,51 @@ export class Screen implements OptionHandler {
         return inputElement.value;
     }
 
+    // The palette slider doubles as the display-mode selector. The highest
+    // position (4) is monochrome ("MONO"); the lower positions pick a color
+    // palette. Labels differ between the GL and 2D renderers.
+    private paletteLabel(value: number, isGL: boolean): string {
+        if (value === 4) {
+            return 'MONO';
+        }
+        if (value === 3) {
+            return isGL ? 'B/W' : '4 BIT';
+        }
+        if (value === 2) {
+            return 'GREY';
+        }
+        if (value === 1) {
+            return isGL ? 'RGB' : 'IIGS';
+        }
+        return isGL ? 'CRT' : 'NTSC';
+    }
+
+    private applyPalette(value: number) {
+        const vm = this.a2.getVideoModes();
+        const isMono = value === 4;
+        vm.mono(isMono);
+        if (!isMono) {
+            vm.palette(value);
+        }
+        this.repaint();
+        void this.modifyDisabledAttribute(COMPOSITE, isMono || this.a2.isGL());
+        void this.waitForParentElement(COLOR_PALETTE).then((element: HTMLElement) => {
+            element.getElementsByTagName('label')[0].innerHTML = this.paletteLabel(
+                value,
+                this.a2.isGL()
+            );
+        });
+    }
+
+    // force a one-shot render when paused, while running the run loop repaints
+    private repaint() {
+        if (this.a2.isRunning()) {
+            return;
+        }
+        this.a2.getVideoModes().refresh();
+        this.a2.renderFrame();
+    }
+
     // After a live renderer switch, the newly activated VideoModes starts with
     // default display settings. Re-apply the current UI option values (read
     // from the option inputs, which mirror the stored prefs) and refresh the
@@ -156,13 +194,7 @@ export class Screen implements OptionHandler {
         const vm = this.a2.getVideoModes();
         const isGL = this.a2.isGL();
 
-        const mono = !(await this.isChecked(SCREEN_MONO));
-        vm.mono(mono);
-
-        const paletteVal = Number(await this.getInputValue(COLOR_PALETTE));
-        if (!mono) {
-            vm.palette(paletteVal);
-        }
+        this.applyPalette(Number(await this.getInputValue(COLOR_PALETTE)));
 
         const scanlines = await this.isChecked(SCREEN_SCANLINE);
         vm.scanlines(scanlines);
@@ -174,17 +206,6 @@ export class Screen implements OptionHandler {
             vm.composite(await this.isChecked(COMPOSITE));
         }
 
-        void this.waitForParentElement(SCREEN_MONO).then((element: HTMLElement) => {
-            element.getElementsByTagName("label")[0].innerHTML = `Color ${isGL ? "Monitor" : "Video Card"}`;
-        });
-        void this.waitForParentElement(COLOR_PALETTE).then((element: HTMLElement) => {
-            element.getElementsByTagName("label")[0].innerHTML = isGL
-                ? `${paletteVal == 3 ? "B/W" : paletteVal == 2 ? "GREY" : paletteVal ? "RGB" : "CRT"}`
-                : `${paletteVal == 3 ? "4 BIT" : paletteVal == 2 ? "GREY" : paletteVal ? "IIGS" : "NTSC"}`;
-        });
-
-        void this.modifyDisabledAttribute(COLOR_PALETTE, mono);
-        void this.modifyDisabledAttribute(COMPOSITE, mono || isGL);
         void this.modifyDisabledAttribute(SCREEN_SCANLINE_SLIDE, !scanlines);
     }
 
@@ -197,42 +218,29 @@ export class Screen implements OptionHandler {
                     void this.reapplyScreenOptions();
                 }
                 break;
-            case SCREEN_MONO:
-                const mono = !(value as boolean);
-                this.a2.getVideoModes().mono(mono);
-                this.modifyDisabledAttribute("palette", mono);
-                this.modifyDisabledAttribute("composite", mono);
-                this.waitForParentElement("mono_screen").then((element: HTMLElement) => {
-                    element.getElementsByTagName("label")[0].innerHTML = `Color ${this.a2.isGL() ? "Monitor" : "Video Card"}`;
-                    //this.modifyDisabledAttribute("composite", this.a2.isGL());
-                });
-                break;
             case COLOR_PALETTE:
-                this.a2.getVideoModes().palette(value as number);
-                this.waitForParentElement("palette").then((element: HTMLElement) => {
-                    element.getElementsByTagName("label")[0].innerHTML = this.a2.isGL()
-                        ? `${value == 3 ? "B/W" : value == 2 ? "GREY" : value ? "RGB" : "CRT"}`
-                        : `${value == 3 ? "4 BIT" : value == 2 ? "GREY" : value ? "IIGS" : "NTSC"}`
-                });
+                this.applyPalette(value as number);
                 break;
             case SCREEN_SCANLINE:
                 const vm = value as boolean;
                 this.a2.getVideoModes().scanlines(vm);
                 this.modifyDisabledAttribute("scanlines_slide", !vm);
+                this.repaint();
                 break;
             case SCREEN_SCANLINE_SLIDE:
                 this.a2.getVideoModes().opacity(value as number);
+                this.repaint();
                 this.waitForParentElement("scanlines_slide").then((element: HTMLElement) => {
                     element.getElementsByTagName("label")[0].innerHTML = "Opacity: " + value;
                 });
                 break;
             case SCREEN_SMOOTH:
                 this.a2.getVideoModes().smoothing(value as boolean);
+                this.repaint();
                 break;
             case COMPOSITE:
                 this.a2.getVideoModes().composite(value as boolean);
-                // TODO
-                //this.modifyDisabledAttribute("composite", true);
+                this.repaint();
                 break;
             case SCREEN_FULL_PAGE:
                 this.setFullPage(value as boolean);

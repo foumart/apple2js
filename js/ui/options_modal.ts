@@ -128,15 +128,11 @@ export class OptionsModal {
                     if (name == "accelerator_toggle") {
                         const value = this.options.getOption("accelerator_toggle") as string;
                         labelElement.textContent = `${value} mHz`;
-                    } else if (name == "mono_screen") {
-                        const gl = this.options.getOption("gl_canvas") as boolean;
-                        labelElement.textContent = gl ? "Color Monitor" : "Digital Output";
                     } else if (name == "palette") {
                         const gl = this.options.getOption("gl_canvas") as boolean;
                         const value = this.options.getOption("palette") as number;
-                        labelElement.textContent = value == 3 ? gl ? "B/W" : "4 BIT" : value == 2 ? gl ? "GREY" : "GREY" : value ? gl ? "RGB" : "IIGS" : gl ? "CRT" : "NTSC";
-                        const disabled = !this.options.getOption("mono_screen") as boolean;
-                        (element as HTMLInputElement).disabled = disabled;
+                        // The top slider position (4) selects monochrome.
+                        labelElement.textContent = value == 4 ? "MONO" : value == 3 ? gl ? "B/W" : "4 BIT" : value == 2 ? "GREY" : value ? gl ? "RGB" : "IIGS" : gl ? "CRT" : "NTSC";
                     } else if (name == "scanlines_slide") {
                         const value = this.options.getOption("scanlines_slide") as number;
                         labelElement.textContent = `Opacity: ${value}`;
@@ -144,7 +140,7 @@ export class OptionsModal {
                         (element as HTMLInputElement).disabled = disabled;
                     } else if (name == "composite") {
                         const gl = this.options.getOption("gl_canvas") as boolean;
-                        const mono = !this.options.getOption("mono_screen") as boolean;
+                        const mono = this.options.getOption("palette") == 4;
                         // Composite idealization only applies to the 2D color renderer
                         // (only takes visible effect in Double Hi-Res mode)
                         (element as HTMLInputElement).disabled = gl || mono;
@@ -160,10 +156,6 @@ export class OptionsModal {
                 }
                 content.appendChild(list);
             }
-            const reloadElement = document.createElement('i');
-            reloadElement.style.marginLeft = '20px';
-            reloadElement.textContent = '* Reload page to take effect';
-            content.append(reloadElement);
         } else {
             console.error('Cannot find target div#options-modal-content');
         }
