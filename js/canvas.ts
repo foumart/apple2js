@@ -834,6 +834,9 @@ export class HiresPage2D implements HiresPage {
 
                 const monoColor = this.vm.monoMode ? whiteCol : null;
 
+                const halfShift = !!hbs && !monoColor && !this.highColorHGRMode;
+                let prevColor: Color = blackCol;
+
                 for (let idx = 0; idx < 9; idx++, offset += 8) {
                     val >>= 1;
 
@@ -863,15 +866,46 @@ export class HiresPage2D implements HiresPage {
                         }
                     }
 
-                    if (dx > -1 && dx < 560) {
-                        this._drawPixel(data, offset, color);
+                    if (idx >= 1 && idx <= 7 && dx > -1 && dx < 560) {
+                        if (halfShift) {
+                            this._drawHalfPixel(
+                                data,
+                                offset,
+                                mix(color as Color, prevColor, 0.2)
+                            );
+                            this._drawHalfPixel(data, offset + 4, color as Color);
+                        } else {
+                            this._drawPixel(data, offset, color);
+                        }
                     }
+                    prevColor = color as Color;
                     dx += 2;
 
                     v0 = v1;
                     v1 = v2;
                     v2 = val & 0x01;
                     odd = !odd;
+                }
+
+                if (!this._refreshing) {
+                    this._refreshing = true;
+                    if (col > 0) {
+                        this._write(
+                            (addr - 1) >> 8,
+                            (addr - 1) & 0xff,
+                            this._buffer[0][base - 1],
+                            0
+                        );
+                    }
+                    if (col < 39) {
+                        this._write(
+                            (addr + 1) >> 8,
+                            (addr + 1) & 0xff,
+                            this._buffer[0][base + 1],
+                            0
+                        );
+                    }
+                    this._refreshing = false;
                 }
             }
         }
