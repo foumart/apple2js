@@ -164,7 +164,7 @@ export class Screen implements OptionHandler {
                 vm.palette(value);
             } else {
                 vm.composite(value === 0 || value === 3);
-                vm.palette(value <= 1 ? 0 : 2);
+                vm.palette(value);
             }
         }
         this.repaint();
