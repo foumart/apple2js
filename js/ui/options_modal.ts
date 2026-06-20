@@ -74,7 +74,7 @@ export class OptionsModal {
         const { name, label, type } = option;
         const onInput = (evt: InputEvent & { target: HTMLInputElement }) => {
             if (
-                ['accelerator_toggle', 'palette', 'scanlines_slide'].includes(
+                ['accelerator_toggle', 'palette', 'scanlines_slide', 'half_pixel_shift_slide'].includes(
                     evt.target.id
                 )
             ) {
@@ -197,6 +197,15 @@ export class OptionsModal {
             labelElement.textContent = `Opacity: ${value}`;
             const disabled = !this.options.getOption(
                 'show_scanlines'
+            ) as boolean;
+            (element as HTMLInputElement).disabled = disabled;
+        } else if (name == 'half_pixel_shift_slide') {
+            const value = this.options.getOption(
+                'half_pixel_shift_slide'
+            ) as number;
+            labelElement.textContent = `Shift: ${value}`;
+            const disabled = !this.options.getOption(
+                'half_pixel_shift'
             ) as boolean;
             (element as HTMLInputElement).disabled = disabled;
         } else {

@@ -596,6 +596,8 @@ export class VideoModesGL implements VideoModes {
     public context: CanvasRenderingContext2D;
     public smoothed: boolean;
     public composited: boolean;
+    public halfPixelShifted = false;
+    public halfPixelShiftBlend = 0.2;
 
     public colorPalette = 0;
 
@@ -1038,6 +1040,14 @@ export class VideoModesGL implements VideoModes {
     composite(value: boolean) {
         this.composited = value;
         if (value) console.log("Composite idealized not available for GL renderer", value);
+    }
+
+    halfPixelShift(on: boolean) {
+        this.halfPixelShifted = on;
+    }
+
+    halfPixelShiftAmount(value: number) {
+        this.halfPixelShiftBlend = value;
     }
 
     smoothing(value: boolean) {

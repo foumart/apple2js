@@ -4,6 +4,8 @@ import { Apple2 } from 'js/apple2';
 export const SCREEN_FULL_PAGE = 'full_page';
 export const SCREEN_SCANLINE = 'show_scanlines';
 export const SCREEN_SCANLINE_SLIDE = 'scanlines_slide';
+export const SCREEN_HALF_SHIFT = 'half_pixel_shift';
+export const SCREEN_HALF_SHIFT_SLIDE = 'half_pixel_shift_slide';
 export const SCREEN_GL = 'gl_canvas';
 export const SCREEN_SMOOTH = 'smoothing';
 export const COLOR_PALETTE = 'palette';
@@ -25,6 +27,8 @@ export class Screen implements OptionHandler {
             if (!this.a2.isGLAvailable()) {
                 void this.modifyDisabledAttribute(SCREEN_GL, true);
             }
+            void this.modifyDisabledAttribute(SCREEN_HALF_SHIFT, this.a2.isGL());
+            void this.updateHalfShiftControls();
         });
     }
 
@@ -68,6 +72,21 @@ export class Screen implements OptionHandler {
                         max: 4,
                         step: 1,
                         defaultVal: 0,
+                    },
+                    {
+                        name: SCREEN_HALF_SHIFT,
+                        label: 'Half-Pixel Shift',
+                        type: BOOLEAN_OPTION,
+                        defaultVal: true,
+                    },
+                    {
+                        name: SCREEN_HALF_SHIFT_SLIDE,
+                        label: '',
+                        type: SLIDER_OPTION,
+                        min: 0,
+                        max: 1,
+                        step: 0.1,
+                        defaultVal: 0.8,
                     },
                     {
                         name: SCREEN_SCANLINE,
@@ -138,6 +157,17 @@ export class Screen implements OptionHandler {
         return inputElement.value;
     }
 
+    private shiftSliderToBlend(slider: number): number {
+        return 1 - slider;
+    }
+
+    private async updateHalfShiftControls() {
+        const disabled =
+            this.a2.isGL() || !(await this.isChecked(SCREEN_HALF_SHIFT));
+        void this.modifyDisabledAttribute(SCREEN_HALF_SHIFT, this.a2.isGL());
+        void this.modifyDisabledAttribute(SCREEN_HALF_SHIFT_SLIDE, disabled);
+    }
+
     private paletteLabel(value: number): string {
         if (value === 4) {
             return 'MONO';
@@ -199,17 +229,26 @@ export class Screen implements OptionHandler {
 
         vm.smoothing(await this.isChecked(SCREEN_SMOOTH));
 
+        if (!this.a2.isGL()) {
+            vm.halfPixelShift(await this.isChecked(SCREEN_HALF_SHIFT));
+            vm.halfPixelShiftAmount(
+                this.shiftSliderToBlend(
+                    Number(await this.getInputValue(SCREEN_HALF_SHIFT_SLIDE))
+                )
+            );
+        }
+
         void this.modifyDisabledAttribute(SCREEN_SCANLINE_SLIDE, !scanlines);
+        void this.updateHalfShiftControls();
     }
 
     setOption(name: string, value: boolean | number | string) {
         switch (name) {
             case SCREEN_GL:
                 if (this.a2.switchRenderMode(value === 'true' || value === true)) {
-                    // Renderer changed live; re-sync the display options onto
-                    // the newly activated renderer and refresh dependent labels.
                     void this.reapplyScreenOptions();
                 }
+                void this.updateHalfShiftControls();
                 break;
             case COLOR_PALETTE:
                 this.applyPalette(value as number);
@@ -219,6 +258,29 @@ export class Screen implements OptionHandler {
                 this.a2.getVideoModes().scanlines(vm);
                 this.modifyDisabledAttribute("scanlines_slide", !vm);
                 this.repaint();
+                break;
+            case SCREEN_HALF_SHIFT:
+                if (!this.a2.isGL()) {
+                    this.a2.getVideoModes().halfPixelShift(value as boolean);
+                    void this.updateHalfShiftControls();
+                    this.repaint();
+                }
+                break;
+            case SCREEN_HALF_SHIFT_SLIDE:
+                if (!this.a2.isGL()) {
+                    this.a2
+                        .getVideoModes()
+                        .halfPixelShiftAmount(
+                            this.shiftSliderToBlend(value as number)
+                        );
+                    this.repaint();
+                    void this.waitForParentElement(SCREEN_HALF_SHIFT_SLIDE).then(
+                        (element: HTMLElement) => {
+                            element.getElementsByTagName('label')[0].innerHTML =
+                                'Shift: ' + value;
+                        }
+                    );
+                }
                 break;
             case SCREEN_SCANLINE_SLIDE:
                 this.a2.getVideoModes().opacity(value as number);

@@ -89,8 +89,12 @@ export interface VideoModes extends Restorable<VideoModesState> {
     smoothing(on: boolean): void;
     palette(value: number): void;
     composite(value: boolean): void;
+    halfPixelShift(on: boolean): void;
+    halfPixelShiftAmount(value: number): void;
     smoothed: boolean;
-    composited: boolean
+    composited: boolean;
+    halfPixelShifted: boolean;
+    halfPixelShiftBlend: number;
 
     getText(): string;
     getCanvasAsBlob(): Promise<Blob>;

@@ -834,7 +834,8 @@ export class HiresPage2D implements HiresPage {
 
                 const monoColor = this.vm.monoMode ? whiteCol : null;
 
-                const halfShift = !!hbs && !monoColor && !this.highColorHGRMode;
+                const halfShift =
+                    this.vm.halfPixelShifted && !!hbs && !this.highColorHGRMode;
                 let prevColor: Color = blackCol;
 
                 for (let idx = 0; idx < 9; idx++, offset += 8) {
@@ -872,7 +873,11 @@ export class HiresPage2D implements HiresPage {
                             this._drawHalfPixel(
                                 data,
                                 offset,
-                                mix(color as Color, prevColor, 0.2)
+                                mix(
+                                    color as Color,
+                                    prevColor,
+                                    this.vm.halfPixelShiftBlend
+                                )
                             );
                             this._drawHalfPixel(data, offset + 4, color as Color);
                         } else {
@@ -977,6 +982,8 @@ export class VideoModes2D implements VideoModes {
     context: CanvasRenderingContext2D;
     public smoothed: boolean;
     public composited: boolean;
+    public halfPixelShifted = true;
+    public halfPixelShiftBlend = 0.2;
 
     constructor(
         private screen: HTMLCanvasElement,
@@ -1287,6 +1294,16 @@ export class VideoModes2D implements VideoModes {
     composite(value: boolean) {
         this.composited = value;
         //if (value) console.log("Composite idealized not implemented yet!", value);
+        this.refresh();
+    }
+
+    halfPixelShift(on: boolean) {
+        this.halfPixelShifted = on;
+        this.refresh();
+    }
+
+    halfPixelShiftAmount(value: number) {
+        this.halfPixelShiftBlend = value;
         this.refresh();
     }
 
