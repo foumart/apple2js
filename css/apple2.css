@@ -900,15 +900,81 @@ a.button:hover {
 }
 
 #options-modal {
-    width: 300px;
+    width: 560px;
+}
+
+#options-modal .options-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+        'screen audio'
+        'joystick system';
+    gap: 10px;
+}
+
+#options-modal .options-panel {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.22) 0%,
+        rgba(255, 255, 255, 0.08) 100%
+    );
+    border: 1px solid rgba(68, 55, 44, 0.4);
+    border-radius: 4px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 0 10px rgba(0, 0, 0, 0.06);
+    padding: 8px 10px;
+    min-width: 0;
+}
+
+#options-modal .options-panel--screen {
+    grid-area: screen;
+}
+
+#options-modal .options-panel--audio {
+    grid-area: audio;
+}
+
+#options-modal .options-panel--joystick {
+    grid-area: joystick;
+}
+
+#options-modal .options-panel--system {
+    grid-area: system;
+}
+
+#options-modal .options-section + .options-section {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(68, 55, 44, 0.2);
 }
 
 #options-modal h3 {
     font-size: 13px;
+    margin: 0 0 6px;
+    font-weight: 600;
+    color: #44372c;
+}
+
+#options-modal ul {
+    margin: 0;
+    padding: 0;
 }
 
 #options-modal li {
     list-style-type: none;
+    margin: 4px 0;
+}
+
+#options-modal .radio-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    align-items: center;
+}
+
+#options-modal .radio-group label {
+    margin-right: 4px;
 }
 
 #printer-modal .paper {
