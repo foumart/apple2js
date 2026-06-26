@@ -1,10 +1,11 @@
-import { SLIDER_OPTION, SELECT_OPTION, OptionHandler } from '../options';
+import { ACTION_OPTION, SLIDER_OPTION, SELECT_OPTION, OptionHandler } from '../options';
 import Apple2IO from '../apple2io';
 import { Apple2 } from '../apple2';
 
 export const SYSTEM_TYPE_APPLE2E = 'computer_type2e';
 export const SYSTEM_TYPE_APPLE2 = 'computer_type2';
 export const SYSTEM_CPU_ACCELERATED = 'accelerator_toggle';
+export const SYSTEM_EMULATOR_PAUSE = 'emulator_pause';
 
 export class System implements OptionHandler {
     constructor(
@@ -16,7 +17,7 @@ export class System implements OptionHandler {
     getOptions() {
         return [
             {
-                name: 'Type',
+                name: '',
                 options: this.e
                     ? [
                           {
@@ -99,6 +100,12 @@ export class System implements OptionHandler {
                         step: 1,
                         defaultVal: 1,
                     },
+                    {
+                        name: SYSTEM_EMULATOR_PAUSE,
+                        label: 'Pause',
+                        type: ACTION_OPTION,
+                        defaultVal: '',
+                    },
                 ],
             },
         ];
@@ -121,6 +128,10 @@ export class System implements OptionHandler {
 
     setOption(name: string, value: number | string) {
         switch (name) {
+            case SYSTEM_EMULATOR_PAUSE:
+                this.a2.togglePause();
+                this.syncPauseUi();
+                break;
             case SYSTEM_CPU_ACCELERATED:
                 {
                     const kHz = Number(value) * 1023;
@@ -136,11 +147,32 @@ export class System implements OptionHandler {
                     this.a2.shouldRestartType = String(value);
                     this.getElement("options-modal-warning").then((element: HTMLElement) => {
                         const divs = element.getElementsByTagName("div");
-                        if (!this.a2.shouldRestart) divs[0].innerHTML = "";
-                        else if (this.a2.shouldRestartType) divs[0].innerHTML = "*** Restart Pending ***";
+                        if (!this.a2.shouldRestart) {
+                            divs[0].innerHTML = "";
+                            divs[0].style.display = "none";
+                        }
+                        else if (this.a2.shouldRestartType) {
+                            divs[0].innerHTML = "*** Restart Pending ***";
+                            divs[0].style.display = "block";
+                        }
                     });
                 }
                 break;
+        }
+    }
+
+    private syncPauseUi() {
+        const running = this.a2.isRunning();
+        const pauseBtn = document.getElementById(
+            SYSTEM_EMULATOR_PAUSE
+        ) as HTMLButtonElement | null;
+        if (pauseBtn) {
+            pauseBtn.textContent = running ? 'Pause' : 'Run';
+        }
+        const toolbar = document.querySelector<HTMLElement>('#pause-run i');
+        if (toolbar) {
+            toolbar.classList.toggle('fa-pause', running);
+            toolbar.classList.toggle('fa-play', !running);
         }
     }
 }

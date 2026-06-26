@@ -68,22 +68,36 @@ describe('OptionsModal', () => {
     });
 
     describe('openModal', () => {
-        let content: HTMLDivElement;
-
         beforeEach(() => {
-            content = document.createElement('div');
-            content.id = 'options-modal-content';
-            document.body.appendChild(content);
+            const display = document.createElement('div');
+            display.id = 'display';
+            const modal = document.createElement('div');
+            modal.id = 'options-modal';
+            modal.className = 'modal options-modal';
+            for (const id of [
+                'options-panel-screen',
+                'options-panel-audio',
+                'options-panel-joystick',
+                'options-panel-system',
+            ]) {
+                const panel = document.createElement('div');
+                panel.id = id;
+                modal.appendChild(panel);
+            }
+            display.appendChild(modal);
+            document.body.appendChild(display);
         });
 
         afterEach(() => {
             jest.resetAllMocks();
-            content.remove();
+            document.getElementById('display')?.remove();
         });
 
         it('renders', () => {
             modal.openModal();
-            expect(content).toMatchSnapshot();
+            expect(
+                document.getElementById('options-panel-screen')
+            ).toMatchSnapshot();
         });
 
         it('toggles booleans', () => {

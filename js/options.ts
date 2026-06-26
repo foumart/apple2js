@@ -4,6 +4,8 @@ export const BOOLEAN_OPTION = 'BOOLEAN_OPTION';
 export const SELECT_OPTION = 'SELECT_OPTION';
 export const SLIDER_OPTION = 'SLIDER_OPTION';
 export const RADIO_OPTION = 'RADIO_OPTION';
+export const LABEL_OPTION = 'LABEL_OPTION';
+export const ACTION_OPTION = 'ACTION_OPTION';
 
 export interface Option {
     name: string;
@@ -37,6 +39,16 @@ export interface SliderOption extends Option {
     step: number;
 }
 
+export interface LabelOption extends Option {
+    type: typeof LABEL_OPTION;
+    defaultVal: '';
+}
+
+export interface ActionOption extends Option {
+    type: typeof ACTION_OPTION;
+    defaultVal: '';
+}
+
 export interface OptionSection {
     name: string;
     options: Option[];
@@ -58,9 +70,15 @@ export class Options {
         for (const section of sections) {
             const { options } = section;
             for (const option of options) {
-                const { name } = option;
+                const { name, type } = option;
+                if (type === LABEL_OPTION) {
+                    continue;
+                }
                 this.handlers[name] = handler;
                 this.options[name] = option;
+                if (type === ACTION_OPTION) {
+                    continue;
+                }
                 const value = this.getOption(name);
                 if (value != null) {
                     handler.setOption(name, isNaN(Number(value)) ? 1 : value);
@@ -91,6 +109,10 @@ export class Options {
         if (name in this.options) {
             const handler = this.handlers[name];
             const option = this.options[name];
+            if (option.type === ACTION_OPTION) {
+                handler.setOption(name, value);
+                return;
+            }
             this.prefs.writePref(name, String(value));
             switch (option.type) {
                 case BOOLEAN_OPTION:

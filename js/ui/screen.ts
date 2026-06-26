@@ -1,4 +1,4 @@
-import { BOOLEAN_OPTION, OptionHandler, RADIO_OPTION, SLIDER_OPTION } from '../options';
+import { BOOLEAN_OPTION, LABEL_OPTION, OptionHandler, RADIO_OPTION, SLIDER_OPTION } from '../options';
 import { Apple2 } from 'js/apple2';
 
 export const SCREEN_FULL_PAGE = 'full_page';
@@ -52,7 +52,7 @@ export class Screen implements OptionHandler {
     getOptions() {
         return [
             {
-                name: 'Screen',
+                name: 'Render Mode',
                 options: [
                     {
                         name: SCREEN_GL,
@@ -65,13 +65,23 @@ export class Screen implements OptionHandler {
                         ],
                     },
                     {
+                        name: 'monitor_type_heading',
+                        label: 'Monitor type',
+                        type: LABEL_OPTION,
+                        defaultVal: '',
+                    },
+                    {
                         name: COLOR_PALETTE,
                         label: '',
-                        type: SLIDER_OPTION,
-                        min: 0,
-                        max: 4,
-                        step: 1,
-                        defaultVal: 0,
+                        type: RADIO_OPTION,
+                        defaultVal: '0',
+                        values: [
+                            { name: 'CRT', value: '0' },
+                            { name: 'RGB', value: '1' },
+                            { name: 'GREY', value: '2' },
+                            { name: 'B/W', value: '3' },
+                            { name: 'MONO', value: '4' },
+                        ],
                     },
                     {
                         name: SCREEN_HALF_SHIFT,
@@ -132,11 +142,13 @@ export class Screen implements OptionHandler {
 
     async modifyDisabledAttribute(id: string, value: boolean) {
         const parentElement = await this.waitForParentElement(id);
-        const inputElement = parentElement.querySelector("input") as HTMLInputElement;
-        if (inputElement) {
-            inputElement.disabled = value;
-            const label = inputElement.parentElement?.getElementsByTagName("label")[0];
-            if (label) label.style.color = value ? "grey" : "black";
+        const inputElements = parentElement.querySelectorAll('input');
+        inputElements.forEach((inputElement) => {
+            (inputElement as HTMLInputElement).disabled = value;
+        });
+        const label = parentElement.getElementsByTagName('label')[0];
+        if (label) {
+            label.classList.toggle('options-label--disabled', value);
         }
     }
 
@@ -147,13 +159,23 @@ export class Screen implements OptionHandler {
 
     async isChecked(id: string): Promise<boolean> {
         const parentElement = await this.waitForParentElement(id);
-        const inputElement = parentElement.querySelector("input") as HTMLInputElement;
+        const inputElement = parentElement.querySelector(
+            'input[type="checkbox"]'
+        ) as HTMLInputElement;
         return inputElement.checked;
     }
 
     async getInputValue(id: string): Promise<string> {
         const parentElement = await this.waitForParentElement(id);
-        const inputElement = parentElement.querySelector("input") as HTMLInputElement;
+        const radio = parentElement.querySelector(
+            'input[type="radio"]:checked'
+        ) as HTMLInputElement | null;
+        if (radio) {
+            return radio.value;
+        }
+        const inputElement = parentElement.querySelector(
+            'input'
+        ) as HTMLInputElement;
         return inputElement.value;
     }
 
@@ -166,22 +188,6 @@ export class Screen implements OptionHandler {
             this.a2.isGL() || !(await this.isChecked(SCREEN_HALF_SHIFT));
         void this.modifyDisabledAttribute(SCREEN_HALF_SHIFT, this.a2.isGL());
         void this.modifyDisabledAttribute(SCREEN_HALF_SHIFT_SLIDE, disabled);
-    }
-
-    private paletteLabel(value: number): string {
-        if (value === 4) {
-            return 'MONO';
-        }
-        if (value === 3) {
-            return 'B&W';
-        }
-        if (value === 2) {
-            return 'GREY';
-        }
-        if (value === 1) {
-            return 'RGB';
-        }
-        return 'CRT';
     }
 
     private applyPalette(value: number) {
@@ -198,10 +204,6 @@ export class Screen implements OptionHandler {
             }
         }
         this.repaint();
-        void this.waitForParentElement(COLOR_PALETTE).then((element: HTMLElement) => {
-            element.getElementsByTagName('label')[0].innerHTML =
-                this.paletteLabel(value);
-        });
     }
 
     // force a one-shot render when paused, while running the run loop repaints
@@ -251,7 +253,7 @@ export class Screen implements OptionHandler {
                 void this.updateHalfShiftControls();
                 break;
             case COLOR_PALETTE:
-                this.applyPalette(value as number);
+                this.applyPalette(Number(value));
                 break;
             case SCREEN_SCANLINE:
                 const vm = value as boolean;
@@ -277,7 +279,7 @@ export class Screen implements OptionHandler {
                     void this.waitForParentElement(SCREEN_HALF_SHIFT_SLIDE).then(
                         (element: HTMLElement) => {
                             element.getElementsByTagName('label')[0].innerHTML =
-                                'Shift: ' + value;
+                                '' + value;//Shift:
                         }
                     );
                 }
@@ -286,7 +288,7 @@ export class Screen implements OptionHandler {
                 this.a2.getVideoModes().opacity(value as number);
                 this.repaint();
                 this.waitForParentElement("scanlines_slide").then((element: HTMLElement) => {
-                    element.getElementsByTagName("label")[0].innerHTML = "Opacity: " + value;
+                    element.getElementsByTagName("label")[0].innerHTML = "" + value;//Opacity: 
                 });
                 break;
             case SCREEN_SMOOTH:

@@ -326,6 +326,14 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
         }
     }
 
+    togglePause() {
+        if (this.isRunning()) {
+            this.stop();
+        } else {
+            this.run();
+        }
+    }
+
     stop() {
         this.paused = true;
         this.syncPausedBodyClass();

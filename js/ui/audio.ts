@@ -1,4 +1,4 @@
-import { BOOLEAN_OPTION, OptionHandler } from '../options';
+import { BOOLEAN_OPTION, SLIDER_OPTION, OptionHandler } from '../options';
 import Apple2IO from '../apple2io';
 import { debug } from '../util';
 
@@ -11,6 +11,7 @@ const SAMPLE_SIZE = 1024;
 const SAMPLE_RATE = 44000;
 
 export const SOUND_ENABLED_OPTION = 'enable_sound';
+export const SOUND_VOLUME_OPTION = 'sound_volume';
 
 declare global {
     interface Window {
@@ -26,8 +27,10 @@ export class Audio implements OptionHandler {
 
     private audioContext;
     private audioNode;
+    private gainNode: GainNode;
     private workletNode: AudioWorkletNode;
     private started = false;
+    private volume = 1;
 
     ready: Promise<void>;
 
@@ -35,6 +38,8 @@ export class Audio implements OptionHandler {
         this.audioContext = new AudioContext({
             sampleRate: SAMPLE_RATE,
         });
+        this.gainNode = this.audioContext.createGain();
+        this.gainNode.gain.value = this.volume;
 
         if (window.AudioWorklet) {
             const workletReady = this.audioContext.audioWorklet.addModule(
@@ -56,7 +61,8 @@ export class Audio implements OptionHandler {
                             this.workletNode.port.postMessage(sample);
                         }
                     });
-                    this.workletNode.connect(this.audioContext.destination);
+                    this.workletNode.connect(this.gainNode);
+                    this.gainNode.connect(this.audioContext.destination);
                 })
                 .catch(console.error);
         } else {
@@ -87,7 +93,8 @@ export class Audio implements OptionHandler {
                 }
             };
 
-            this.audioNode.connect(this.audioContext.destination);
+            this.audioNode.connect(this.gainNode);
+            this.gainNode.connect(this.audioContext.destination);
             io.sampleRate(this.audioContext.sampleRate, SAMPLE_SIZE);
             io.addSampleListener((sample) => {
                 if (this.sound && this.audioContext.state === 'running') {
@@ -146,17 +153,55 @@ export class Audio implements OptionHandler {
                         type: BOOLEAN_OPTION,
                         defaultVal: true,
                     },
+                    {
+                        name: SOUND_VOLUME_OPTION,
+                        label: '',
+                        type: SLIDER_OPTION,
+                        min: 0,
+                        max: 1,
+                        step: 0.1,
+                        defaultVal: 1,
+                    },
                 ],
             },
         ];
     }
 
-    setOption = (name: string, value: boolean) => {
+    setOption = (name: string, value: boolean | number) => {
         switch (name) {
             case SOUND_ENABLED_OPTION:
                 const oldValue = this.sound;
-                this.sound = value;
+                this.sound = value as boolean;
                 if (oldValue != value) this.updateIcon();
+                this.updateVolumeControlState();
+                break;
+            case SOUND_VOLUME_OPTION:
+                this.volume = value as number;
+                this.gainNode.gain.value = this.volume;
+                this.updateVolumeLabel(this.volume);
+                break;
         }
     };
+
+    private updateVolumeLabel(value: number) {
+        const slide = document.getElementById('sound_volume');
+        const label = slide?.parentElement?.querySelector('label');
+        if (label) {
+            label.textContent = `Volume: ${value.toFixed(1)}`;
+        }
+    }
+
+    private updateVolumeControlState() {
+        const slide = document.getElementById(
+            'sound_volume'
+        ) as HTMLInputElement | null;
+        if (!slide) {
+            return;
+        }
+        slide.disabled = !this.sound;
+        const label = slide.parentElement?.querySelector('label');
+        if (label) {
+            label.classList.toggle('options-label--disabled', !this.sound);
+        }
+    }
 }

@@ -40,8 +40,6 @@ import { System } from './system';
 import { Options } from '../options';
 import { HttpBlockDisk } from 'js/formats/http_block_disk';
 
-let paused = false;
-
 let startTime = Date.now();
 let lastCycles = 0;
 let lastFrames = 0;
@@ -235,7 +233,7 @@ function loadingProgress(current: number, total: number) {
 function loadingStop() {
     MicroModal.close('loading-modal');
 
-    if (!paused) {
+    if (_apple2.isRunning()) {
         ready
             .then(() => {
                 _apple2.run();
@@ -872,25 +870,25 @@ export function updateUI() {
 }
 
 export function pauseRun() {
-    const label = document.querySelector<HTMLElement>('#pause-run i')!;
-    if (paused) {
-        ready
-            .then(() => {
-                _apple2.run();
-            })
-            .catch(console.error);
-        label.classList.remove('fa-play');
-        label.classList.add('fa-pause');
-    } else {
-        _apple2.stop();
-        label.classList.remove('fa-pause');
-        label.classList.add('fa-play');
+    _apple2.togglePause();
+    syncPauseButtons();
+}
+
+function syncPauseButtons() {
+    const running = _apple2.isRunning();
+    const label = document.querySelector<HTMLElement>('#pause-run i');
+    if (label) {
+        label.classList.toggle('fa-pause', running);
+        label.classList.toggle('fa-play', !running);
     }
-    paused = !paused;
+    const pauseBtn = document.getElementById('emulator_pause');
+    if (pauseBtn) {
+        pauseBtn.textContent = running ? 'Pause' : 'Run';
+    }
 }
 
 export function openOptions() {
-    optionsModal.openModal();
+    optionsModal.toggleModal();
 }
 
 export function copy() {
@@ -1008,7 +1006,7 @@ async function onLoaded(
         }
     });
     keyboard.setFunction('F3', () => io.keyDown(0x1b)); // Escape
-    keyboard.setFunction('F4', optionsModal.openModal);
+    keyboard.setFunction('F4', optionsModal.toggleModal);
     keyboard.setFunction('F6', () => {
         window.localStorage.setItem(
             'state',
