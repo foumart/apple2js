@@ -1084,7 +1084,6 @@ async function onLoaded(
 
     const hash = gup('disk') || hup();
     if (hash) {
-        _apple2.stop();
         await processHash(hash);
         const drives = hash.split('|').length;
 
@@ -1095,10 +1094,10 @@ async function onLoaded(
                 (document.getElementById("exit-fullscreen") as HTMLElement).style.width = "292px";
             }
         }
-    } else {
-        await ready;
-        _apple2.run();
     }
+    await ready;
+    _apple2.run();
+    syncPauseButtons();
 
     document
         .querySelector<HTMLInputElement>('#local_file')

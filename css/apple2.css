@@ -4,7 +4,7 @@
 
 body {
     font-size: 14px;
-    background-color: black; /* #c4c1a0;  Pantone 453 */
+    background-color: #c4c1a0; /* #c4c1a0;  Pantone 453 */
     font-family: sans-serif;
     overflow-x: hidden;
     overflow-y: hidden;
@@ -19,8 +19,7 @@ body {
 
 .outer {
     margin: auto;
-    overflow-y: hidden;
-    overflow: hidden;
+    overflow: unset;
     width: 560px;
     transform: scale(var(--scale-factor));
     transform-origin: 50% 0%;
@@ -44,14 +43,21 @@ body {
 .overscan {
     overflow-y: hidden;
     overflow: hidden;
-    padding: 4px;
+    /*padding: 0;*/
     margin: auto;
     position: relative;
     background-color: black;
+    /*width: 560px;*/
     height: 384px;
-    border: 2px inset #f0edd0;
-    border-radius: 10px;
 }
+
+/*body:not(.full-page) #screen,
+body:not(.full-page) #screen2 {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+}*/
 
 .embedded-page {
     overflow-y: hidden;
@@ -150,6 +156,13 @@ body {
     left: 5px;
 }
 
+#periphery3 {
+    width: 560px;
+    margin-bottom: 6px;
+    background-color: black;
+    margin-left: -3px;
+}
+
 #exit-fullscreen {
     display: none;
 }
@@ -158,7 +171,7 @@ body {
     background-color: #222;
     position: fixed;
     margin-right: 1px;
-    width: 563px;
+    width: 550px;
     top: 425px;
     right: 5px;
     display: flex;
@@ -303,7 +316,7 @@ th {
 
 .inset button {
     width: 27px;
-    height: 25px;
+    height: 27px;
     margin: 1px 0 1px 1px;
 }
 
@@ -334,7 +347,7 @@ th {
     border-radius: 4px;
     line-height: 10px;
     margin: 1px;
-    padding-top: 2px;
+    padding-top: 5px;
     user-select: none;
     /*text-shadow: 0px 1px 0 rgba(64, 128, 64, 0.75);*/
 }
@@ -568,15 +581,20 @@ a.button:hover {
 }
 
 #keyboard {
-    background-color: black;
+    /* background-color: black; */
     border-radius: 5px;
-    margin: 1px 0 0 1px;
+    /*margin: 1px 0 0 1px;*/
+    display: grid;
 }
 
 #keyboard .row {
     display: flex;
+    width: 557px;
+    justify-content: space-between;
     padding: 0;
-    margin: 0 0 1px 0;
+    margin: 0;
+    margin-top: 1px;
+    margin-left: 2px;
     font-family: Helvetica;
 }
 
@@ -586,29 +604,29 @@ a.button:hover {
 
 #keyboard .key {
     display: inline-block;
-    margin: 0 1px 0 0;
     padding: 0;
-    width: 28px;
-    height: 28px;
+    width: 31px;
+    height: 31px;
     background-color: #f0edd0;
     color: #333;
     text-align: center;
     position: relative;
     border-radius: 5px;
-    border: 4px outset #ac9a8788;
-    border-bottom-width: 6px;
-    border-right-width: 6px;
+    border: 3px outset #ac9a8788;
+    border-bottom-width: 5px;
+    border-right-width: 5px;
     cursor: pointer;
     font-weight: bold;
 }
 
 #keyboard .pressed {
     background-color: #e0ddc0;
-    border: 5px outset #7c6a5788;
+    border: 4px outset #7c6a5788;
+    border-bottom-width: 3px;
+    border-right-width: 3px;
 }
 
 #keyboard .key div {
-    border-radius: 3px;
     text-align: left;
     margin-left: 4px;
 }
@@ -630,24 +648,16 @@ a.button:hover {
     font-weight: bolder;
 }
 
-#keyboard .key-Shift {
-    width: 53px;
-}
-
 #keyboard .active {
     color: #494;
 }
 
-#keyboard .key-Return {
-    width: 52px;
-}
-
 #keyboard .key-Delete {
-    width: 44px;
+    width: 43px;
 }
 
 #keyboard .key-Tab {
-    width: 44px;
+    width: 43px;
 }
 
 #keyboard .key-POWER {
@@ -739,13 +749,16 @@ a.button:hover {
 }
 
 .apple2e #display {
-    /*margin: 4px 4px 6px;*/
-    margin-bottom: 2px;
+    margin-bottom: 4px;
     position: relative;
+    margin-left: -3px;
+    width: 560px;
+    border: 3px inset #f0edd0;
+    background-color: black;
 }
 
 .apple2e .inset {
-    width: 563px;
+    width: 560px;
 }
 
 .apple2e #keyboard .key-Caps {
@@ -754,19 +767,20 @@ a.button:hover {
 
 .apple2e #keyboard .key-Control {
     width: 55px;
+    margin-right: 1px;
 }
 
 .apple2e #keyboard .key-Return {
-    width: 56px;
+    width: 57px;
 }
 
 .apple2e #keyboard .key-Shift {
-    width: 75px;
+    width: 76px;
 }
 
 .apple2e #keyboard .key-nbsp {
     margin-left: 0;
-    width: 215px;
+    width: 200px;
 }
 
 .apple2e #keyboard .key-9668 div, .apple2e #keyboard .key-9658 div, .apple2e #keyboard .key-9660 div {
@@ -774,7 +788,7 @@ a.button:hover {
 }
 
 #keyboard .key-PW {
-    width: 17px;
+    width: 31px;
     height: 37px;
     border: 3px solid #c0bda0;
     border-right-color: #908d70;
@@ -784,6 +798,10 @@ a.button:hover {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     border-bottom-width: 0;
+}
+
+#keyboard .key-Caps {
+    margin-right: 1px;
 }
 
 #keyboard .key-PW div {
@@ -1397,7 +1415,8 @@ a.button:hover {
     width: 75px;
     border-radius: 8px;
     border: 3px inset #f0edd0;
-    height: 27px;
+    height: 28px;
     margin-right: 5px;
     padding: 0 7px 1px 5px;
+    user-select: none;
 }
