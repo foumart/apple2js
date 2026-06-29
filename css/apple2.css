@@ -47,7 +47,7 @@ body {
     margin: auto;
     position: relative;
     background-color: black;
-    /*width: 560px;*/
+    width: 560px;
     height: 384px;
 }
 
@@ -360,23 +360,29 @@ th {
     content: '';
     display: block;
     pointer-events: none;
-    background-image: url(../img/scanlines.png);
-    background-size: 100% 100%;
-    image-rendering: var(--image-rendering, pixelated);
-    opacity: var(--after-opacity, 1);
     position: absolute;
-    top: 4px;
-    left: 4px;
-    bottom: 4px;
-    right: 4px;
+    inset: 0;
+    z-index: 1;
+    opacity: var(--after-opacity, 1);
+    image-rendering: var(--image-rendering, pixelated);
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 1px,
+        rgb(0 0 0 / 50%) 1px,
+        rgb(0 0 0 / 50%) 2px
+    );
 }
 
-.full-page .scanlines:after {
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-}
+/*.full-page .scanlines:after {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 0.25vh,
+        rgb(0 0 0 / 50%) 0.25vh,
+        rgb(0 0 0 / 50%) 0.5vh
+    );
+}*/
 
 #screen {
     cursor: crosshair;
