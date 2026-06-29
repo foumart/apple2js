@@ -310,13 +310,13 @@ th {
 .inset {
     border-radius: 8px;
     border: 3px inset #f0edd0;
-    margin: auto;
+    /*margin: auto;*/
     display: flex;
 }
 
 .inset button {
     width: 27px;
-    height: 27px;
+    height: 25px;
     margin: 1px 0 1px 1px;
 }
 
@@ -347,7 +347,7 @@ th {
     border-radius: 4px;
     line-height: 10px;
     margin: 1px;
-    padding-top: 5px;
+    padding-top: 3px;
     user-select: none;
     /*text-shadow: 0px 1px 0 rgba(64, 128, 64, 0.75);*/
 }
@@ -589,12 +589,12 @@ a.button:hover {
 
 #keyboard .row {
     display: flex;
-    width: 557px;
+    width: 558px;
     justify-content: space-between;
     padding: 0;
     margin: 0;
     margin-top: 1px;
-    margin-left: 2px;
+    margin-left: 1px;
     font-family: Helvetica;
 }
 
@@ -605,8 +605,8 @@ a.button:hover {
 #keyboard .key {
     display: inline-block;
     padding: 0;
-    width: 31px;
-    height: 31px;
+    width: 30px;
+    height: 30px;
     background-color: #f0edd0;
     color: #333;
     text-align: center;
@@ -622,8 +622,8 @@ a.button:hover {
 #keyboard .pressed {
     background-color: #e0ddc0;
     border: 4px outset #7c6a5788;
-    border-bottom-width: 3px;
-    border-right-width: 3px;
+    border-bottom-width: 4px;
+    border-right-width: 4px;
 }
 
 #keyboard .key div {
@@ -739,10 +739,10 @@ a.button:hover {
     background-color: #550;
 }
 
-#keyboard .key-nbsp {
+/*#keyboard .key-nbsp {
     margin-left: 62px;
     width: 330px;
-}
+}*/
 
 #keyboard.layout-pravetz82 .key-nbsp {
     margin-left: 72px;
@@ -767,7 +767,7 @@ a.button:hover {
 
 .apple2e #keyboard .key-Control {
     width: 55px;
-    margin-right: 1px;
+    /*margin-right: 1px;*/
 }
 
 .apple2e #keyboard .key-Return {
@@ -775,11 +775,14 @@ a.button:hover {
 }
 
 .apple2e #keyboard .key-Shift {
-    width: 76px;
+    width: 78px;
+}
+
+.apple2e #keyboard .key-Shift:first-of-type {
+    width: 74px;
 }
 
 .apple2e #keyboard .key-nbsp {
-    margin-left: 0;
     width: 200px;
 }
 
@@ -789,7 +792,7 @@ a.button:hover {
 
 #keyboard .key-PW {
     width: 31px;
-    height: 37px;
+    height: 36px;
     border: 3px solid #c0bda0;
     border-right-color: #908d70;
     background-color: #f0edd0;
@@ -800,9 +803,9 @@ a.button:hover {
     border-bottom-width: 0;
 }
 
-#keyboard .key-Caps {
+/*#keyboard .key-Caps {
     margin-right: 1px;
-}
+}*/
 
 #keyboard .key-PW div {
     margin-top: 2px;
@@ -860,6 +863,7 @@ a.button:hover {
     flex-grow: 1;
     width: auto;
     background-color: black;
+    margin-bottom: 1px;
 }
 
 .spacer {
@@ -1365,7 +1369,7 @@ a.button:hover {
 #controls button:active,
 #controls a.button:active {
     width: 26px;
-    height: 24px;
+    height: 26px;
     margin: 2px 0 0 2px;
     border: 1px solid #66886688;
     border-top-color: #55665566;
@@ -1412,11 +1416,11 @@ a.button:hover {
 
 #logo {
     background-color: #443838;
-    width: 75px;
+    width: 80px;
     border-radius: 8px;
     border: 3px inset #f0edd0;
-    height: 28px;
+    height: 26px;
     margin-right: 5px;
-    padding: 0 7px 1px 5px;
+    padding: 0 4px 1px 3px;
     user-select: none;
 }
