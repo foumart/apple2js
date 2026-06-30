@@ -876,11 +876,6 @@ export function pauseRun() {
 
 function syncPauseButtons() {
     const running = _apple2.isRunning();
-    const label = document.querySelector<HTMLElement>('#pause-run i');
-    if (label) {
-        label.classList.toggle('fa-pause', running);
-        label.classList.toggle('fa-play', !running);
-    }
     const pauseBtn = document.getElementById('emulator_pause');
     if (pauseBtn) {
         pauseBtn.textContent = running ? 'Pause' : 'Run';

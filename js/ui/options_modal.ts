@@ -339,6 +339,10 @@ export class OptionsModal {
         } else {
             panel.classList.remove('options-panel--minimized');
         }
+        const title =
+            panel.querySelector('.options-panel-title')?.textContent ?? '';
+        const expandLabel = `Expand ${title} panel`;
+        const minimizeLabel = `Minimize ${title} panel`;
         const btn = panel.querySelector<HTMLButtonElement>(
             '.options-panel-minimize'
         );
@@ -346,11 +350,19 @@ export class OptionsModal {
             btn.textContent = minimized ? '+' : '−';
             btn.setAttribute(
                 'aria-label',
-                minimized
-                    ? `Expand ${panel.querySelector('.options-panel-title')?.textContent ?? ''} panel`
-                    : `Minimize ${panel.querySelector('.options-panel-title')?.textContent ?? ''} panel`
+                minimized ? expandLabel : minimizeLabel
             );
             btn.setAttribute('aria-expanded', String(!minimized));
+        }
+        const toggleBtn = panel.querySelector<HTMLButtonElement>(
+            '.options-panel-toggle'
+        );
+        if (toggleBtn) {
+            toggleBtn.setAttribute(
+                'aria-label',
+                minimized ? expandLabel : minimizeLabel
+            );
+            toggleBtn.setAttribute('aria-expanded', String(!minimized));
         }
     }
 
@@ -607,15 +619,18 @@ export class OptionsModal {
             const target = evt.target as HTMLElement;
             if (
                 target.closest('.options-panel-close') ||
-                target.closest('.options-panel-minimize')
+                target.closest('.options-panel-minimize') ||
+                target.closest('.options-panel-toggle')
             ) {
                 return;
             }
-            const chrome = target.closest('.options-panel-chrome');
-            if (!chrome) {
+            const dragHandle = target.closest('.options-panel-drag-handle');
+            if (!dragHandle) {
                 return;
             }
-            const panel = chrome.closest('.options-panel') as HTMLElement | null;
+            const panel = dragHandle.closest(
+                '.options-panel'
+            ) as HTMLElement | null;
             if (!panel || panel.classList.contains('options-panel--hidden')) {
                 return;
             }
@@ -641,6 +656,17 @@ export class OptionsModal {
             if (minimizeBtn) {
                 evt.stopPropagation();
                 const panel = minimizeBtn.closest(
+                    '.options-panel'
+                ) as HTMLElement | null;
+                if (panel) {
+                    this.togglePanelMinimized(panel);
+                }
+                return;
+            }
+            const toggleZone = target.closest('.options-panel-toggle');
+            if (toggleZone) {
+                evt.stopPropagation();
+                const panel = toggleZone.closest(
                     '.options-panel'
                 ) as HTMLElement | null;
                 if (panel) {

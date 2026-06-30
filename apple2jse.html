@@ -46,8 +46,11 @@
         <div class="options-dock" id="options-dock">
           <div class="options-panel options-panel--screen" id="options-panel-screen">
             <div class="options-panel-chrome">
-              <svg class="options-panel-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="1.5" y="2" width="13" height="8.5" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3.5" y="4" width="9" height="4.5" fill="currentColor" opacity=".35"/><path d="M5 10.5h6M7 10.5v1.5h2v-1.5M3.5 12.5h9" fill="none" stroke="currentColor" stroke-width="1"/></svg>
-              <span class="options-panel-title">SCREEN</span>
+              <div class="options-panel-drag-handle">
+                <svg class="options-panel-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="1.5" y="2" width="13" height="8.5" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3.5" y="4" width="9" height="4.5" fill="currentColor" opacity=".35"/><path d="M5 10.5h6M7 10.5v1.5h2v-1.5M3.5 12.5h9" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+                <span class="options-panel-title">SCREEN</span>
+              </div>
+              <button type="button" class="options-panel-toggle" aria-expanded="true" aria-label="Minimize Screen panel"></button>
               <div class="options-panel-actions">
                 <button type="button" class="options-panel-minimize" aria-expanded="true" aria-label="Minimize Screen panel">−</button>
                 <button type="button" class="options-panel-close" aria-label="Close Screen panel">×</button>
@@ -57,8 +60,11 @@
           </div>
           <div class="options-panel options-panel--joystick" id="options-panel-joystick">
             <div class="options-panel-chrome">
-              <svg class="options-panel-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="3" y="10" width="10" height="3.5" rx=".5" fill="none" stroke="currentColor" stroke-width="1"/><line x1="8" y1="10" x2="8" y2="4" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="3" r="2" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="5" cy="12" r=".8" fill="currentColor"/><circle cx="11" cy="12" r=".8" fill="currentColor"/></svg>
-              <span class="options-panel-title">JOYSTICK</span>
+              <div class="options-panel-drag-handle">
+                <svg class="options-panel-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="3" y="10" width="10" height="3.5" rx=".5" fill="none" stroke="currentColor" stroke-width="1"/><line x1="8" y1="10" x2="8" y2="4" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="3" r="2" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="5" cy="12" r=".8" fill="currentColor"/><circle cx="11" cy="12" r=".8" fill="currentColor"/></svg>
+                <span class="options-panel-title">JOYSTICK</span>
+              </div>
+              <button type="button" class="options-panel-toggle" aria-expanded="true" aria-label="Minimize Joystick panel"></button>
               <div class="options-panel-actions">
                 <button type="button" class="options-panel-minimize" aria-expanded="true" aria-label="Minimize Joystick panel">−</button>
                 <button type="button" class="options-panel-close" aria-label="Close Joystick panel">×</button>
@@ -68,8 +74,11 @@
           </div>
           <div class="options-panel options-panel--audio" id="options-panel-audio">
             <div class="options-panel-chrome">
-              <svg class="options-panel-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 5.5h3.5L9 2.5v11L5.5 10.5H2z" fill="none" stroke="currentColor" stroke-width="1"/><path d="M10.5 6.5q1.5 1.5 0 3M11.5 5q2.5 3 0 6" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
-              <span class="options-panel-title">AUDIO</span>
+              <div class="options-panel-drag-handle">
+                <svg class="options-panel-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 5.5h3.5L9 2.5v11L5.5 10.5H2z" fill="none" stroke="currentColor" stroke-width="1"/><path d="M10.5 6.5q1.5 1.5 0 3M11.5 5q2.5 3 0 6" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+                <span class="options-panel-title">AUDIO</span>
+              </div>
+              <button type="button" class="options-panel-toggle" aria-expanded="true" aria-label="Minimize Audio panel"></button>
               <div class="options-panel-actions">
                 <button type="button" class="options-panel-minimize" aria-expanded="true" aria-label="Minimize Audio panel">−</button>
                 <button type="button" class="options-panel-close" aria-label="Close Audio panel">×</button>
@@ -79,8 +88,11 @@
           </div>
           <div class="options-panel options-panel--system" id="options-panel-system">
             <div class="options-panel-chrome">
-              <svg class="options-panel-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="2" y="1.5" width="12" height="7" fill="none" stroke="currentColor" stroke-width="1"/><rect x="4" y="3" width="8" height="3.5" fill="currentColor" opacity=".35"/><rect x="1" y="9.5" width="14" height="5" fill="none" stroke="currentColor" stroke-width="1"/><line x1="3" y1="12" x2="5" y2="12" stroke="currentColor"/><line x1="7" y1="12" x2="9" y2="12" stroke="currentColor"/><line x1="11" y1="12" x2="13" y2="12" stroke="currentColor"/></svg>
-              <span class="options-panel-title">EMULATOR</span>
+              <div class="options-panel-drag-handle">
+                <svg class="options-panel-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="2" y="1.5" width="12" height="7" fill="none" stroke="currentColor" stroke-width="1"/><rect x="4" y="3" width="8" height="3.5" fill="currentColor" opacity=".35"/><rect x="1" y="9.5" width="14" height="5" fill="none" stroke="currentColor" stroke-width="1"/><line x1="3" y1="12" x2="5" y2="12" stroke="currentColor"/><line x1="7" y1="12" x2="9" y2="12" stroke="currentColor"/><line x1="11" y1="12" x2="13" y2="12" stroke="currentColor"/></svg>
+                <span class="options-panel-title">EMULATOR</span>
+              </div>
+              <button type="button" class="options-panel-toggle" aria-expanded="true" aria-label="Minimize Emulator panel"></button>
               <div class="options-panel-actions">
                 <button type="button" class="options-panel-minimize" aria-expanded="true" aria-label="Minimize Type panel">−</button>
                 <button type="button" class="options-panel-close" aria-label="Close Type panel">×</button>
@@ -112,7 +124,7 @@
           <i class="fas fa-volume-off"></i>
         </button>
         <button id="pause-run" onclick="Apple2.pauseRun()" title="Pause/Run">
-          <i class="fas fa-pause"></i>
+          <i class="fas fa-play"></i>
         </button>
         <button id="toggle-printer" onclick="Apple2.openPrinterModal()" title="Toggle Printer">
           <i class="fas fa-print"></i>

@@ -280,11 +280,13 @@ input[type='text'] {
     white-space: nowrap;
     flex-grow: 1;
     user-select: none;
-    border: 2px solid #565554;
-    border-top-color: #828180;
+    border: 2px solid #3a3938;
     border-top-width: 1px;
-    border-left-color: #828180;
     border-left-width: 1px;
+    border-top-color: #5c5b5a;
+    border-left-color: #5c5b5a;
+    border-bottom-color: #454443;
+    border-right-color: #454443;
     border-radius: 4px;
     margin: 1px;
     /*text-shadow: 0px 1px 0 rgba(64, 128, 64, 0.75);*/
@@ -339,11 +341,13 @@ th {
     text-align: center;
     background: #000;
     color: #0f0;
-    border: 2px solid #565554;
-    border-top-color: #828180;
+    border: 2px solid #3a3938;
     border-top-width: 1px;
-    border-left-color: #828180;
     border-left-width: 1px;
+    border-top-color: #5c5b5a;
+    border-left-color: #5c5b5a;
+    border-bottom-color: #454443;
+    border-right-color: #454443;
     border-radius: 4px;
     line-height: 10px;
     margin: 1px;
@@ -582,41 +586,97 @@ a.button:hover {
     opacity: 1;
 }
 
+#periphery1 button,
+#controls button {
+    border-color: #3a3938;
+    border-top-color: #5c5b5a;
+    border-left-color: #5c5b5a;
+    border-bottom-color: #454443;
+    border-right-color: #454443;
+}
+
 #periphery1 button .fas,
 #periphery2 button .fas,
 #controls button .fas {
     filter: brightness(0) invert(0.68);
 }
 
-#periphery1 button:hover,
-#periphery2 button:hover,
-#controls button:hover,
 body:has(#options-modal.is-open) #toggle-options,
-#pause-run:has(.fa-play),
+body:not(.apple2-paused) #pause-run,
 #toggle-sound:has(.fa-volume-up) {
     background: #000;
     color: #0f0;
-    border-color: #22cc22cc;
-    border-top-color: #33ff33dd;
-    border-left-color: #33ff33dd;
+    border-color: #585756;
+    border-top-color: #828180;
+    border-left-color: #828180;
+    border-bottom-color: #686766;
+    border-right-color: #686766;
 }
 
-#periphery1 button:hover .fas,
-#periphery2 button:hover .fas,
-#controls button:hover .fas,
 body:has(#options-modal.is-open) #toggle-options .fas,
-#pause-run:has(.fa-play) .fas,
+body:not(.apple2-paused) #pause-run .fas,
 #toggle-sound:has(.fa-volume-up) .fas {
     filter: none;
 }
 
+#periphery1 button:hover,
+#periphery2 button:hover,
+#controls button:hover {
+    background: #2a2a2a;
+    color: #b0b0b0;
+    border-color: #6a6968;
+    border-top-color: #9a9897;
+    border-left-color: #9a9897;
+}
+
+#periphery1 button:hover .fas,
+#periphery2 button:hover .fas,
+#controls button:hover .fas {
+    filter: brightness(0) invert(0.85);
+}
+
 body:has(#options-modal.is-open) #toggle-options:hover,
-#pause-run:has(.fa-play):hover,
+body:not(.apple2-paused) #pause-run:hover,
 #toggle-sound:has(.fa-volume-up):hover {
+    background: #000;
     color: #2aff3c;
-    border-color: #44ee44dd;
-    border-top-color: #66ff66ee;
-    border-left-color: #66ff66ee;
+    border-color: #6a6968;
+    border-top-color: #9a9897;
+    border-left-color: #9a9897;
+    border-bottom-color: #787776;
+    border-right-color: #787776;
+}
+
+body:has(#options-modal.is-open) #toggle-options:hover .fas,
+body:not(.apple2-paused) #pause-run:hover .fas,
+#toggle-sound:has(.fa-volume-up):hover .fas {
+    filter: none;
+}
+
+#periphery1 button:active,
+#periphery2 button:active,
+#controls button:active,
+body:has(#options-modal.is-open) #toggle-options:active,
+body:not(.apple2-paused) #pause-run:active,
+#toggle-sound:has(.fa-volume-up):active {
+    background: #333;
+    color: #0c0;
+    /*border: 2px solid #484746;
+    border-top-width: 1px;
+    border-left-width: 1px;
+    border-top-color: #3a3938;
+    border-left-color: #3a3938;
+    border-bottom-color: #6d6c6b;
+    border-right-color: #6d6c6b;*/
+}
+
+#periphery1 button:active .fas,
+#periphery2 button:active .fas,
+#controls button:active .fas,
+body:has(#options-modal.is-open) #toggle-options:active .fas,
+body:not(.apple2-paused) #pause-run:active .fas,
+#toggle-sound:has(.fa-volume-up):active .fas {
+    filter: none;
 }
 
 button:focus,
@@ -1046,19 +1106,26 @@ a.button:hover {
     position: relative;
     z-index: 1;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 5px;
     padding: 4px 6px;
     border-bottom: 2px solid #33aa33cc;
     background: #002200;
     /*text-shadow: 0 0 4px rgba(0, 255, 0, 0.45);*/
-    cursor: grab;
-    user-select: none;
-    touch-action: none;
     flex-shrink: 0;
 }
 
-#options-modal .options-panel-chrome:active {
+#options-modal .options-panel-drag-handle {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+
+#options-modal .options-panel-drag-handle:active {
     cursor: grabbing;
 }
 
@@ -1070,15 +1137,43 @@ a.button:hover {
 }
 
 #options-modal .options-panel-title {
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
     font-size: 8px;
     letter-spacing: -0.5px;
     text-transform: uppercase;
 }
 
+#options-modal .options-panel-toggle {
+    flex: 1;
+    min-width: 12px;
+    align-self: stretch;
+    margin: -4px 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    opacity: 1;
+    border-radius: 0;
+}
+
+#options-modal .options-panel-toggle:hover {
+    background: transparent;
+    color: inherit;
+    border: none;
+}
+
+#options-modal .options-panel-chrome:has(.options-panel-toggle:hover) .options-panel-minimize {
+    background: #001400;
+    color: #2aff3c;
+    border-color: #55ee55dd;
+    border-top-color: #88ff88ee;
+    border-left-color: #88ff88ee;
+}
+
 #options-modal .options-panel-actions {
     display: flex;
+    align-items: center;
     gap: 3px;
     margin-left: auto;
     flex-shrink: 0;
@@ -1452,25 +1547,6 @@ a.button:hover {
     height: 16px;
     background-size: 16px;
     margin: 3px;
-}
-
-#controls button:active {
-    width: 26px;
-    height: 26px;
-    margin: 2px 0 0 2px;
-    border: 1px solid #66886688;
-    border-top-color: #55665566;
-    border-left-color: #55665566;
-}
-
-#periphery1 button:active,
-#periphery2 button:active {
-    width: 26px;
-    height: 26px;
-    margin: 2px 0 0 2px;
-    border: 1px solid #555;
-    border-top-color: #444;
-    border-left-color: #444;
 }
 
 .fa-folder-open {

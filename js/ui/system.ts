@@ -169,10 +169,5 @@ export class System implements OptionHandler {
         if (pauseBtn) {
             pauseBtn.textContent = running ? 'Pause' : 'Run';
         }
-        const toolbar = document.querySelector<HTMLElement>('#pause-run i');
-        if (toolbar) {
-            toolbar.classList.toggle('fa-pause', running);
-            toolbar.classList.toggle('fa-play', !running);
-        }
     }
 }
