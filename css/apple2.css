@@ -280,10 +280,10 @@ input[type='text'] {
     white-space: nowrap;
     flex-grow: 1;
     user-select: none;
-    border: 2px solid #6a6a6a;
-    border-top-color: #929292;
+    border: 2px solid #565554;
+    border-top-color: #828180;
     border-top-width: 1px;
-    border-left-color: #929292;
+    border-left-color: #828180;
     border-left-width: 1px;
     border-radius: 4px;
     margin: 1px;
@@ -339,10 +339,10 @@ th {
     text-align: center;
     background: #000;
     color: #0f0;
-    border: 2px solid #6a6a6a;
-    border-top-color: #929292;
+    border: 2px solid #565554;
+    border-top-color: #828180;
     border-top-width: 1px;
-    border-left-color: #929292;
+    border-left-color: #828180;
     border-left-width: 1px;
     border-radius: 4px;
     line-height: 10px;
@@ -560,14 +560,63 @@ a.button {
     cursor: pointer;
     padding: 0;
     opacity: 0.85;
-    /*filter: grayscale(100%);*/
 }
 
 button:hover,
 a.button:hover {
     background-color: #22170d;
     opacity: 1;
-    /*filter: none;*/
+}
+
+/* Toolbar: periphery + controls — grey default, green on hover / when active */
+#periphery1 button,
+#periphery2 button,
+#controls button {
+    background: #1a1a1a;
+    color: #888;
+    border: 2px solid #565554;
+    border-top-color: #828180;
+    border-left-color: #828180;
+    border-top-width: 1px;
+    border-left-width: 1px;
+    opacity: 1;
+}
+
+#periphery1 button .fas,
+#periphery2 button .fas,
+#controls button .fas {
+    filter: brightness(0) invert(0.68);
+}
+
+#periphery1 button:hover,
+#periphery2 button:hover,
+#controls button:hover,
+body:has(#options-modal.is-open) #toggle-options,
+#pause-run:has(.fa-play),
+#toggle-sound:has(.fa-volume-up) {
+    background: #000;
+    color: #0f0;
+    border-color: #22cc22cc;
+    border-top-color: #33ff33dd;
+    border-left-color: #33ff33dd;
+}
+
+#periphery1 button:hover .fas,
+#periphery2 button:hover .fas,
+#controls button:hover .fas,
+body:has(#options-modal.is-open) #toggle-options .fas,
+#pause-run:has(.fa-play) .fas,
+#toggle-sound:has(.fa-volume-up) .fas {
+    filter: none;
+}
+
+body:has(#options-modal.is-open) #toggle-options:hover,
+#pause-run:has(.fa-play):hover,
+#toggle-sound:has(.fa-volume-up):hover {
+    color: #2aff3c;
+    border-color: #44ee44dd;
+    border-top-color: #66ff66ee;
+    border-left-color: #66ff66ee;
 }
 
 button:focus,
@@ -872,20 +921,6 @@ a.button:hover {
     margin-bottom: 1px;
 }
 
-#periphery1 button,
-#controls button,
-#periphery1 a.button,
-#controls a.button {
-    filter: grayscale(100%);
-}
-
-#periphery1 button:hover,
-#controls button:hover,
-#periphery1 a.button:hover,
-#controls a.button:hover {
-    filter: none;
-}
-
 .spacer {
     flex-grow: 1;
 }
@@ -1047,6 +1082,23 @@ a.button:hover {
     gap: 3px;
     margin-left: auto;
     flex-shrink: 0;
+}
+
+#options-modal button {
+    background: #000;
+    color: #0f0;
+    border: 2px solid #44cc44cc;
+    border-top-color: #77ff77cc;
+    border-left-color: #77ff77cc;
+    opacity: 1;
+}
+
+#options-modal button:hover {
+    background: #001400;
+    color: #2aff3c;
+    border-color: #55ee55dd;
+    border-top-color: #88ff88ee;
+    border-left-color: #88ff88ee;
 }
 
 #options-modal .options-panel-minimize,
@@ -1290,7 +1342,19 @@ a.button:hover {
 }
 
 #options-modal .options-panel--screen li.options-subheading {
-    margin-top: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #224422;
+}
+
+#options-modal .options-panel--screen .options-section-header {
+    padding-bottom: 6px;
+    margin-bottom: 2px;
+    border-bottom: 1px solid #224422;
+}
+
+#options-modal .options-panel--screen li:has(#half_pixel_shift_slide) {
+    display: none;
 }
 
 #options-modal .options-action {
@@ -1390,14 +1454,23 @@ a.button:hover {
     margin: 3px;
 }
 
-#controls button:active,
-#controls a.button:active {
+#controls button:active {
     width: 26px;
     height: 26px;
     margin: 2px 0 0 2px;
     border: 1px solid #66886688;
     border-top-color: #55665566;
     border-left-color: #55665566;
+}
+
+#periphery1 button:active,
+#periphery2 button:active {
+    width: 26px;
+    height: 26px;
+    margin: 2px 0 0 2px;
+    border: 1px solid #555;
+    border-top-color: #444;
+    border-left-color: #444;
 }
 
 .fa-folder-open {
