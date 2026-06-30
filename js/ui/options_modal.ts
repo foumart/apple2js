@@ -34,11 +34,23 @@ const PANEL_IDS: Record<OptionsPanelId, string> = {
     system: 'options-panel-system',
 };
 
+// Canonical top-to-bottom order of panels within the dock.
+const PANEL_ORDER: OptionsPanelId[] = ['screen', 'joystick', 'audio', 'system'];
+
+// Pixels the pointer must travel before a docked panel pops out for dragging.
+const DRAG_THRESHOLD = 4;
+
+// Size of the bottom-right hit zone (CSS px) where a dropped panel re-docks.
+const REDOCK_ZONE = 240;
+
 type DragState = {
     panel: HTMLElement;
     offsetX: number;
     offsetY: number;
     pointerId: number;
+    startX: number;
+    startY: number;
+    started: boolean;
 };
 
 export class OptionsModal {
@@ -53,8 +65,25 @@ export class OptionsModal {
         return document.getElementById('options-modal');
     }
 
+    private getDock(): HTMLElement | null {
+        return document.getElementById('options-dock');
+    }
+
     private getPanelElement(id: OptionsPanelId): HTMLElement | null {
         return document.getElementById(PANEL_IDS[id]);
+    }
+
+    private panelIdOf(panel: HTMLElement): OptionsPanelId | null {
+        for (const id of PANEL_ORDER) {
+            if (PANEL_IDS[id] === panel.id) {
+                return id;
+            }
+        }
+        return null;
+    }
+
+    private isFloating(panel: HTMLElement): boolean {
+        return panel.dataset.floating === 'true';
     }
 
     private getPanelBody(id: OptionsPanelId): HTMLElement | null {
@@ -306,21 +335,9 @@ export class OptionsModal {
 
     private setPanelMinimized(panel: HTMLElement, minimized: boolean) {
         if (minimized) {
-            const scale = this.getScaleFactor();
-            const width =
-                Math.round(panel.getBoundingClientRect().width / scale);
-            if (panel.dataset.floating !== 'true') {
-                this.anchorPanelForDrag(panel);
-            }
             panel.classList.add('options-panel--minimized');
-            panel.style.boxSizing = 'border-box';
-            panel.style.width = `${width}px`;
-            panel.style.maxWidth = `${width}px`;
         } else {
             panel.classList.remove('options-panel--minimized');
-            panel.style.width = '';
-            panel.style.maxWidth = '';
-            panel.style.boxSizing = '';
         }
         const btn = panel.querySelector<HTMLButtonElement>(
             '.options-panel-minimize'
@@ -337,28 +354,99 @@ export class OptionsModal {
         }
     }
 
+    private clearPanelInlineLayout(panel: HTMLElement) {
+        panel.style.left = '';
+        panel.style.top = '';
+        panel.style.right = '';
+        panel.style.bottom = '';
+        panel.style.width = '';
+        panel.style.maxWidth = '';
+        panel.style.boxSizing = '';
+        panel.style.height = '';
+    }
+
+    /**
+     * Returns every panel to the dock in canonical order, clears any floating
+     * state, and leaves them all minimized.
+     */
     private resetPanelLayout() {
-        for (const id of Object.keys(PANEL_IDS) as OptionsPanelId[]) {
+        const dock = this.getDock();
+        for (const id of PANEL_ORDER) {
             const panel = this.getPanelElement(id);
             if (!panel) {
                 continue;
             }
             panel.classList.remove(
                 'options-panel--hidden',
-                'options-panel--floating',
-                'options-panel--minimized'
+                'options-panel--floating'
             );
-            this.setPanelMinimized(panel, false);
-            panel.style.left = '';
-            panel.style.top = '';
-            panel.style.right = '';
-            panel.style.bottom = '';
-            panel.style.width = '';
-            panel.style.maxWidth = '';
-            panel.style.boxSizing = '';
-            panel.style.height = '';
+            this.clearPanelInlineLayout(panel);
             delete panel.dataset.floating;
+            // Re-appending in PANEL_ORDER restores the docked stacking order.
+            if (dock) {
+                dock.appendChild(panel);
+            }
+            this.setPanelMinimized(panel, true);
         }
+    }
+
+    /** Pops a docked panel out into a free-floating, draggable element. */
+    private undock(panel: HTMLElement) {
+        const modal = this.getModal();
+        if (!modal || this.isFloating(panel)) {
+            return;
+        }
+        this.anchorPanelForDrag(panel);
+        panel.style.width = '200px';
+        panel.style.maxWidth = '200px';
+        panel.style.boxSizing = 'border-box';
+        // Reparent to the modal root so absolute coords are stable while the
+        // dock reflows around the removed panel.
+        modal.appendChild(panel);
+    }
+
+    /** Returns a floating panel to its canonical slot in the dock. */
+    private redock(panel: HTMLElement) {
+        const dock = this.getDock();
+        if (!dock) {
+            return;
+        }
+        const id = this.panelIdOf(panel);
+        const idx = id ? PANEL_ORDER.indexOf(id) : -1;
+        let before: HTMLElement | null = null;
+        for (let i = idx + 1; i < PANEL_ORDER.length; i++) {
+            const sibling = this.getPanelElement(PANEL_ORDER[i]);
+            if (sibling && sibling.parentElement === dock) {
+                before = sibling;
+                break;
+            }
+        }
+        panel.classList.remove('options-panel--floating');
+        delete panel.dataset.floating;
+        this.clearPanelInlineLayout(panel);
+        dock.insertBefore(panel, before);
+
+        // Now that it is docked again, re-enforce the accordion: if it came
+        // back expanded, minimize the other docked panels.
+        if (!panel.classList.contains('options-panel--minimized')) {
+            this.expandPanel(panel);
+        }
+    }
+
+    /** True when the panel currently overlaps the bottom-right re-dock zone. */
+    private isOverDock(panel: HTMLElement): boolean {
+        const modal = this.getModal();
+        if (!modal) {
+            return false;
+        }
+        const rect = panel.getBoundingClientRect();
+        const modalRect = modal.getBoundingClientRect();
+        const scale = this.getScaleFactor();
+        const zone = REDOCK_ZONE * scale;
+        return (
+            rect.right > modalRect.right - zone &&
+            rect.bottom > modalRect.bottom - zone
+        );
     }
 
     private anchorPanelForDrag(panel: HTMLElement) {
@@ -435,28 +523,64 @@ export class OptionsModal {
     }
 
     private onPointerMove = (evt: PointerEvent) => {
-        if (!this.dragState || evt.pointerId !== this.dragState.pointerId) {
+        const drag = this.dragState;
+        if (!drag || evt.pointerId !== drag.pointerId) {
             return;
         }
+        if (!drag.started) {
+            const dx = evt.clientX - drag.startX;
+            const dy = evt.clientY - drag.startY;
+            if (Math.hypot(dx, dy) < DRAG_THRESHOLD) {
+                return;
+            }
+            drag.started = true;
+            // First real movement pops a docked panel out into the modal.
+            this.undock(drag.panel);
+        }
         evt.preventDefault();
-        this.movePanel(this.dragState.panel, evt.clientX, evt.clientY);
+        this.movePanel(drag.panel, evt.clientX, evt.clientY);
     };
 
     private onPointerUp = (evt: PointerEvent) => {
-        if (!this.dragState || evt.pointerId !== this.dragState.pointerId) {
+        const drag = this.dragState;
+        if (!drag || evt.pointerId !== drag.pointerId) {
             return;
         }
         document.removeEventListener('pointermove', this.onPointerMove);
         document.removeEventListener('pointerup', this.onPointerUp);
         document.removeEventListener('pointercancel', this.onPointerUp);
+        if (
+            drag.started &&
+            this.isFloating(drag.panel) &&
+            this.isOverDock(drag.panel)
+        ) {
+            this.redock(drag.panel);
+        }
         this.dragState = null;
     };
 
+    /**
+     * Expands a panel. Docked panels behave as an accordion: expanding one
+     * minimizes the other docked panels. Floating panels expand independently.
+     */
+    private expandPanel(panel: HTMLElement) {
+        if (!this.isFloating(panel)) {
+            for (const id of PANEL_ORDER) {
+                const other = this.getPanelElement(id);
+                if (other && other !== panel && !this.isFloating(other)) {
+                    this.setPanelMinimized(other, true);
+                }
+            }
+        }
+        this.setPanelMinimized(panel, false);
+    }
+
     private togglePanelMinimized(panel: HTMLElement) {
-        this.setPanelMinimized(
-            panel,
-            !panel.classList.contains('options-panel--minimized')
-        );
+        if (panel.classList.contains('options-panel--minimized')) {
+            this.expandPanel(panel);
+        } else {
+            this.setPanelMinimized(panel, true);
+        }
     }
 
     private closePanel(panel: HTMLElement) {
@@ -496,13 +620,15 @@ export class OptionsModal {
                 return;
             }
             evt.preventDefault();
-            this.anchorPanelForDrag(panel);
             const rect = panel.getBoundingClientRect();
             this.dragState = {
                 panel,
                 offsetX: evt.clientX - rect.left,
                 offsetY: evt.clientY - rect.top,
                 pointerId: evt.pointerId,
+                startX: evt.clientX,
+                startY: evt.clientY,
+                started: false,
             };
             document.addEventListener('pointermove', this.onPointerMove);
             document.addEventListener('pointerup', this.onPointerUp);
@@ -555,6 +681,12 @@ export class OptionsModal {
         for (const section of this.options.getSections()) {
             const panelId = SECTION_PANEL[section.name] ?? 'system';
             panels[panelId]?.appendChild(this.renderSection(section));
+        }
+
+        // Open the Emulator panel by default; the rest stay minimized.
+        const systemPanel = this.getPanelElement('system');
+        if (systemPanel) {
+            this.expandPanel(systemPanel);
         }
 
         const pauseBtn = document.getElementById('emulator_pause');

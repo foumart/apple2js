@@ -83,12 +83,12 @@ export class Screen implements OptionHandler {
                             { name: 'MONO', value: '4' },
                         ],
                     },
-                    {
+                    /*{
                         name: SCREEN_HALF_SHIFT,
                         label: 'Half-Pixel Shift',
                         type: BOOLEAN_OPTION,
                         defaultVal: true,
-                    },
+                    },*/
                     {
                         name: SCREEN_HALF_SHIFT_SLIDE,
                         label: '',
@@ -119,12 +119,12 @@ export class Screen implements OptionHandler {
                         type: BOOLEAN_OPTION,
                         defaultVal: true,
                     },
-                    {
+                    /*{
                         name: SCREEN_FULL_PAGE,
                         label: 'Full Screen',
                         type: BOOLEAN_OPTION,
                         defaultVal: false,
-                    },
+                    },*/
                 ],
             },
         ];
