@@ -79,11 +79,25 @@ body.embedded-page.screen-only:not(.layout-ready) .outer {
     visibility: hidden;
 }
 
+body.embedded-page:not(.screen-only) {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-x: hidden;
+}
+
+body.embedded-page:not(.screen-only) .outer {
+    flex-shrink: 0;
+    margin: 0;
+}
+
 .embedded-page #display {
     overflow-y: hidden;
     overflow: hidden;
     padding: 0;
     border: 0;
+    margin-left: 0;
+    margin-right: 0;
     justify-content: center;
     align-items: center;
     /*margin: auto !important;*/

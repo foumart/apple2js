@@ -1,3 +1,7 @@
+const OUTER_LAYOUT_W = 560;
+const OUTER_CHROME_H = 422;
+const OUTER_KEYBOARD_H = 655;
+
 export function handleResize(embedded = false, fullscreenClass = 'full-page') {
     const fullscreen = document.body.classList.contains(fullscreenClass);
     const outer = document.getElementsByClassName("outer")[0] as HTMLElement;
@@ -11,10 +15,6 @@ export function handleResize(embedded = false, fullscreenClass = 'full-page') {
 
     const scrollerWidth = scrollBar ? (window.innerWidth - document.documentElement.clientWidth) : 0;
     const width = fullscreen ? 560 : 560 + scrollerWidth;
-    
-    outer.style.transformOrigin = screenOnly
-        ? "50% 0%"
-        : `${window.innerWidth - width < 0 ? embedded ? "0%" : "0%" : "50%"} 0%`;
 
     let min = 2;
     if (fullscreen) {
@@ -26,20 +26,46 @@ export function handleResize(embedded = false, fullscreenClass = 'full-page') {
     }
 
     const height = fullscreen ? 384 : 384 * (560 / width);
-    
+
     const offset = screenOnly ? 0 : !scrollBar ? 40 : 65;
     const display = document.querySelector('body .outer #display') as HTMLElement;
-    display.style.borderRadius = !scrollBar ? "0" : "8px";
-    display.style.padding = !scrollBar ? "0" : "4px";
-    display.style.marginLeft = !scrollBar ? "0" : "-7px";
-    display.style.borderWidth = !scrollBar ? "0" : "3px";
-    
-    const widthScale = Math.max(0.2, 1 + (window.innerWidth - width) / (scrollBar ? width : 560));
-    const heightDenom = screenOnly ? 384 : scrollBar ? height + offset : 384 + offset;
-    const heightScale = Math.max(
-        0.2,
-        1 + (window.innerHeight - height - offset) / heightDenom
-    );
-    const scale = +Math.min(min, widthScale, heightScale).toFixed(3);
+    if (embedded) {
+        display.style.marginLeft = "0";
+        display.style.borderRadius = screenOnly || !scrollBar ? "0" : "8px";
+        display.style.padding = screenOnly || !scrollBar ? "0" : "4px";
+        display.style.borderWidth = screenOnly || !scrollBar ? "0" : "3px";
+    } else {
+        display.style.borderRadius = !scrollBar ? "0" : "8px";
+        display.style.padding = !scrollBar ? "0" : "4px";
+        display.style.marginLeft = !scrollBar ? "0" : "-7px";
+        display.style.borderWidth = !scrollBar ? "0" : "3px";
+    }
+
+    let scale: number;
+    if (screenOnly) {
+        scale = Math.floor(Math.max(0.2, Math.min(
+            window.innerWidth / OUTER_LAYOUT_W,
+            window.innerHeight / 384
+        )) * 1000) / 1000;
+        outer.style.transformOrigin = "50% 0%";
+    } else if (embedded && !fullscreen) {
+        // FoumartGames iframe embed with periphery (standalone uses embedded=false).
+        const layoutH = keyboardVisible ? OUTER_KEYBOARD_H : OUTER_CHROME_H;
+        scale = Math.floor(Math.max(0.2, Math.min(
+            window.innerWidth / OUTER_LAYOUT_W,
+            window.innerHeight / layoutH
+        )) * 1000) / 1000;
+        outer.style.transformOrigin = "50% 0%";
+    } else {
+        outer.style.transformOrigin =
+            `${window.innerWidth - width < 0 ? "0%" : "50%"} 0%`;
+        const widthScale = Math.max(0.2, 1 + (window.innerWidth - width) / (scrollBar ? width : 560));
+        const heightDenom = scrollBar ? height + offset : 384 + offset;
+        const heightScale = Math.max(
+            0.2,
+            1 + (window.innerHeight - height - offset) / heightDenom
+        );
+        scale = +Math.min(min, widthScale, heightScale).toFixed(3);
+    }
     document.documentElement.style.setProperty('--scale-factor', "" + scale);
 }
