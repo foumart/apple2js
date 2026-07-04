@@ -35,9 +35,9 @@ export function handleResize(embedded = false, fullscreenClass = 'full-page') {
     const display = document.querySelector('body .outer #display') as HTMLElement;
     if (embedded) {
         display.style.marginLeft = "0";
-        display.style.borderRadius = screenOnly || !scrollBar ? "0" : "8px";
-        display.style.padding = screenOnly || !scrollBar ? "0" : "4px";
-        display.style.borderWidth = screenOnly || !scrollBar ? "0" : "3px";
+        display.style.borderRadius = "0";
+        display.style.padding = "0";
+        display.style.borderWidth = "0";
     } else {
         display.style.borderRadius = !scrollBar ? "0" : "8px";
         display.style.padding = !scrollBar ? "0" : "4px";
