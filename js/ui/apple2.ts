@@ -1118,6 +1118,17 @@ async function onLoaded(
     _apple2.run();
     syncPauseButtons();
 
+    if (_apple2.isEmbedded()) {
+        try {
+            window.parent.postMessage(
+                { action: 'gameLoaded', value: 'apple2' },
+                '*'
+            );
+        } catch (_) {
+            /* detached or cross-origin frame */
+        }
+    }
+
     document
         .querySelector<HTMLInputElement>('#local_file')
         ?.addEventListener('change', (event: Event) => {

@@ -334,6 +334,19 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
         } else {
             this.run();
         }
+        if (
+            typeof document !== 'undefined' &&
+            document.body.classList.contains('embedded-page')
+        ) {
+            try {
+                window.parent.postMessage(
+                    { action: 'apple2Pause', value: this.isRunning() },
+                    '*'
+                );
+            } catch (_) {
+                /* detached or cross-origin frame */
+            }
+        }
     }
 
     stop() {
@@ -415,6 +428,10 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
 
     isGL() {
         return this._options.gl;
+    }
+
+    isEmbedded() {
+        return !!this._options.embedded;
     }
 
     get shouldRestartType() {

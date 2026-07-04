@@ -4,6 +4,8 @@
     "description": "Apple II Emulator in JavaScript",
     "scripts": {
         "build": "rimraf dist && webpack --mode=production",
+        "deploy:foumart": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-foumart.ps1",
+        "deploy:foumart:copy": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-foumart.ps1 -SkipBuild",
         "dev": "webpack serve --mode=development",
         "index": "bin/index > json/disks/index.js",
         "lint": "eslint '**/*.js' '**/*.ts' '**/*.tsx' && stylelint '**/*.scss'",
