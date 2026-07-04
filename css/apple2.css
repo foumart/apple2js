@@ -170,7 +170,7 @@ body.embedded-page #display .overscan {
 
 .full-page .outer #lights {
     position: fixed;
-    top: 388px;
+    top: 390px;
     left: 256px;
 }
 
@@ -271,7 +271,7 @@ input[type='text'] {
 
 #lights {
     float: right;
-    margin: 0 3px 6px;
+    margin: 2px 3px 6px 0;
 }
 
 #lights > div {

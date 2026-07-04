@@ -32,7 +32,8 @@ try {
         @{ Src = "dist\preact.bundle.js";          Dst = "dist\preact.bundle.js" },
         @{ Src = "dist\audio_worker.bundle.js";    Dst = "dist\audio_worker.bundle.js" },
         @{ Src = "dist\format_worker.bundle.js";   Dst = "dist\format_worker.bundle.js" },
-        @{ Src = "css\apple2.css";                 Dst = "css\apple2.css" }
+        @{ Src = "css\apple2.css";                 Dst = "css\apple2.css" },
+        @{ Src = "apple2jse.html";                 Dst = "index.html" }
     )
 
     foreach ($item in $copies) {
