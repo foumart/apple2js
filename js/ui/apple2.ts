@@ -39,6 +39,7 @@ import { JoyStick } from './joystick';
 import { System } from './system';
 import { Options } from '../options';
 import { HttpBlockDisk } from 'js/formats/http_block_disk';
+import { applyShowDisk, readShowDiskParam, readDiskQueryPath } from '../embed_options';
 
 let startTime = Date.now();
 let lastCycles = 0;
@@ -950,18 +951,6 @@ declare global {
     }
 }
 
-/**
- * Returns the value of a query parameter or the empty string if it does not
- * exist.
- * @param name the parameter name. Note that `name` must not have any RegExp
- *     meta-characters except '[' and ']' or it will fail.
- */
-
-function gup(name: string) {
-    const params = new URLSearchParams(window.location.search);
-    return params.get(name);
-}
-
 /** Returns the URL fragment. */
 function hup() {
     const regex = new RegExp('#(.*)');
@@ -1099,7 +1088,7 @@ async function onLoaded(
 
     // Check for disks in hashtag
 
-    const hash = gup('disk') || hup();
+    const hash = readDiskQueryPath() || hup();
     if (hash) {
         await processHash(hash);
         const drives = hash.split('|').length;
@@ -1110,6 +1099,9 @@ async function onLoaded(
                 (periphery[i] as HTMLElement).style.display = "flex";
                 (document.getElementById("exit-fullscreen") as HTMLElement).style.width = "292px";
             }
+        }
+        if (!readShowDiskParam(window.location.search)) {
+            applyShowDisk(false);
         }
     }
     await ready;

@@ -13,6 +13,7 @@ import Mouse from './cards/mouse';
 
 import { Apple2 } from './apple2';
 import { handleResize } from './resize';
+import { applyShowDisk } from './embed_options';
 
 const prefs = new Prefs();
 const romVersion = prefs.readPref('computer_type2e');
@@ -52,6 +53,7 @@ const options = {
     canvas2: document.querySelector<HTMLCanvasElement>('#screen2')!,
     gl: prefs.readPref('gl_canvas', 'true') === 'true',
     embedded: prefs.readPref('embedded', 'true') === 'true',
+    showDisk: prefs.readPref('disk', 'true') !== 'false',
     rom,
     characterRom,
     e: true,
@@ -60,6 +62,7 @@ const options = {
 };
 
 export const apple2 = new Apple2(options);
+applyShowDisk(options.showDisk);
 apple2.ready
     .then(() => {
         const io = apple2.getIO();

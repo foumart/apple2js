@@ -91,6 +91,10 @@ body.embedded-page:not(.screen-only) .outer {
     margin: 0;
 }
 
+body.hide-disk #periphery1 {
+    display: none !important;
+}
+
 .embedded-page #display {
     overflow-y: hidden;
     overflow: hidden;
@@ -98,6 +102,7 @@ body.embedded-page:not(.screen-only) .outer {
     border: 0;
     margin-left: 0;
     margin-right: 0;
+    margin-bottom: 0;
     justify-content: center;
     align-items: center;
     /*margin: auto !important;*/

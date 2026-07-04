@@ -34,6 +34,8 @@ export interface Apple2Options {
     canvas: HTMLCanvasElement;
     canvas2: HTMLCanvasElement;
     tick: () => void;
+    embedded?: boolean;
+    showDisk?: boolean;
 }
 
 export interface Stats {

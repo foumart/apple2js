@@ -1,6 +1,6 @@
+import { getChromeLayoutHeight } from './embed_options';
+
 const OUTER_LAYOUT_W = 560;
-const OUTER_CHROME_H = 422;
-const OUTER_KEYBOARD_H = 655;
 
 export function handleResize(embedded = false, fullscreenClass = 'full-page') {
     const fullscreen = document.body.classList.contains(fullscreenClass);
@@ -50,7 +50,7 @@ export function handleResize(embedded = false, fullscreenClass = 'full-page') {
         outer.style.transformOrigin = "50% 0%";
     } else if (embedded && !fullscreen) {
         // FoumartGames iframe embed with periphery (standalone uses embedded=false).
-        const layoutH = keyboardVisible ? OUTER_KEYBOARD_H : OUTER_CHROME_H;
+        const layoutH = getChromeLayoutHeight(keyboardVisible);
         scale = Math.floor(Math.max(0.2, Math.min(
             window.innerWidth / OUTER_LAYOUT_W,
             window.innerHeight / layoutH
