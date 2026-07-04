@@ -64,6 +64,21 @@ body:not(.full-page) #screen2 {
     overflow: hidden;
 }
 
+body.embedded-page.screen-only {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background-color: #000;
+}
+
+body.embedded-page.screen-only .outer {
+    flex-shrink: 0;
+}
+
+body.embedded-page.screen-only:not(.layout-ready) .outer {
+    visibility: hidden;
+}
+
 .embedded-page #display {
     overflow-y: hidden;
     overflow: hidden;
@@ -161,6 +176,11 @@ body:not(.full-page) #screen2 {
     margin-bottom: 6px;
     background-color: black;
     margin-left: -3px;
+    display: none;
+}
+
+body.keyboard-visible #periphery3 {
+    display: flex;
 }
 
 #exit-fullscreen {
@@ -262,7 +282,7 @@ input[type='text'] {
 
 @font-face {
     font-family: 'PrintChar';
-    src: url('./PrintChar21.ttf') format('truetype');
+    src: url('./ApplePrintChar21.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
@@ -603,6 +623,7 @@ a.button:hover {
 
 body:has(#options-modal.is-open) #toggle-options,
 body:not(.apple2-paused) #pause-run,
+body.keyboard-visible #toggle-keyboard,
 #toggle-sound:has(.fa-volume-up) {
     background: #000;
     color: #0f0;
@@ -615,6 +636,7 @@ body:not(.apple2-paused) #pause-run,
 
 body:has(#options-modal.is-open) #toggle-options .fas,
 body:not(.apple2-paused) #pause-run .fas,
+body.keyboard-visible #toggle-keyboard .fas,
 #toggle-sound:has(.fa-volume-up) .fas {
     filter: none;
 }
@@ -637,6 +659,7 @@ body:not(.apple2-paused) #pause-run .fas,
 
 body:has(#options-modal.is-open) #toggle-options:hover,
 body:not(.apple2-paused) #pause-run:hover,
+body.keyboard-visible #toggle-keyboard:hover,
 #toggle-sound:has(.fa-volume-up):hover {
     background: #000;
     color: #2aff3c;
@@ -649,6 +672,7 @@ body:not(.apple2-paused) #pause-run:hover,
 
 body:has(#options-modal.is-open) #toggle-options:hover .fas,
 body:not(.apple2-paused) #pause-run:hover .fas,
+body.keyboard-visible #toggle-keyboard:hover .fas,
 #toggle-sound:has(.fa-volume-up):hover .fas {
     filter: none;
 }
@@ -658,6 +682,7 @@ body:not(.apple2-paused) #pause-run:hover .fas,
 #controls button:active,
 body:has(#options-modal.is-open) #toggle-options:active,
 body:not(.apple2-paused) #pause-run:active,
+body.keyboard-visible #toggle-keyboard:active,
 #toggle-sound:has(.fa-volume-up):active {
     background: #333;
     color: #0c0;
@@ -675,8 +700,18 @@ body:not(.apple2-paused) #pause-run:active,
 #controls button:active .fas,
 body:has(#options-modal.is-open) #toggle-options:active .fas,
 body:not(.apple2-paused) #pause-run:active .fas,
+body.keyboard-visible #toggle-keyboard:active .fas,
 #toggle-sound:has(.fa-volume-up):active .fas {
     filter: none;
+}
+
+/* Pause/run: play when paused, pause when running */
+body.apple2-paused #pause-run .fas {
+    background-image: url(../img/fa-play.png);
+}
+
+body:not(.apple2-paused) #pause-run .fas {
+    background-image: url(../img/fa-pause.png);
 }
 
 button:focus,
@@ -1443,7 +1478,12 @@ a.button:hover {
 }
 
 #options-modal .options-panel--screen .options-section-header {
-    padding-bottom: 6px;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+#options-modal .options-panel--screen li:has(#palette) {
+    padding-bottom: 8px;
     margin-bottom: 2px;
     border-bottom: 1px solid #224422;
 }
@@ -1512,14 +1552,38 @@ a.button:hover {
     display: none;
 }
 
+#options-modal li.options-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#options-modal li.options-slider-row input[type='range'] {
+    flex: 0 0 auto;
+    width: 100px;
+    max-width: 100px;
+}
+
+#options-modal li.options-slider-row label {
+    flex: 0 0 auto;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
 #options-modal .options-panel--audio input[type='range'] {
     width: 100%;
     max-width: none;
 }
 
+#options-modal .options-panel--audio li.options-slider-row input[type='range'] {
+    width: 100px;
+    max-width: 100px;
+}
+
 #options-modal .options-panel--audio label[for='sound_volume'] {
     display: inline-block;
-    min-width: 5.5em;
+    min-width: 0;
     font-variant-numeric: tabular-nums;
 }
 
@@ -1581,6 +1645,10 @@ a.button:hover {
 
 .fa-cog {
     background-image: url(../img/fa-cog.png);
+}
+
+.fa-keyboard {
+    background-image: url(../img/fa-keyboard.png);
 }
 
 .fa-fullscreen {

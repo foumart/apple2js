@@ -87,6 +87,7 @@ let keyboard: KeyBoard;
 let io: Apple2IO;
 let driveNo: DriveNumber = 1;
 let _e: boolean;
+let keyboardVisible = false;
 
 let ready: Promise<[void, void]>;
 
@@ -601,6 +602,26 @@ export function toggleShowFPS() {
     showStats = ++showStats % 3;
 }
 
+export function toggleKeyboard() {
+    setKeyboardVisible(!keyboardVisible);
+}
+
+function setKeyboardVisible(visible: boolean) {
+    keyboardVisible = visible;
+    document.body.classList.toggle('keyboard-visible', visible);
+    const btn = document.getElementById('toggle-keyboard');
+    if (btn) {
+        btn.title = visible ? 'Hide Keyboard' : 'Show Keyboard';
+    }
+    requestAnimationFrame(() => {
+        window.dispatchEvent(new Event('resize'));
+    });
+}
+
+function initKeyboardToggle() {
+    setKeyboardVisible(false);
+}
+
 export function toggleFullscreen() {
     const fs = document.body.classList.contains('full-page');
     options.setOption(SCREEN_FULL_PAGE, !fs);
@@ -981,6 +1002,7 @@ async function onLoaded(
     audio = new Audio(io, initSoundToggle);
     options.addOptions(audio);
     initSoundToggle();
+    initKeyboardToggle();
 
     ready = Promise.all([audio.ready, apple2.ready]);
 

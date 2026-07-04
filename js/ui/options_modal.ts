@@ -296,7 +296,7 @@ export class OptionsModal {
             labelElement.textContent = `${value} mHz`;
         } else if (name == 'scanlines_slide') {
             const value = this.options.getOption('scanlines_slide') as number;
-            labelElement.textContent = `${value}`;//Opacity:
+            labelElement.textContent = `Opacity: ${value}`;
             const disabled = !this.options.getOption(
                 'show_scanlines'
             ) as boolean;
@@ -321,6 +321,10 @@ export class OptionsModal {
 
         labelElement.setAttribute('for', name);
         listItem.appendChild(labelElement);
+
+        if (name === 'scanlines_slide' || name === 'sound_volume') {
+            listItem.classList.add('options-slider-row');
+        }
 
         return listItem;
     }

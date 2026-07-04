@@ -288,7 +288,8 @@ export class Screen implements OptionHandler {
                 this.a2.getVideoModes().opacity(value as number);
                 this.repaint();
                 this.waitForParentElement("scanlines_slide").then((element: HTMLElement) => {
-                    element.getElementsByTagName("label")[0].innerHTML = "" + value;//Opacity: 
+                    element.getElementsByTagName("label")[0].innerHTML =
+                        `Opacity: ${value}`;
                 });
                 break;
             case SCREEN_SMOOTH:
