@@ -10,8 +10,12 @@ export function handleResize(embedded = false, fullscreenClass = 'full-page') {
     const screenOnly = document.body.classList.contains('screen-only');
 
     const scrollBar = keyboardVisible;
+    const embeddedEmbed = embedded && !fullscreen;
 
-    document.body.style.overflowY = scrollBar ? "scroll" : "hidden";
+    // FoumartGames iframe host resizes the frame or enables inner scroll.
+    if (!embeddedEmbed) {
+        document.body.style.overflowY = scrollBar ? "scroll" : "hidden";
+    }
 
     const scrollerWidth = scrollBar ? (window.innerWidth - document.documentElement.clientWidth) : 0;
     const width = fullscreen ? 560 : 560 + scrollerWidth;

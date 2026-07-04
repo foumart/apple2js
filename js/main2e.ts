@@ -87,6 +87,20 @@ apple2.ready
         io.setSlot(7, smartport);
 
         initUI(apple2, disk2, smartport, printer, options.e, keyboardLayout);
+
+        if (options.embedded) {
+            try {
+                window.parent.postMessage(
+                    {
+                        action: 'apple2Renderer',
+                        value: apple2.isGL() ? 'webgl' : 'canvas',
+                    },
+                    '*'
+                );
+            } catch (_) {
+                /* detached or cross-origin frame */
+            }
+        }
     })
     .catch(console.error);
 

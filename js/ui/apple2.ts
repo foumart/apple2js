@@ -607,6 +607,15 @@ export function toggleKeyboard() {
     setKeyboardVisible(!keyboardVisible);
 }
 
+function notifyEmbedHostKeyboard(visible: boolean) {
+    if (!document.body.classList.contains('embedded-page')) return;
+    try {
+        window.parent.postMessage({ action: 'apple2Keyboard', value: visible }, '*');
+    } catch (_) {
+        /* cross-origin or detached frame */
+    }
+}
+
 function setKeyboardVisible(visible: boolean) {
     keyboardVisible = visible;
     document.body.classList.toggle('keyboard-visible', visible);
@@ -614,6 +623,7 @@ function setKeyboardVisible(visible: boolean) {
     if (btn) {
         btn.title = visible ? 'Hide Keyboard' : 'Show Keyboard';
     }
+    notifyEmbedHostKeyboard(visible);
     requestAnimationFrame(() => {
         window.dispatchEvent(new Event('resize'));
     });
