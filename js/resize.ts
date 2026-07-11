@@ -1,4 +1,4 @@
-import { getChromeLayoutHeight } from './embed_options';
+import { getChromeLayoutHeight, syncEmbeddedScreenScale } from './embed_options';
 
 const OUTER_LAYOUT_W = 560;
 
@@ -8,8 +8,9 @@ export function handleResize(embedded = false, fullscreenClass = 'full-page') {
 
     const keyboardVisible = document.body.classList.contains('keyboard-visible');
     const screenOnly = document.body.classList.contains('screen-only');
+    const hostExpandedKeyboard = document.body.classList.contains('embed-keyboard-expanded');
 
-    const scrollBar = keyboardVisible;
+    const scrollBar = keyboardVisible && !hostExpandedKeyboard;
     const embeddedEmbed = embedded && !fullscreen;
 
     // FoumartGames iframe host resizes the frame or enables inner scroll.
@@ -47,13 +48,17 @@ export function handleResize(embedded = false, fullscreenClass = 'full-page') {
 
     let scale: number;
     if (screenOnly) {
-        scale = Math.floor(Math.max(0.2, Math.min(
-            window.innerWidth / OUTER_LAYOUT_W,
-            window.innerHeight / 384
-        )) * 1000) / 1000;
-        outer.style.transformOrigin = "50% 0%";
+        syncEmbeddedScreenScale();
+        return;
     } else if (embedded && !fullscreen) {
-        // FoumartGames iframe embed with periphery (standalone uses embedded=false).
+        // FoumartGames host (game.js) owns scale when embedded in the game iframe.
+        const hostManagedEmbed =
+            document.body.classList.contains('embedded-page') ||
+            /[?&]embedded=true(?:&|$)/i.test(window.location.search);
+        if (hostManagedEmbed) {
+            outer.style.transformOrigin = '50% 0%';
+            return;
+        }
         const layoutH = getChromeLayoutHeight(keyboardVisible);
         scale = Math.floor(Math.max(0.2, Math.min(
             window.innerWidth / OUTER_LAYOUT_W,

@@ -39,7 +39,7 @@ import { JoyStick } from './joystick';
 import { System } from './system';
 import { Options } from '../options';
 import { HttpBlockDisk } from 'js/formats/http_block_disk';
-import { applyShowDisk, readShowDiskParam, readDiskQueryPath } from '../embed_options';
+import { applyShowDisk, applyEmbeddedScreenLayout, readShowDiskParam, readDiskQueryPath } from '../embed_options';
 
 let startTime = Date.now();
 let lastCycles = 0;
@@ -608,7 +608,7 @@ export function toggleKeyboard() {
 }
 
 function notifyEmbedHostKeyboard(visible: boolean) {
-    if (!document.body.classList.contains('embedded-page')) return;
+    if (window.parent === window) return;
     try {
         window.parent.postMessage({ action: 'apple2Keyboard', value: visible }, '*');
     } catch (_) {
@@ -1002,6 +1002,11 @@ async function onLoaded(
     options.addOptions(audio);
     initSoundToggle();
     initKeyboardToggle();
+
+    if (_apple2.isEmbedded()) {
+        const diskParam = new URLSearchParams(window.location.search).get('disk');
+        applyEmbeddedScreenLayout(diskParam === 'true');
+    }
 
     ready = Promise.all([audio.ready, apple2.ready]);
 

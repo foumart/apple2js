@@ -23,6 +23,18 @@
 <meta name="apple-mobile-web-app-title" content="Apple //jse">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta charset="utf-8" />
+<script>
+(function () {
+  if (!/[?&]embedded=true(?:&|$)/i.test(location.search)) return;
+  if (window.parent === window) return;
+  document.documentElement.classList.add("apple2-embedded-boot");
+})();
+</script>
+<style id="apple2-embedded-boot-style">
+html.apple2-embedded-boot,
+html.apple2-embedded-boot body { background: transparent !important; }
+html.apple2-embedded-boot .outer { visibility: hidden !important; }
+</style>
 <meta name="description" content="Apple //jse is an Apple //e emulator written using only JavaScript and HTML5. It has color display, sound and disk support." />
 <meta name="keywords" content="apple2e,apple,ii,javascript,emulator,html5" />
 
