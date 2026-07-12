@@ -37,8 +37,9 @@ export const setHashParts = (parts: string[]) => {
 };
 
 export const getNameAndExtension = (url: string) => {
-    const urlParts = url.split('/');
-    const file = urlParts.pop() || url;
+    const path = url.split('?')[0].split('#')[0];
+    const urlParts = path.split('/');
+    const file = urlParts.pop() || path;
     const fileParts = file.split('.');
     const ext = fileParts.pop()?.toLowerCase() || '[none]';
     const name = decodeURIComponent(fileParts.join('.'));

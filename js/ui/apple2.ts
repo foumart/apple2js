@@ -39,6 +39,7 @@ import { JoyStick } from './joystick';
 import { System } from './system';
 import { Options } from '../options';
 import { HttpBlockDisk } from 'js/formats/http_block_disk';
+import { getNameAndExtension } from 'js/components/util/files';
 import { applyShowDisk, applyEmbeddedScreenLayout, readShowDiskParam, readDiskQueryPath } from '../embed_options';
 
 let startTime = Date.now();
@@ -518,11 +519,7 @@ export async function doLoadHTTP(_driveNo: DriveNumber, url?: string) {
         url = url || input.value;
         if (!url) throw new Error("URL is empty");
 
-        const urlParts = url.split('/');
-        const file = urlParts.pop()!;
-        const fileParts = file.split('.');
-        const ext = fileParts.pop()!.toLowerCase();
-        const name = decodeURIComponent(fileParts.join('.'));
+        const { name, ext } = getNameAndExtension(url);
 
         try {
             const head = await fetch(url, { method: 'HEAD' });

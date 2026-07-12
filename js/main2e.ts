@@ -52,7 +52,7 @@ const options = {
     canvas: document.querySelector<HTMLCanvasElement>('#screen')!,
     canvas2: document.querySelector<HTMLCanvasElement>('#screen2')!,
     gl: prefs.readPref('gl_canvas', 'true') === 'true',
-    embedded: prefs.readPref('embedded', 'true') === 'true',
+    embedded: prefs.readPref('embedded', 'false') === 'true',
     showDisk: prefs.readPref('disk', 'true') !== 'false',
     rom,
     characterRom,

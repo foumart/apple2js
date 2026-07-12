@@ -1,6 +1,6 @@
 export const OUTER_LAYOUT_W = 560;
 export const OUTER_CHROME_H = 422;
-export const OUTER_KEYBOARD_H = 620;
+export const OUTER_KEYBOARD_H = 630;
 const SCREEN_LAYOUT_H = 384;
 
 /** Disk image path from ?disk= query (legacy), not the show/hide periphery flag. */
@@ -28,7 +28,7 @@ export function applyShowDisk(showDisk: boolean) {
     document.body.classList.toggle('hide-disk', !showDisk);
 }
 
-/** Canonical 1× layout height for embed scale (844÷2 chrome, 1240÷2 keyboard). */
+/** Canonical 1× layout height for embed scale (844÷2 chrome, 1260÷2 keyboard). */
 export function getChromeLayoutHeight(keyboardVisible: boolean): number {
     return keyboardVisible ? OUTER_KEYBOARD_H : OUTER_CHROME_H;
 }
