@@ -41,6 +41,11 @@ import { Options } from '../options';
 import { HttpBlockDisk } from 'js/formats/http_block_disk';
 import { getNameAndExtension } from 'js/components/util/files';
 import { applyShowDisk, applyEmbeddedScreenLayout, readShowDiskParam, readDiskQueryPath } from '../embed_options';
+import {
+    initDiskAutosave,
+    restoreDiskAutosaves,
+    setBootSourceUrl,
+} from './disk_autosave';
 
 let startTime = Date.now();
 let lastCycles = 0;
@@ -265,6 +270,7 @@ export async function loadAjax(_driveNo: DriveNumber, url: string) {
                 loadBinary(data);
             } else if (includes(DISK_FORMATS, data.type)) {
                 loadDisk(_driveNo, data);
+                setBootSourceUrl(_driveNo, url);
             }
             initGamepad(data.gamepad);
             loadingStop();
@@ -499,6 +505,7 @@ async function defaultLoadHttp(
         }
 
         initGamepad();
+        setBootSourceUrl(_driveNo, url);
     } catch (error: any) {
         openAlert(error.message || "Unknown error");
         console.error(error);
@@ -536,6 +543,7 @@ export async function doLoadHTTP(_driveNo: DriveNumber, url?: string) {
                     _driveNo,
                     new HttpBlockDisk(name, contentLength, url)
                 );
+                setBootSourceUrl(_driveNo, url);
             } else {
                 await defaultLoadHttp(url, name, ext, _driveNo);
             }
@@ -884,6 +892,7 @@ async function processHash(hash: string) {
         } else {
             await doLoadHTTP(drive, file);
         }
+        setBootSourceUrl(drive, file);
     }
     oldHashFiles = files;
 }
@@ -985,6 +994,8 @@ async function onLoaded(
     _massStorage = massStorage;
     _printer = printer;
     _e = e;
+
+    initDiskAutosave(_disk2, driveLights);
 
     system = new System(apple2, io, e);
     options.addOptions(system);
@@ -1103,6 +1114,7 @@ async function onLoaded(
     const hash = readDiskQueryPath() || hup();
     if (hash) {
         await processHash(hash);
+        restoreDiskAutosaves(_disk2, driveLights);
         const drives = hash.split('|').length;
 
         if (drives > 1) {
