@@ -43,8 +43,8 @@ import { getNameAndExtension } from 'js/components/util/files';
 import { applyShowDisk, applyEmbeddedScreenLayout, readShowDiskParam, readDiskQueryPath } from '../embed_options';
 import {
     initDiskAutosave,
-    restoreDiskAutosaves,
     setBootSourceUrl,
+    tryRestoreDiskAutosave,
 } from './disk_autosave';
 
 let startTime = Date.now();
@@ -809,9 +809,10 @@ function loadLocalStorage(_driveNo: DriveNumber, name: string) {
         window.localStorage.getItem('diskIndex') || '{}'
     ) as LocalDiskIndex;
     if (diskIndex[name]) {
-        _disk2.setJSON(_driveNo, diskIndex[name]);
-        driveLights.label(_driveNo, name);
-        driveLights.dirty(_driveNo, false);
+        void _disk2.setJSON(_driveNo, diskIndex[name]).then(() => {
+            driveLights.label(_driveNo, name);
+            driveLights.dirty(_driveNo, false);
+        });
     }
 }
 
@@ -887,12 +888,17 @@ async function processHash(hash: string) {
             file = 'json/disks/' + file + '.json';
         }
 
+        setBootSourceUrl(drive, file);
+
+        if (await tryRestoreDiskAutosave(_disk2, drive, file, driveLights)) {
+            continue;
+        }
+
         if (file.split('.').pop()?.toLowerCase() === "json") {
             await loadAjax(drive, file);
         } else {
             await doLoadHTTP(drive, file);
         }
-        setBootSourceUrl(drive, file);
     }
     oldHashFiles = files;
 }
@@ -1105,16 +1111,13 @@ async function onLoaded(
         document.body.classList.add('standalone');
     }
 
-    cpu.reset();
     setInterval(updateKHz, 1000);
     initGamepad();
 
-    // Check for disks in hashtag
-
+    // Load boot disk(s) before CPU reset so ProDOS sees the saved image.
     const hash = readDiskQueryPath() || hup();
     if (hash) {
         await processHash(hash);
-        restoreDiskAutosaves(_disk2, driveLights);
         const drives = hash.split('|').length;
 
         if (drives > 1) {
@@ -1128,6 +1131,8 @@ async function onLoaded(
             applyShowDisk(false);
         }
     }
+
+    cpu.reset();
     await ready;
     _apple2.run();
     syncPauseButtons();

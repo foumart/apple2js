@@ -307,7 +307,11 @@ export default class DiskII implements Card<State>, MassStorage<NibbleFormat> {
     /** Current driver object. Must only be set by `updateAcivetDrive()`. */
     private curDriver: DiskDriver;
 
-    private worker: Worker;
+    private worker: Worker | undefined;
+    private workerPendingByDrive = new Map<
+        DriveNumber,
+        { resolve: () => void; reject: (error: Error) => void }
+    >();
 
     /** Builds a new Disk ][ card. */
     constructor(
@@ -617,7 +621,7 @@ export default class DiskII implements Card<State>, MassStorage<NibbleFormat> {
 
     /** Sets the data for `drive` from `disk`, which is expected to be JSON. */
     // TODO(flan): This implementation is not very safe.
-    setDisk(driveNo: DriveNumber, jsonDisk: JSONDisk) {
+    async setDisk(driveNo: DriveNumber, jsonDisk: JSONDisk): Promise<boolean> {
         if (this.worker) {
             const message: FormatWorkerMessage = {
                 type: PROCESS_JSON_DISK,
@@ -626,7 +630,9 @@ export default class DiskII implements Card<State>, MassStorage<NibbleFormat> {
                     jsonDisk,
                 },
             };
+            const pending = this.waitForWorker(driveNo);
             this.worker.postMessage(message);
+            await pending;
             return true;
         } else {
             const disk = createDiskFromJsonDisk(jsonDisk);
@@ -646,8 +652,12 @@ export default class DiskII implements Card<State>, MassStorage<NibbleFormat> {
         return jsonEncode(curDisk, pretty);
     }
 
-    setJSON(driveNo: DriveNumber, json: string) {
-        if (this.worker) {
+    async setJSON(
+        driveNo: DriveNumber,
+        json: string,
+        opts?: { sync?: boolean }
+    ): Promise<boolean> {
+        if (this.worker && !opts?.sync) {
             const message: FormatWorkerMessage = {
                 type: PROCESS_JSON,
                 payload: {
@@ -655,7 +665,9 @@ export default class DiskII implements Card<State>, MassStorage<NibbleFormat> {
                     json,
                 },
             };
+            const pending = this.waitForWorker(driveNo);
             this.worker.postMessage(message);
+            await pending;
         } else {
             const disk = jsonDecode(json);
             this.insertDisk(driveNo, disk);
@@ -687,7 +699,9 @@ export default class DiskII implements Card<State>, MassStorage<NibbleFormat> {
                     options,
                 },
             };
+            const pending = this.waitForWorker(driveNo);
             this.worker.postMessage(message);
+            await pending;
             return;
         } else {
             const disk = createDisk(fmt, options);
@@ -697,6 +711,25 @@ export default class DiskII implements Card<State>, MassStorage<NibbleFormat> {
             }
         }
         throw new Error('Unable to load disk');
+    }
+
+    private waitForWorker(driveNo: DriveNumber): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.workerPendingByDrive.set(driveNo, { resolve, reject });
+        });
+    }
+
+    private finishWorker(driveNo: DriveNumber, disk: FloppyDisk | null) {
+        const pending = this.workerPendingByDrive.get(driveNo);
+        if (!pending) {
+            return;
+        }
+        this.workerPendingByDrive.delete(driveNo);
+        if (disk) {
+            pending.resolve();
+        } else {
+            pending.reject(new Error('Unable to load disk'));
+        }
     }
 
     initWorker() {
@@ -718,6 +751,7 @@ export default class DiskII implements Card<State>, MassStorage<NibbleFormat> {
                                 if (disk) {
                                     this.insertDisk(drive, disk);
                                 }
+                                this.finishWorker(drive, disk);
                             }
                             break;
                     }

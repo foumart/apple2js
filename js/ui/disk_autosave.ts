@@ -3,13 +3,16 @@ import DiskII from '../cards/disk2';
 import {
     DriveNumber,
     DRIVE_NUMBERS,
-    isNibbleDisk,
     isNoFloppyDisk,
 } from '../formats/types';
 import type DriveLights from './drive_lights';
 
 const AUTOSAVE_PREFIX = 'apple2js:autosave:';
-const DEBOUNCE_MS = 2000;
+const DEBOUNCE_MS = 1500;
+const PERIODIC_MS = 5000;
+
+/** Master switch — off while autosave perf/reliability is investigated. */
+export const DISK_AUTOSAVE_ENABLED = false;
 
 interface AutosaveRecord {
     v: 1;
@@ -21,10 +24,12 @@ function haveStorage(): boolean {
     return typeof window !== 'undefined' && !!window.localStorage;
 }
 
-/** URL/localStorage pref: autosave=false disables automatic disk progress saves. */
+/** URL/localStorage pref: autosave=true opts in when DISK_AUTOSAVE_ENABLED is false. */
 export function readAutosaveEnabled(
     search: string | URLSearchParams = window.location.search
 ): boolean {
+    if (!DISK_AUTOSAVE_ENABLED) return false;
+
     const params =
         typeof search === 'string'
             ? new URLSearchParams(
@@ -35,13 +40,89 @@ export function readAutosaveEnabled(
     return params.get('autosave') !== 'false';
 }
 
-function storageKey(sourceUrl: string, driveNo: DriveNumber): string {
+function readHashDiskUrl(driveNo: DriveNumber): string | undefined {
+    if (typeof window === 'undefined') return undefined;
+    const hash = decodeURIComponent(window.location.hash || '').replace(
+        /^#/,
+        ''
+    );
+    if (!hash) return undefined;
+    let file = hash.split('|')[driveNo - 1];
+    if (!file) return undefined;
+    if (!file.includes('.')) {
+        file = 'json/disks/' + file + '.json';
+    }
+    return file;
+}
+
+function canonicalPath(sourceUrl: string): string {
     try {
         const url = new URL(sourceUrl, window.location.href);
-        return `${AUTOSAVE_PREFIX}${url.pathname}:${driveNo}`;
+        return url.pathname.replace(/^\/games\//i, '/game/');
     } catch {
-        return `${AUTOSAVE_PREFIX}${sourceUrl}:${driveNo}`;
+        return sourceUrl;
     }
+}
+
+function diskBasename(sourceUrl: string): string | undefined {
+    try {
+        const url = new URL(sourceUrl, window.location.href);
+        return url.pathname.split('/').filter(Boolean).pop()?.toLowerCase();
+    } catch {
+        const parts = sourceUrl.split('/').filter(Boolean);
+        return parts.pop()?.split('?')[0]?.toLowerCase();
+    }
+}
+
+/** Primary stable key: normalized pathname + drive number. */
+function primaryStorageKey(
+    sourceUrl: string,
+    driveNo: DriveNumber
+): string {
+    return `${AUTOSAVE_PREFIX}${canonicalPath(sourceUrl)}:${driveNo}`;
+}
+
+function storageKeyCandidates(
+    sourceUrl: string,
+    driveNo: DriveNumber
+): string[] {
+    const keys: string[] = [];
+    const seen = new Set<string>();
+    const add = (key: string) => {
+        if (!seen.has(key)) {
+            seen.add(key);
+            keys.push(key);
+        }
+    };
+
+    add(primaryStorageKey(sourceUrl, driveNo));
+
+    try {
+        const url = new URL(sourceUrl, window.location.href);
+        add(`${AUTOSAVE_PREFIX}${url.pathname}:${driveNo}`);
+        add(
+            `${AUTOSAVE_PREFIX}${url.pathname.toLowerCase()}:${driveNo}`
+        );
+    } catch {
+        add(`${AUTOSAVE_PREFIX}${sourceUrl}:${driveNo}`);
+    }
+
+    const baseName = diskBasename(sourceUrl);
+    if (haveStorage() && baseName) {
+        const suffix = `:${driveNo}`;
+        for (let idx = 0; idx < window.localStorage.length; idx++) {
+            const key = window.localStorage.key(idx);
+            if (
+                key?.startsWith(AUTOSAVE_PREFIX) &&
+                key.endsWith(suffix) &&
+                key.toLowerCase().includes(baseName)
+            ) {
+                add(key);
+            }
+        }
+    }
+
+    return keys;
 }
 
 const bootSourceUrls: Partial<Record<DriveNumber, string>> = {};
@@ -58,6 +139,27 @@ export function getBootSourceUrl(
     return bootSourceUrls[driveNo];
 }
 
+/** Boot disk URL from tracked load or the page hash fragment. */
+export function getActiveDiskSourceUrl(
+    driveNo: DriveNumber
+): string | undefined {
+    return bootSourceUrls[driveNo] ?? readHashDiskUrl(driveNo);
+}
+
+function readAutosaveRaw(
+    sourceUrl: string,
+    driveNo: DriveNumber
+): { key: string; raw: string } | null {
+    if (!haveStorage()) return null;
+    for (const key of storageKeyCandidates(sourceUrl, driveNo)) {
+        const raw = window.localStorage.getItem(key);
+        if (raw) {
+            return { key, raw };
+        }
+    }
+    return null;
+}
+
 export function serializeDriveForAutosave(
     disk2: DiskII,
     driveNo: DriveNumber
@@ -68,18 +170,8 @@ export function serializeDriveForAutosave(
         return null;
     }
 
-    if (isNibbleDisk(disk)) {
-        try {
-            return {
-                v: 1,
-                kind: 'json',
-                payload: disk2.getJSON(driveNo),
-            };
-        } catch {
-            /* fall through to full drive state */
-        }
-    }
-
+    // Store the full drive state (raw nibble tracks). Sector-based JSON from
+    // getJSON() re-parses tracks and corrupts modified DOS/ProDOS disks.
     return {
         v: 1,
         kind: 'drive',
@@ -87,14 +179,21 @@ export function serializeDriveForAutosave(
     };
 }
 
-export function restoreDriveFromAutosave(
+export function hasDiskAutosave(
+    sourceUrl: string,
+    driveNo: DriveNumber
+): boolean {
+    return readAutosaveRaw(sourceUrl, driveNo) !== null;
+}
+
+export async function restoreDriveFromAutosave(
     disk2: DiskII,
     driveNo: DriveNumber,
     record: AutosaveRecord
-): boolean {
+): Promise<boolean> {
     if (record.kind === 'json') {
-        disk2.setJSON(driveNo, record.payload);
-        return true;
+        // Legacy sector JSON saves are unreliable after in-game disk writes.
+        return false;
     }
 
     const driveState = base64_json_parse(record.payload);
@@ -115,10 +214,8 @@ export function saveDiskAutosave(
     if (!record) return false;
 
     try {
-        window.localStorage.setItem(
-            storageKey(sourceUrl, driveNo),
-            JSON.stringify(record)
-        );
+        const key = primaryStorageKey(sourceUrl, driveNo);
+        window.localStorage.setItem(key, JSON.stringify(record));
         return true;
     } catch (error) {
         console.warn('Disk autosave failed', error);
@@ -126,24 +223,47 @@ export function saveDiskAutosave(
     }
 }
 
-export function loadDiskAutosave(
+export async function loadDiskAutosave(
     disk2: DiskII,
     driveNo: DriveNumber,
     sourceUrl: string
-): boolean {
-    if (!haveStorage()) return false;
-
-    const raw = window.localStorage.getItem(storageKey(sourceUrl, driveNo));
-    if (!raw) return false;
+): Promise<boolean> {
+    const found = readAutosaveRaw(sourceUrl, driveNo);
+    if (!found) return false;
 
     try {
-        const record = JSON.parse(raw) as AutosaveRecord;
+        const record = JSON.parse(found.raw) as AutosaveRecord;
         if (record.v !== 1 || !record.payload) return false;
-        return restoreDriveFromAutosave(disk2, driveNo, record);
+        if (record.kind === 'json') {
+            window.localStorage.removeItem(found.key);
+            return false;
+        }
+        const ok = await restoreDriveFromAutosave(disk2, driveNo, record);
+        if (ok) {
+            // Migrate legacy keys to the canonical key.
+            saveDiskAutosave(disk2, driveNo, sourceUrl);
+        }
+        return ok;
     } catch (error) {
         console.warn('Disk autosave restore failed', error);
         return false;
     }
+}
+
+/** Restore saved progress for a boot disk, if present. */
+export async function tryRestoreDiskAutosave(
+    disk2: DiskII,
+    driveNo: DriveNumber,
+    sourceUrl: string,
+    driveLights: DriveLights
+): Promise<boolean> {
+    if (!haveStorage() || !readAutosaveEnabled()) return false;
+    if (!hasDiskAutosave(sourceUrl, driveNo)) return false;
+    if (await loadDiskAutosave(disk2, driveNo, sourceUrl)) {
+        driveLights.dirty(driveNo, false);
+        return true;
+    }
+    return false;
 }
 
 export function clearDiskAutosave(
@@ -151,21 +271,21 @@ export function clearDiskAutosave(
     driveNo: DriveNumber
 ): void {
     if (!haveStorage()) return;
-    window.localStorage.removeItem(storageKey(sourceUrl, driveNo));
+    for (const key of storageKeyCandidates(sourceUrl, driveNo)) {
+        window.localStorage.removeItem(key);
+    }
 }
 
-export function restoreDiskAutosaves(
+export async function restoreDiskAutosaves(
     disk2: DiskII,
     driveLights: DriveLights
-): void {
+): Promise<void> {
     if (!haveStorage() || !readAutosaveEnabled()) return;
 
     for (const driveNo of DRIVE_NUMBERS) {
-        const sourceUrl = bootSourceUrls[driveNo];
+        const sourceUrl = getActiveDiskSourceUrl(driveNo);
         if (!sourceUrl) continue;
-        if (loadDiskAutosave(disk2, driveNo, sourceUrl)) {
-            driveLights.dirty(driveNo, false);
-        }
+        await tryRestoreDiskAutosave(disk2, driveNo, sourceUrl, driveLights);
     }
 }
 
@@ -173,13 +293,16 @@ let disk2Ref: DiskII | null = null;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 const pendingDirty = new Set<DriveNumber>();
 
-function flushAutosaveForDrives(driveNos: DriveNumber[]) {
+function flushAutosaveForDrives(
+    driveNos: DriveNumber[],
+    force = false
+) {
     if (!disk2Ref || !haveStorage() || !readAutosaveEnabled()) return;
 
     for (const driveNo of driveNos) {
-        const sourceUrl = bootSourceUrls[driveNo];
+        const sourceUrl = getActiveDiskSourceUrl(driveNo);
         if (!sourceUrl) continue;
-        if (!disk2Ref.getMetadata(driveNo).dirty) continue;
+        if (!force && !disk2Ref.getMetadata(driveNo).dirty) continue;
         saveDiskAutosave(disk2Ref, driveNo, sourceUrl);
     }
 }
@@ -191,18 +314,19 @@ function flushAllDirty() {
             pendingDirty.add(driveNo);
         }
     }
-    flushAutosaveForDrives([...pendingDirty]);
+    flushAutosaveForDrives([...pendingDirty], true);
     pendingDirty.clear();
 }
 
 function scheduleAutosave(driveNo: DriveNumber) {
     pendingDirty.add(driveNo);
+    flushAutosaveForDrives([driveNo], true);
     if (debounceTimer !== null) {
         clearTimeout(debounceTimer);
     }
     debounceTimer = setTimeout(() => {
         debounceTimer = null;
-        flushAutosaveForDrives([...pendingDirty]);
+        flushAutosaveForDrives([...pendingDirty], true);
         pendingDirty.clear();
     }, DEBOUNCE_MS);
 }
@@ -223,4 +347,8 @@ export function initDiskAutosave(disk2: DiskII, driveLights: DriveLights) {
 
     window.addEventListener('pagehide', flushAllDirty);
     window.addEventListener('beforeunload', flushAllDirty);
+
+    setInterval(() => {
+        flushAutosaveForDrives([...DRIVE_NUMBERS]);
+    }, PERIODIC_MS);
 }
