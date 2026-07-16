@@ -276,6 +276,62 @@ export function clearDiskAutosave(
     }
 }
 
+/*
+ * Manual save/load state. Unlike the automatic hooks, these are user-initiated
+ * (a single serialize on click) and intentionally bypass DISK_AUTOSAVE_ENABLED.
+ * They persist the raw disk image, which is where DOS/ProDOS games (e.g. the
+ * GridLock SETTINGS file) store progress.
+ */
+
+/** Persist disk progress for every drive that holds a disk. */
+export function saveStateNow(disk2: DiskII): boolean {
+    if (!haveStorage()) return false;
+
+    let saved = false;
+    for (const driveNo of DRIVE_NUMBERS) {
+        const sourceUrl = getActiveDiskSourceUrl(driveNo);
+        if (!sourceUrl) continue;
+        if (saveDiskAutosave(disk2, driveNo, sourceUrl)) {
+            saved = true;
+        }
+    }
+    return saved;
+}
+
+/** Restore disk progress for every drive that has a saved state. */
+export async function loadStateNow(
+    disk2: DiskII,
+    driveLights: DriveLights
+): Promise<boolean> {
+    if (!haveStorage()) return false;
+
+    let restored = false;
+    for (const driveNo of DRIVE_NUMBERS) {
+        const sourceUrl = getActiveDiskSourceUrl(driveNo);
+        if (!sourceUrl) continue;
+        if (!hasDiskAutosave(sourceUrl, driveNo)) continue;
+        if (await loadDiskAutosave(disk2, driveNo, sourceUrl)) {
+            driveLights.dirty(driveNo, false);
+            restored = true;
+        }
+    }
+    return restored;
+}
+
+/** Whether any active drive has a saved state on disk. */
+export function hasSavedState(disk2: DiskII): boolean {
+    if (!haveStorage()) return false;
+    // disk2 is accepted for symmetry / future per-disk checks.
+    void disk2;
+    for (const driveNo of DRIVE_NUMBERS) {
+        const sourceUrl = getActiveDiskSourceUrl(driveNo);
+        if (sourceUrl && hasDiskAutosave(sourceUrl, driveNo)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export async function restoreDiskAutosaves(
     disk2: DiskII,
     driveLights: DriveLights
@@ -319,8 +375,11 @@ function flushAllDirty() {
 }
 
 function scheduleAutosave(driveNo: DriveNumber) {
+    // IMPORTANT: the dirty callback fires on EVERY nibble written to disk
+    // (thousands of times during a single BSAVE). Serializing synchronously
+    // here froze the emulator loop, so only ever (re)arm a debounce timer that
+    // coalesces the writes into a single save once activity settles.
     pendingDirty.add(driveNo);
-    flushAutosaveForDrives([driveNo], true);
     if (debounceTimer !== null) {
         clearTimeout(debounceTimer);
     }

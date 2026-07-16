@@ -45,7 +45,11 @@ export default class RAM implements Memory, Restorable<RAMState> {
     }
 
     public setState(state: RAMState) {
-        this.mem = new Uint8Array(state.mem);
+        // Copy in place rather than reassigning `this.mem`. Video pages
+        // (LoresPage/HiresPage) hold live `subarray` views into this buffer
+        // via getBuffer(); reassigning would orphan those views and leave the
+        // text/hi-res screens showing stale, pre-restore memory.
+        this.mem.set(state.mem);
     }
 
     public getBuffer(start: byte, end: byte): memory {

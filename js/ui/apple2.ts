@@ -42,10 +42,13 @@ import { HttpBlockDisk } from 'js/formats/http_block_disk';
 import { getNameAndExtension } from 'js/components/util/files';
 import { applyShowDisk, applyEmbeddedScreenLayout, readShowDiskParam, readDiskQueryPath } from '../embed_options';
 import {
+    getActiveDiskSourceUrl,
     initDiskAutosave,
+    saveStateNow,
     setBootSourceUrl,
     tryRestoreDiskAutosave,
 } from './disk_autosave';
+import { hasFullState, loadFullState, saveFullState } from './save_state';
 
 let startTime = Date.now();
 let lastCycles = 0;
@@ -916,6 +919,41 @@ export function updateUI() {
 export function pauseRun() {
     _apple2.togglePause();
     syncPauseButtons();
+}
+
+/** Storage key namespaced by the primary drive's disk URL. */
+function stateKey(): string {
+    const url = getActiveDiskSourceUrl(1) || 'default';
+    try {
+        return new URL(url, window.location.href).pathname;
+    } catch {
+        return url;
+    }
+}
+
+/**
+ * Save a full-machine snapshot (resume the exact moment). Also persists the
+ * raw disk image as a separate progress path so a later reboot still sees it.
+ */
+export async function saveState(): Promise<boolean> {
+    const ok = await saveFullState(_apple2, stateKey());
+    // Best-effort disk-progress save; independent of the snapshot result.
+    try {
+        saveStateNow(_disk2);
+    } catch (error) {
+        console.warn('Disk progress save failed', error);
+    }
+    return ok;
+}
+
+/** Restore the full-machine snapshot for the current disk. */
+export function loadState(): Promise<boolean> {
+    return loadFullState(_apple2, stateKey());
+}
+
+/** Whether a full-machine snapshot exists for the current disk. */
+export function hasState(): Promise<boolean> {
+    return hasFullState(stateKey());
 }
 
 function syncPauseButtons() {

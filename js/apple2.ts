@@ -392,6 +392,10 @@ export class Apple2 implements Restorable<State>, DebuggerContainer {
                 }
             });
         }
+        // vm.setState() above ran before RAM/MMU were restored, so its refresh
+        // rebuilt the screen from stale memory. Redraw now that the video page
+        // buffers hold the restored bytes.
+        this.vm.refresh();
     }
 
     reset() {
