@@ -1,4 +1,4 @@
-/** @jest-environment jsdom */
+/** @jest-environment ./test/env/jsdom-environment.js */
 
 import { Ready, spawn } from 'js/components/util/promises';
 

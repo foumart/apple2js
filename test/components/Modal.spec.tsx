@@ -1,4 +1,4 @@
-/** @jest-environment jsdom */
+/** @jest-environment ./test/env/jsdom-environment.js */
 import { h } from 'preact';
 import { fireEvent, render, screen } from '@testing-library/preact';
 import { Modal, ModalContent, ModalFooter } from 'js/components/Modal';

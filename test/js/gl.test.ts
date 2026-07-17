@@ -1,4 +1,4 @@
-/** @jest-environment jsdom */
+/** @jest-environment ./test/env/jsdom-environment.js */
 /** @fileoverview Test for canvas.ts. */
 
 import RAM from 'js/ram';

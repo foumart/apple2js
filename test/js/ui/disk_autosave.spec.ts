@@ -1,4 +1,4 @@
-/** @jest-environment jsdom */
+/** @jest-environment ./test/env/jsdom-environment.js */
 import DiskII, { Callbacks } from 'js/cards/disk2';
 import Apple2IO from 'js/apple2io';
 import { CPU6502 } from '@whscullin/cpu6502';
@@ -59,7 +59,9 @@ describe('disk_autosave', () => {
         const record = serializeDriveForAutosave(disk2, 1);
         expect(record).not.toBeNull();
         expect(record!.kind).toBe('drive');
-        saveDiskAutosave(disk2, 1, 'https://example.com/games/gridlock.dsk?v=1');
+        saveDiskAutosave(disk2, 1, 'https://example.com/games/gridlock.dsk?v=1', {
+            manual: true,
+        });
         expect(
             localStorage.getItem('apple2js:autosave:/game/gridlock.dsk:1')
         ).not.toBeNull();
@@ -81,7 +83,9 @@ describe('disk_autosave', () => {
 
     it('clearDiskAutosave removes stored progress', () => {
         setBootSourceUrl(1, 'https://example.com/game.dsk');
-        saveDiskAutosave(disk2, 1, 'https://example.com/game.dsk');
+        saveDiskAutosave(disk2, 1, 'https://example.com/game.dsk', {
+            manual: true,
+        });
         clearDiskAutosave('https://example.com/game.dsk', 1);
         expect(
             localStorage.getItem('apple2js:autosave:/game.dsk:1')

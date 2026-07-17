@@ -1,5 +1,6 @@
 module.exports = {
     moduleNameMapper: {
+        '^canvas$': '<rootDir>/test/__mocks__/canvas-module.js',
         '^js/(.*)': '<rootDir>/js/$1',
         '^test/(.*)': '<rootDir>/test/$1',
         '\\.css$': 'identity-obj-proxy',

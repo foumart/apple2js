@@ -9,6 +9,8 @@
  * setup. It still requires typing.
  */
 
+require('./canvas-mock-register');
+
 import JsdomEnvironment from 'jest-environment-jsdom';
 
 export default class JsdomEnvironmentWithBackDoors extends JsdomEnvironment {

@@ -1039,8 +1039,6 @@ async function onLoaded(
     _printer = printer;
     _e = e;
 
-    initDiskAutosave(_disk2, driveLights);
-
     system = new System(apple2, io, e);
     options.addOptions(system);
 
@@ -1169,6 +1167,10 @@ async function onLoaded(
             applyShowDisk(false);
         }
     }
+
+    // Hook autosave after boot disk restore so loading saved progress does not
+    // immediately re-schedule a redundant write.
+    initDiskAutosave(_disk2, driveLights);
 
     cpu.reset();
     await ready;

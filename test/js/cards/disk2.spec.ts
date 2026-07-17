@@ -1,4 +1,4 @@
-/** @jest-environment jsdom */
+/** @jest-environment ./test/env/jsdom-environment.js */
 import fs from 'fs';
 
 import Apple2IO from 'js/apple2io';

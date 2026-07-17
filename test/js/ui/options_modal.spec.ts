@@ -1,4 +1,4 @@
-/** @jest-environment jsdom */
+/** @jest-environment ./test/env/jsdom-environment.js */
 import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import { Options } from 'js/options';
