@@ -13,3 +13,4 @@
 /emulator
 /submodules
 __diff_output__
+*.ps1

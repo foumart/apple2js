@@ -17,7 +17,7 @@ if ($body === null) {
 }
 
 http_response_code($body['status'] ? $body['status'] : 502);
-header('Content-Type: application/octet-stream');
+header('Content-Type: ' . (isset($body['type']) ? $body['type'] : 'application/octet-stream'));
 echo $body['data'];
 
 function load_public_url($url)
@@ -44,7 +44,7 @@ function load_public_url($url)
         $raw = curl_exec($ch);
         if ($raw === false) {
             curl_close($ch);
-            return null;
+            return array('status' => 502, 'data' => '', 'type' => 'text/plain');
         }
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $headerLen = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
@@ -55,7 +55,11 @@ function load_public_url($url)
             $url = resolve_redirect($url, $match[1]);
             continue;
         }
-        return array('status' => $status, 'data' => $data);
+        $type = 'application/octet-stream';
+        if (preg_match('/^Content-Type:\s*([^\r\n]+)/mi', $headers, $typeMatch)) {
+            $type = trim($typeMatch[1]);
+        }
+        return array('status' => $status, 'data' => $data, 'type' => $type);
     }
     return null;
 }

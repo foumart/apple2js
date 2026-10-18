@@ -1,15 +1,15 @@
 import { debug } from '../util';
 import { Card, Restorable, byte } from '../types';
+import MacRawHost, { httpBytes } from './uthernet_macraw';
 
 /**
  * Uthernet II is a WIZnet W5100 on the slot I/O bus ($C0n4-$C0n7).
- * This is the virtual-W5100 subset AppleWin uses for DNS offload:
- * https://github.com/a2retrosystems/uthernet2/wiki/Virtual-W5100-with-DNS
  *
- * IP65's driver (drivers/w5100.s) must pass its probe. Software such as
- * WGET then opens a TCP socket by hostname and writes a plain HTTP request.
- * The browser cannot open that socket, so a finished request is fetched
- * by uthernet-fetch.php on this page's host and handed back as HTTP bytes.
+ * Two stacks are used in the field. WGET opens a hardware TCP socket and,
+ * on AppleWin's virtual chip, offloads DNS. Contiki opens socket 0 in
+ * MACRAW mode and sends its own DHCP, DNS and TCP frames. The browser
+ * cannot open either kind of socket, so a finished HTTP request is loaded
+ * by uthernet-fetch.php and handed back as HTTP bytes.
  */
 
 const MEM_SIZE = 0x8000;
@@ -179,18 +179,94 @@ export function fetchTarget(url: string): string {
     return `uthernet-fetch.php?url=${encodeURIComponent(url)}`;
 }
 
+/**
+ * Plain HTTP is what the Apple sends. When that host answers only on
+ * HTTPS, load the secure URL and still hand the Apple a plain response.
+ */
+async function loadUrl(url: string): Promise<Response> {
+    const first = await fetch(fetchTarget(url));
+    if (first.ok || !url.startsWith('http://') || first.status !== 502) {
+        return first;
+    }
+    return fetch(fetchTarget(`https://${url.slice('http://'.length)}`));
+}
+
+async function loadNetwork(): Promise<import('./uthernet_macraw').NetConfig | null> {
+    try {
+        const response = await fetch('uthernet-net.php');
+        if (!response.ok) {
+            return null;
+        }
+        const body = (await response.json()) as {
+            ip?: string;
+            mask?: string;
+            gateway?: string;
+            dns?: string;
+        };
+        const ip = parseIp(body.ip);
+        const mask = parseIp(body.mask);
+        const gateway = parseIp(body.gateway);
+        const dns = parseIp(body.dns);
+        if (!ip || !mask || !gateway || !dns) {
+            return null;
+        }
+        return { ip, mask, gateway, dns };
+    } catch {
+        return null;
+    }
+}
+
+async function resolveName(name: string): Promise<string | null> {
+    try {
+        const response = await fetch(
+            `uthernet-dns.php?name=${encodeURIComponent(name)}`
+        );
+        if (!response.ok) {
+            return null;
+        }
+        const text = (await response.text()).trim();
+        return parseIp(text) ? text : null;
+    } catch {
+        return null;
+    }
+}
+
+function parseIp(text: string | undefined): number[] | null {
+    if (!text) {
+        return null;
+    }
+    const parts = text.split('.');
+    if (parts.length !== 4) {
+        return null;
+    }
+    const nums = parts.map((part) => Number(part));
+    if (nums.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) {
+        return null;
+    }
+    return nums;
+}
+
 export default class Uthernet2 implements Card, Restorable<Uthernet2State> {
     private mem = new Uint8Array(MEM_SIZE);
     private mode = 0;
     private ptr = 0;
     private sockets: SocketState[] = [0, 1, 2, 3].map(() => blankSocket());
+    private mac: MacRawHost;
 
     constructor() {
+        this.mac = new MacRawHost({
+            load: (url) => loadUrl(url),
+            onData: () => this.drainMac(0),
+            urlFor: requestUrl,
+            network: () => loadNetwork(),
+            resolve: (name) => resolveName(name),
+        });
         this.reset();
         debug('Uthernet II');
     }
 
     reset() {
+        this.mac.reset();
         for (let i = 0; i < 4; i++) {
             this.sockets[i].gen++;
         }
@@ -353,18 +429,13 @@ export default class Uthernet2 implements Card, Restorable<Uthernet2State> {
         const target = fetchTarget(url);
         debug('Uthernet II fetch', target);
         try {
-            const response = await fetch(target);
+            const response = await loadUrl(url);
             const body = new Uint8Array(await response.arrayBuffer());
             if (gen !== this.sockets[sock].gen) {
                 return;
             }
-            const reason = response.status === 200 ? 'OK' : 'ERR';
-            const header = `HTTP/1.0 ${response.status} ${reason}\r\nContent-Length: ${body.length}\r\nConnection: close\r\n\r\n`;
-            const head = new TextEncoder().encode(header);
-            const all = new Uint8Array(head.length + body.length);
-            all.set(head, 0);
-            all.set(body, head.length);
-            this.sockets[sock].pending = all;
+            const type = response.headers?.get('content-type') || '';
+            this.sockets[sock].pending = httpBytes(response.status, body, type);
             this.sockets[sock].pendingOff = 0;
             this.sockets[sock].fetchDone = true;
             this.pump(sock);
@@ -452,6 +523,13 @@ export default class Uthernet2 implements Card, Restorable<Uthernet2State> {
                 break;
             case CMD.SEND: {
                 const chunk = this.pullTx(sock);
+                if (proto === PROTO.MACRAW) {
+                    if (chunk.length) {
+                        this.mac.handle(Uint8Array.from(chunk));
+                    }
+                    this.drainMac(sock);
+                    break;
+                }
                 if (proto === PROTO.TCP && this.mem[regs + SOCK.SR] === SR.ESTABLISHED) {
                     const state = this.sockets[sock];
                     for (let i = 0; i < chunk.length; i++) {
@@ -532,7 +610,42 @@ export default class Uthernet2 implements Card, Restorable<Uthernet2State> {
         // No card ROM.
     }
 
+    /** Copy one MACRAW reply into the socket receive buffer. */
+    private enqueueMac(sock: number, frame: Uint8Array): boolean {
+        const packet = new Uint8Array(frame.length + 2);
+        const size = frame.length + 2;
+        packet[0] = size >> 8;
+        packet[1] = size & 0xff;
+        packet.set(frame, 2);
+        const { base, size: win } = this.window(false, sock);
+        if (win < 1 || packet.length > win - this.rxUsed(sock)) {
+            return false;
+        }
+        const mask = win - 1;
+        const state = this.sockets[sock];
+        for (let i = 0; i < packet.length; i++) {
+            this.mem[base + (state.rxWr & mask)] = packet[i];
+            state.rxWr = (state.rxWr + 1) & 0xffff;
+        }
+        return true;
+    }
+
+    private drainMac(sock: number) {
+        for (;;) {
+            const frame = this.mac.peek();
+            if (!frame) {
+                return;
+            }
+            if (!this.enqueueMac(sock, frame)) {
+                return;
+            }
+            this.mac.shift();
+        }
+    }
+
     tick() {
+        this.mac.poll();
+        this.drainMac(0);
         for (let sock = 0; sock < 4; sock++) {
             this.pump(sock);
         }

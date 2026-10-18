@@ -122,16 +122,16 @@ describe('Uthernet II', () => {
 
             await new Promise((resolve) => setTimeout(resolve, 0));
 
-            const called = String(
-                (fetchMock as jest.Mock).mock.calls[0][0]
+            const calls = (fetchMock as jest.Mock).mock.calls.map((args) =>
+                decodeURIComponent(String(args[0]))
             );
-            expect(decodeURIComponent(called)).toBe(
-                decodeURIComponent(
-                    fetchTarget(
+            expect(
+                calls.some((url) =>
+                    url.includes(
                         'http://a2.foumartgames.com/gridlock/get.php?hash=abc'
                     )
                 )
-            );
+            ).toBe(true);
             const received = readWord(card, 0x0526);
             expect(received).toBeGreaterThan(12);
 
@@ -148,6 +148,290 @@ describe('Uthernet II', () => {
             writeByte(card, 0x0501, 0x40);
             expect(readWord(card, 0x0526)).toBe(0);
             expect(readByte(card, 0x0503)).toBe(0x1c);
+        } finally {
+            global.fetch = previous;
+        }
+    });
+});
+
+function writeWord(card: Uthernet2, addr: number, value: number) {
+    setAddr(card, addr);
+    card.ioSwitch(DATA, (value >> 8) & 0xff);
+    card.ioSwitch(DATA, value & 0xff);
+}
+
+function openMacRaw(card: Uthernet2) {
+    card.ioSwitch(MODE, 0x13);
+    writeByte(card, 0x001a, 0x0a);
+    writeByte(card, 0x001b, 0x0a);
+    writeByte(card, 0x0400, 0x44);
+    writeByte(card, 0x0401, 0x01);
+}
+
+function sendFrame(card: Uthernet2, frame: Uint8Array) {
+    setAddr(card, 0x4000);
+    for (let i = 0; i < frame.length; i++) {
+        card.ioSwitch(DATA, frame[i]);
+    }
+    writeWord(card, 0x0422, 0);
+    writeWord(card, 0x0424, frame.length);
+    writeByte(card, 0x0401, 0x20);
+}
+
+function readFrame(card: Uthernet2): Uint8Array | null {
+    if (!readWord(card, 0x0426)) {
+        return null;
+    }
+    const rd = readWord(card, 0x0428);
+    setAddr(card, 0x6000 + (rd & 0x0fff));
+    const size = ((card.ioSwitch(DATA) ?? 0) << 8) | (card.ioSwitch(DATA) ?? 0);
+    const frame = new Uint8Array(Math.max(0, size - 2));
+    for (let i = 0; i < frame.length; i++) {
+        frame[i] = card.ioSwitch(DATA) ?? 0;
+    }
+    writeWord(card, 0x0428, (rd + size) & 0xffff);
+    writeByte(card, 0x0401, 0x40);
+    return frame;
+}
+
+function udpFrame(
+    payload: Uint8Array,
+    srcPort: number,
+    dstPort: number,
+    srcIp: number[],
+    dstIp: number[]
+): Uint8Array {
+    const udp = new Uint8Array(8 + payload.length);
+    udp[0] = srcPort >> 8;
+    udp[1] = srcPort & 0xff;
+    udp[2] = dstPort >> 8;
+    udp[3] = dstPort & 0xff;
+    udp[4] = udp.length >> 8;
+    udp[5] = udp.length & 0xff;
+    udp.set(payload, 8);
+    const ip = new Uint8Array(20 + udp.length);
+    ip[0] = 0x45;
+    ip[2] = ip.length >> 8;
+    ip[3] = ip.length & 0xff;
+    ip[8] = 64;
+    ip[9] = 17;
+    ip.set(srcIp, 12);
+    ip.set(dstIp, 16);
+    ip.set(udp, 20);
+    const frame = new Uint8Array(14 + ip.length);
+    frame.fill(0xff, 0, 6);
+    frame[6] = 0x00;
+    frame[7] = 0x08;
+    frame[8] = 0xdc;
+    frame[11] = 0xa2;
+    frame[12] = 0x08;
+    frame.set(ip, 14);
+    return frame;
+}
+
+function dhcp(kind: number): Uint8Array {
+    const boot = new Uint8Array(300);
+    boot[0] = 1;
+    boot[1] = 1;
+    boot[2] = 6;
+    boot[4] = 0x11;
+    boot[7] = 0x44;
+    boot[28] = 0x00;
+    boot[29] = 0x08;
+    boot[30] = 0xdc;
+    boot[33] = 0xa2;
+    boot[236] = 0x63;
+    boot[237] = 0x82;
+    boot[238] = 0x53;
+    boot[239] = 0x63;
+    boot[240] = 53;
+    boot[241] = 1;
+    boot[242] = kind;
+    boot[243] = 255;
+    return udpFrame(boot, 68, 67, [0, 0, 0, 0], [255, 255, 255, 255]);
+}
+
+function dnsQuery(name: string): Uint8Array {
+    const bytes = [0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    for (const label of name.split('.')) {
+        bytes.push(label.length);
+        for (let i = 0; i < label.length; i++) {
+            bytes.push(label.charCodeAt(i));
+        }
+    }
+    bytes.push(0, 0, 1, 0, 1);
+    return udpFrame(
+        Uint8Array.from(bytes),
+        1025,
+        53,
+        [192, 168, 1, 2],
+        [192, 168, 1, 1]
+    );
+}
+
+function tcpFrame(
+    seq: number,
+    ack: number,
+    flags: number,
+    payload: Uint8Array,
+    dstIp: number[]
+): Uint8Array {
+    const tcp = new Uint8Array(20 + payload.length);
+    tcp[0] = 0x04;
+    tcp[1] = 0x00;
+    tcp[2] = 0x00;
+    tcp[3] = 80;
+    tcp[4] = (seq >>> 24) & 0xff;
+    tcp[5] = (seq >>> 16) & 0xff;
+    tcp[6] = (seq >>> 8) & 0xff;
+    tcp[7] = seq & 0xff;
+    tcp[8] = (ack >>> 24) & 0xff;
+    tcp[9] = (ack >>> 16) & 0xff;
+    tcp[10] = (ack >>> 8) & 0xff;
+    tcp[11] = ack & 0xff;
+    tcp[12] = 0x50;
+    tcp[13] = flags;
+    tcp[14] = 0x10;
+    tcp.set(payload, 20);
+    const ip = new Uint8Array(20 + tcp.length);
+    ip[0] = 0x45;
+    ip[2] = ip.length >> 8;
+    ip[3] = ip.length & 0xff;
+    ip[8] = 64;
+    ip[9] = 6;
+    ip.set([192, 168, 1, 2], 12);
+    ip.set(dstIp, 16);
+    ip.set(tcp, 20);
+    const frame = new Uint8Array(14 + ip.length);
+    frame[6] = 0x00;
+    frame[7] = 0x08;
+    frame[8] = 0xdc;
+    frame[11] = 0xa2;
+    frame[12] = 0x08;
+    frame.set(ip, 14);
+    return frame;
+}
+
+function udpChecksumOk(frame: Uint8Array): boolean {
+    const ip = frame.subarray(14);
+    const total = (ip[2] << 8) | ip[3];
+    const udp = ip.subarray(20, total);
+    let sum = 0;
+    for (let i = 12; i < 20; i += 2) {
+        sum += (ip[i] << 8) | ip[i + 1];
+    }
+    sum += ip[9];
+    sum += udp.length;
+    for (let i = 0; i + 1 < udp.length; i += 2) {
+        sum += (udp[i] << 8) | udp[i + 1];
+    }
+    while (sum >>> 16) {
+        sum = (sum & 0xffff) + (sum >>> 16);
+    }
+    return sum === 0xffff;
+}
+
+function ipPayload(frame: Uint8Array): Uint8Array {
+    const ip = frame.subarray(14);
+    const total = (ip[2] << 8) | ip[3];
+    const ihl = (ip[0] & 0x0f) * 4;
+    return ip.subarray(ihl, total);
+}
+
+describe('Uthernet II MACRAW', () => {
+    it('offers a DHCP lease, answers DNS, and returns an HTTP body', async () => {
+        const payload = new Uint8Array([0x48, 0x69]);
+        const previous = global.fetch;
+        global.fetch = jest.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes('uthernet-net.php')) {
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({
+                        ip: '192.168.68.52',
+                        mask: '255.255.252.0',
+                        gateway: '192.168.68.1',
+                        dns: '192.168.100.1',
+                    }),
+                };
+            }
+            if (url.includes('uthernet-dns.php')) {
+                return { ok: true, status: 200, text: async () => '93.184.216.34' };
+            }
+            return {
+                ok: true,
+                status: 200,
+                arrayBuffer: async () =>
+                    payload.buffer.slice(
+                        payload.byteOffset,
+                        payload.byteOffset + payload.byteLength
+                    ),
+            };
+        }) as unknown as typeof fetch;
+
+        try {
+            const card = new Uthernet2();
+            openMacRaw(card);
+            expect(readByte(card, 0x0403)).toBe(0x42);
+
+            sendFrame(card, dhcp(1));
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            const offer = readFrame(card);
+            expect(offer).not.toBeNull();
+            const offerBoot = ipPayload(offer as Uint8Array).subarray(8);
+            expect(offerBoot[0]).toBe(2);
+            expect(Array.from(offerBoot.subarray(16, 20))).toEqual([192, 168, 68, 52]);
+            expect(offerBoot[242]).toBe(2);
+            expect(udpChecksumOk(offer as Uint8Array)).toBe(true);
+
+            sendFrame(card, dhcp(3));
+            const ack = readFrame(card);
+            expect(ipPayload(ack as Uint8Array).subarray(8)[242]).toBe(5);
+
+            sendFrame(card, dnsQuery('example.com'));
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            const dns = readFrame(card);
+            const dnsBody = ipPayload(dns as Uint8Array).subarray(8);
+            expect(dnsBody[0]).toBe(0x00);
+            expect(dnsBody[7]).toBe(1);
+            expect(dnsBody[dnsBody.length - 6]).toBe(0);
+            expect(dnsBody[dnsBody.length - 5]).toBe(4);
+            const answer = dnsBody.subarray(dnsBody.length - 4);
+            expect(Array.from(answer)).toEqual([93, 184, 216, 34]);
+
+            sendFrame(
+                card,
+                tcpFrame(1000, 0, 0x02, new Uint8Array(0), [93, 184, 216, 34])
+            );
+            const synAck = readFrame(card);
+            expect(ipPayload(synAck as Uint8Array)[13]).toBe(0x12);
+
+            const req = new TextEncoder().encode(
+                'GET /hello HTTP/1.0\r\nHost: example.com\r\n\r\n'
+            );
+            sendFrame(card, tcpFrame(1001, 0x1001, 0x18, req, [93, 184, 216, 34]));
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            card.tick();
+
+            let text = '';
+            for (let i = 0; i < 6; i++) {
+                const frame = readFrame(card);
+                if (!frame) {
+                    break;
+                }
+                const tcp = ipPayload(frame);
+                const hlen = ((tcp[12] >> 4) & 0x0f) * 4;
+                for (let n = hlen; n < tcp.length; n++) {
+                    text += String.fromCharCode(tcp[n]);
+                }
+            }
+            expect(text.startsWith('HTTP/1.0 200')).toBe(true);
+            expect(text.endsWith('Hi')).toBe(true);
+            const calls = (global.fetch as jest.Mock).mock.calls.map((args) =>
+                decodeURIComponent(String(args[0]))
+            );
+            expect(calls.some((url) => url.includes('http://example.com/hello'))).toBe(true);
         } finally {
             global.fetch = previous;
         }
