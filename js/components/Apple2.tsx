@@ -19,6 +19,7 @@ import { Screen } from './Screen';
 import { Drives } from './Drives';
 import { Slinky } from './Slinky';
 import { ThunderClock } from './ThunderClock';
+import { Uthernet } from './Uthernet';
 import { Videoterm } from './Videoterm';
 import { spawn, Ready } from './util/promises';
 
@@ -176,7 +177,7 @@ export const Apple2 = (props: Apple2Props) => {
                     <LanguageCard cpu={cpu} io={io} rom={rom} slot={0} />
                 ) : null}
                 <Slinky io={io} slot={2} />
-                {!e ? <Videoterm io={io} slot={3} /> : null}
+                {!e ? <Videoterm io={io} slot={3} /> : <Uthernet io={io} slot={3} />}
                 <Mouse cpu={cpu} screenRef={screenRef} io={io} slot={4} />
                 <ThunderClock io={io} slot={5} />
                 <Inset>

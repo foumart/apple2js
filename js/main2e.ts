@@ -10,6 +10,7 @@ import RAMFactor from './cards/ramfactor';
 import SmartPort from './cards/smartport';
 import Thunderclock from './cards/thunderclock';
 import Mouse from './cards/mouse';
+import Uthernet2 from './cards/uthernet2';
 
 import { Apple2 } from './apple2';
 import { handleResize } from './resize';
@@ -79,8 +80,11 @@ apple2.ready
         const smartport = new SmartPort(cpu, driveLights, { block: !enhanced });
         const mouse = new Mouse(cpu, mouseUI);
 
+        const uthernet = new Uthernet2();
+
         io.setSlot(1, parallel);
         io.setSlot(2, slinky);
+        io.setSlot(3, uthernet);
         io.setSlot(4, mouse);
         io.setSlot(5, clock);
         io.setSlot(6, disk2);
