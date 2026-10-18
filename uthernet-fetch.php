@@ -6,6 +6,7 @@
  * returns the body. Private and loopback addresses are refused.
  */
 header('Cache-Control: no-store');
+header('Access-Control-Allow-Origin: *');
 
 $url = isset($_GET['url']) ? $_GET['url'] : '';
 $body = load_public_url($url);

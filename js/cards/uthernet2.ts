@@ -181,6 +181,13 @@ export function fetchTarget(url: string): string {
 }
 
 /**
+ * Used only when this page's own uthernet-fetch.php is returned as source
+ * instead of being run. That host does execute the script.
+ */
+const PUBLIC_RELAY =
+    'https://foumartgames.com/extensions/AppleIIe/uthernet-fetch.php';
+
+/**
  * Plain HTTP is what the Apple sends. When that host answers only on
  * HTTPS, load the secure URL and still hand the Apple a plain response.
  */
@@ -190,16 +197,54 @@ async function loadUrl(url: string): Promise<Response> {
     if (mode === 'https' && target.startsWith('http://')) {
         target = `https://${target.slice('http://'.length)}`;
     }
-    const first = await fetch(fetchTarget(target));
+    let response = await loadThroughProxy(fetchTarget(target));
     if (
-        mode !== 'https-fallback' ||
-        first.ok ||
-        !target.startsWith('http://') ||
-        first.status !== 502
+        mode === 'https-fallback' &&
+        !response.ok &&
+        response.status === 502 &&
+        target.startsWith('http://')
     ) {
-        return first;
+        response = await loadThroughProxy(
+            fetchTarget(`https://${target.slice('http://'.length)}`)
+        );
     }
-    return fetch(fetchTarget(`https://${target.slice('http://'.length)}`));
+    if (!(await isUnparsedProxy(response))) {
+        return response;
+    }
+    try {
+        const relay = await loadThroughProxy(
+            `${PUBLIC_RELAY}?url=${encodeURIComponent(target)}`
+        );
+        if (!(await isUnparsedProxy(relay))) {
+            return relay;
+        }
+    } catch {
+        /* The public relay could not be read. */
+    }
+    return new Response('proxy was not executed', {
+        status: 502,
+        headers: { 'content-type': 'text/plain' },
+    });
+}
+
+async function loadThroughProxy(pageUrl: string): Promise<Response> {
+    return fetch(pageUrl, { cache: 'no-store' });
+}
+
+/** The web server handed back the PHP file instead of running it. */
+async function isUnparsedProxy(response: Response): Promise<boolean> {
+    if (typeof response.clone !== 'function') {
+        return false;
+    }
+    const bytes = new Uint8Array(await response.clone().arrayBuffer());
+    return (
+        bytes.length >= 5 &&
+        bytes[0] === 0x3c &&
+        bytes[1] === 0x3f &&
+        bytes[2] === 0x70 &&
+        bytes[3] === 0x68 &&
+        bytes[4] === 0x70
+    );
 }
 
 async function loadNetwork(): Promise<import('./uthernet_settings').NetConfig | null> {
