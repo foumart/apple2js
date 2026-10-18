@@ -9,14 +9,8 @@ header('Content-Type: application/json');
 
 $config = lan_config();
 if ($config === null) {
-    // This host has no visible LAN (shell access disabled, or a public
-    // web server). DHCP still needs an answer or IPCONFIG waits forever.
-    $config = array(
-        'ip' => '192.168.68.52',
-        'mask' => '255.255.252.0',
-        'gateway' => '192.168.68.1',
-        'dns' => '192.168.100.1',
-    );
+    echo 'null';
+    exit;
 }
 echo json_encode($config);
 

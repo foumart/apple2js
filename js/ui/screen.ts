@@ -289,7 +289,7 @@ export class Screen implements OptionHandler {
                 this.repaint();
                 this.waitForParentElement("scanlines_slide").then((element: HTMLElement) => {
                     element.getElementsByTagName("label")[0].innerHTML =
-                        `Opacity: ${value}`;
+                        `Alpha: ${value}`;
                 });
                 break;
             case SCREEN_SMOOTH:

@@ -34,6 +34,7 @@ import Apple2IO from '../apple2io';
 import Printer from './printer';
 
 import { OptionsModal } from './options_modal';
+import { Network } from './network';
 import { Screen, SCREEN_FULL_PAGE } from './screen';
 import { JoyStick } from './joystick';
 import { System } from './system';
@@ -1050,6 +1051,8 @@ async function onLoaded(
 
     audio = new Audio(io, initSoundToggle);
     options.addOptions(audio);
+
+    options.addOptions(new Network());
     initSoundToggle();
     initKeyboardToggle();
 

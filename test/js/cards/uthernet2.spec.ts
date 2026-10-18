@@ -349,10 +349,10 @@ describe('Uthernet II MACRAW', () => {
                     ok: true,
                     status: 200,
                     json: async () => ({
-                        ip: '192.168.68.52',
-                        mask: '255.255.252.0',
-                        gateway: '192.168.68.1',
-                        dns: '192.168.100.1',
+                        ip: '10.4.4.10',
+                        mask: '255.255.255.0',
+                        gateway: '10.4.4.1',
+                        dns: '10.4.4.1',
                     }),
                 };
             }
@@ -381,7 +381,7 @@ describe('Uthernet II MACRAW', () => {
             expect(offer).not.toBeNull();
             const offerBoot = ipPayload(offer as Uint8Array).subarray(8);
             expect(offerBoot[0]).toBe(2);
-            expect(Array.from(offerBoot.subarray(16, 20))).toEqual([192, 168, 68, 52]);
+            expect(Array.from(offerBoot.subarray(16, 20))).toEqual([10, 4, 4, 10]);
             expect(offerBoot[242]).toBe(2);
             expect(udpChecksumOk(offer as Uint8Array)).toBe(true);
 

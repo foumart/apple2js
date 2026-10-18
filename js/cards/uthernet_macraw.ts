@@ -1,4 +1,10 @@
 import { debug } from '../util';
+import {
+    getUthernetPrefs,
+    manualNet,
+    NetConfig,
+    onUthernetPrefs,
+} from './uthernet_settings';
 
 /**
  * Answers the Ethernet frames Contiki (and any other MACRAW stack) sends.
@@ -11,22 +17,6 @@ const GATEWAY_MAC = [0x02, 0x00, 0x00, 0x00, 0x00, 0x01];
 
 const ETH_IP = 0x0800;
 const ETH_ARP = 0x0806;
-
-/** IPv4 settings of the machine running the relay, in wire order. */
-export interface NetConfig {
-    ip: number[];
-    mask: number[];
-    gateway: number[];
-    dns: number[];
-}
-
-/** Used when the relay cannot see a LAN. */
-const FALLBACK_NET: NetConfig = {
-    ip: [192, 168, 68, 52],
-    mask: [255, 255, 252, 0],
-    gateway: [192, 168, 68, 1],
-    dns: [192, 168, 100, 1],
-};
 
 export interface MacRawHooks {
     /** Load a URL the emulated stack asked for. */
@@ -84,7 +74,29 @@ export default class MacRawHost {
     private clientIp = [0, 0, 0, 0];
 
     constructor(private readonly hooks: MacRawHooks) {
+        onUthernetPrefs(() => this.applyAddressChoice());
         this.requestNet();
+    }
+
+    private applyAddressChoice() {
+        const prefs = getUthernetPrefs();
+        if (prefs.addressMode !== 'manual') {
+            this.net = null;
+            this.netStarted = false;
+            this.requestNet();
+            return;
+        }
+        const manual = manualNet(prefs);
+        if (!manual) {
+            return;
+        }
+        this.net = manual;
+        const held = this.dhcpHold;
+        this.dhcpHold = null;
+        if (held) {
+            this.dhcp(held);
+            this.flush();
+        }
     }
 
     reset() {
@@ -291,29 +303,38 @@ export default class MacRawHost {
         );
     }
 
+    private finishNet(net: NetConfig) {
+        if (getUthernetPrefs().addressMode === 'manual') {
+            return;
+        }
+        this.net = net;
+        const held = this.dhcpHold;
+        this.dhcpHold = null;
+        if (held) {
+            this.dhcp(held);
+            this.flush();
+        }
+    }
+
     private requestNet() {
+        if (getUthernetPrefs().addressMode === 'manual') {
+            this.applyAddressChoice();
+            return;
+        }
         if (this.netStarted) {
             return;
         }
         this.netStarted = true;
         void this.hooks.network().then(
             (net) => {
-                this.net = net || FALLBACK_NET;
-                const held = this.dhcpHold;
-                this.dhcpHold = null;
-                if (held) {
-                    this.dhcp(held);
-                    this.flush();
+                if (net) {
+                    this.finishNet(net);
+                } else {
+                    this.netStarted = false;
                 }
             },
             () => {
-                this.net = FALLBACK_NET;
-                const held = this.dhcpHold;
-                this.dhcpHold = null;
-                if (held) {
-                    this.dhcp(held);
-                    this.flush();
-                }
+                this.netStarted = false;
             }
         );
     }

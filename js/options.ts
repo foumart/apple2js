@@ -6,6 +6,7 @@ export const SLIDER_OPTION = 'SLIDER_OPTION';
 export const RADIO_OPTION = 'RADIO_OPTION';
 export const LABEL_OPTION = 'LABEL_OPTION';
 export const ACTION_OPTION = 'ACTION_OPTION';
+export const TEXT_OPTION = 'TEXT_OPTION';
 
 export interface Option {
     name: string;
@@ -49,6 +50,11 @@ export interface ActionOption extends Option {
     defaultVal: '';
 }
 
+export interface TextOption extends Option {
+    type: typeof TEXT_OPTION;
+    defaultVal: string;
+}
+
 export interface OptionSection {
     name: string;
     options: Option[];
@@ -80,9 +86,18 @@ export class Options {
                     continue;
                 }
                 const value = this.getOption(name);
-                if (value != null) {
-                    handler.setOption(name, isNaN(Number(value)) ? 1 : value);
+                if (value == null) {
+                    continue;
                 }
+                if (
+                    type === SELECT_OPTION ||
+                    type === RADIO_OPTION ||
+                    type === TEXT_OPTION
+                ) {
+                    handler.setOption(name, String(value));
+                    continue;
+                }
+                handler.setOption(name, isNaN(Number(value)) ? 1 : value);
             }
             this.sections.push(section);
         }

@@ -4,6 +4,7 @@ import {
     BOOLEAN_OPTION,
     LABEL_OPTION,
     SELECT_OPTION,
+    TEXT_OPTION,
     RADIO_OPTION,
     Option,
     OptionSection,
@@ -14,7 +15,7 @@ import {
     SliderOption,
 } from '../options';
 
-type OptionsPanelId = 'screen' | 'audio' | 'joystick' | 'system';
+type OptionsPanelId = 'screen' | 'audio' | 'joystick' | 'system' | 'network';
 
 const PANEL_EDGE_MARGIN = 5;
 
@@ -25,6 +26,9 @@ const SECTION_PANEL: Record<string, OptionsPanelId> = {
     Joystick: 'joystick',
     Type: 'system',
     'CPU Speed': 'system',
+    Card: 'network',
+    Address: 'network',
+    Web: 'network',
 };
 
 const PANEL_IDS: Record<OptionsPanelId, string> = {
@@ -32,10 +36,17 @@ const PANEL_IDS: Record<OptionsPanelId, string> = {
     audio: 'options-panel-audio',
     joystick: 'options-panel-joystick',
     system: 'options-panel-system',
+    network: 'options-panel-network',
 };
 
 // Canonical top-to-bottom order of panels within the dock.
-const PANEL_ORDER: OptionsPanelId[] = ['screen', 'joystick', 'audio', 'system'];
+const PANEL_ORDER: OptionsPanelId[] = [
+    'screen',
+    'joystick',
+    'audio',
+    'network',
+    'system',
+];
 
 // Pixels the pointer must travel before a docked panel pops out for dragging.
 const DRAG_THRESHOLD = 4;
@@ -102,6 +113,7 @@ export class OptionsModal {
             audio: this.getPanelBody('audio'),
             joystick: this.getPanelBody('joystick'),
             system: this.getPanelBody('system'),
+            network: this.getPanelBody('network'),
         };
     }
 
@@ -131,7 +143,12 @@ export class OptionsModal {
         const block = document.createElement('div');
         block.className = 'options-section';
 
-        const skipSectionHeader = name === 'Joystick' || name === 'Audio';
+        const skipSectionHeader =
+            name === 'Joystick' ||
+            name === 'Audio' ||
+            name === 'Card' ||
+            name === 'Address' ||
+            name === 'Web';
         const listOptions: Option[] = [];
 
         if (!skipSectionHeader) {
@@ -254,6 +271,16 @@ export class OptionsModal {
                     listItem.appendChild(container);
                     return listItem;
                 }
+            case TEXT_OPTION:
+                {
+                    const inputElement = document.createElement('input');
+                    inputElement.setAttribute('type', 'text');
+                    inputElement.value = String(
+                        this.options.getOption(name) ?? ''
+                    );
+                    element = inputElement;
+                }
+                break;
             case SLIDER_OPTION:
                 {
                     const selectOption = option as SliderOption;
@@ -296,7 +323,7 @@ export class OptionsModal {
             labelElement.textContent = `${value} mHz`;
         } else if (name == 'scanlines_slide') {
             const value = this.options.getOption('scanlines_slide') as number;
-            labelElement.textContent = `Opacity: ${value}`;
+            labelElement.textContent = `Alpha: ${value}`;
             const disabled = !this.options.getOption(
                 'show_scanlines'
             ) as boolean;
@@ -725,6 +752,7 @@ export class OptionsModal {
             pauseBtn.textContent = paused ? 'Run' : 'Pause';
         }
 
+        document.dispatchEvent(new Event('apple2:options-open'));
         MicroModal.show('options-modal');
     };
 

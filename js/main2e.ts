@@ -11,6 +11,7 @@ import SmartPort from './cards/smartport';
 import Thunderclock from './cards/thunderclock';
 import Mouse from './cards/mouse';
 import Uthernet2 from './cards/uthernet2';
+import { bindUthernet } from './ui/network';
 
 import { Apple2 } from './apple2';
 import { handleResize } from './resize';
@@ -85,6 +86,7 @@ apple2.ready
         io.setSlot(1, parallel);
         io.setSlot(2, slinky);
         io.setSlot(3, uthernet);
+        bindUthernet(io, uthernet);
         io.setSlot(4, mouse);
         io.setSlot(5, clock);
         io.setSlot(6, disk2);

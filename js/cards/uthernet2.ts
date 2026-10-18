@@ -1,6 +1,7 @@
 import { debug } from '../util';
 import { Card, Restorable, byte } from '../types';
 import MacRawHost, { httpBytes } from './uthernet_macraw';
+import { getUthernetPrefs } from './uthernet_settings';
 
 /**
  * Uthernet II is a WIZnet W5100 on the slot I/O bus ($C0n4-$C0n7).
@@ -184,25 +185,33 @@ export function fetchTarget(url: string): string {
  * HTTPS, load the secure URL and still hand the Apple a plain response.
  */
 async function loadUrl(url: string): Promise<Response> {
-    const first = await fetch(fetchTarget(url));
-    if (first.ok || !url.startsWith('http://') || first.status !== 502) {
+    const mode = getUthernetPrefs().web;
+    let target = url;
+    if (mode === 'https' && target.startsWith('http://')) {
+        target = `https://${target.slice('http://'.length)}`;
+    }
+    const first = await fetch(fetchTarget(target));
+    if (
+        mode !== 'https-fallback' ||
+        first.ok ||
+        !target.startsWith('http://') ||
+        first.status !== 502
+    ) {
         return first;
     }
-    return fetch(fetchTarget(`https://${url.slice('http://'.length)}`));
+    return fetch(fetchTarget(`https://${target.slice('http://'.length)}`));
 }
 
-async function loadNetwork(): Promise<import('./uthernet_macraw').NetConfig | null> {
+async function loadNetwork(): Promise<import('./uthernet_settings').NetConfig | null> {
     try {
         const response = await fetch('uthernet-net.php');
         if (!response.ok) {
             return null;
         }
-        const body = (await response.json()) as {
-            ip?: string;
-            mask?: string;
-            gateway?: string;
-            dns?: string;
-        };
+        const body = await readJson(response);
+        if (!body) {
+            return null;
+        }
         const ip = parseIp(body.ip);
         const mask = parseIp(body.mask);
         const gateway = parseIp(body.gateway);
@@ -214,6 +223,25 @@ async function loadNetwork(): Promise<import('./uthernet_macraw').NetConfig | nu
     } catch {
         return null;
     }
+}
+
+async function readJson(
+    response: Response
+): Promise<{ ip?: string; mask?: string; gateway?: string; dns?: string } | null> {
+    const text = (await response.text()).trim();
+    if (!text) {
+        return null;
+    }
+    const body = JSON.parse(text) as {
+        ip?: string;
+        mask?: string;
+        gateway?: string;
+        dns?: string;
+    } | null;
+    if (!body || typeof body !== 'object') {
+        return null;
+    }
+    return body;
 }
 
 async function resolveName(name: string): Promise<string | null> {

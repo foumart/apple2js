@@ -1590,6 +1590,54 @@ body.embedded-page.apple2e #display {
     accent-color: #0f0;
 }
 
+#options-modal .options-panel--network select {
+    margin-right: 0.7em;
+}
+
+#options-modal .options-panel--network #uthernet_slot,
+#options-modal .options-panel--network #uthernet_address,
+#options-modal .options-panel--network #uthernet_web {
+    height: 20px;
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+
+#options-modal .options-panel--network li:has(#uthernet_enabled) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#options-modal .options-panel--network label[for='uthernet_enabled'] {
+    line-height: 8px;
+}
+
+#options-modal .options-panel--network .options-panel-body {
+    padding: 2px 8px;
+}
+
+#options-modal .options-panel--network input[type='text'] {
+    width: 120px;
+    box-sizing: border-box;
+    margin-right: 5px;
+    font-family: 'PrintChar', sans-serif;
+    font-size: 8px;
+    color: #0f0;
+    cursor: text;
+    background: #2a2a2a;
+    border: 1px solid #363;
+    padding: 1px 4px;
+}
+
+#options-modal .options-panel--network input[type='text']:disabled {
+    color: #c8c8c8;
+    background: #1a1a1a;
+    opacity: 1;
+    cursor: default;
+    user-select: none;
+    -webkit-text-fill-color: #c8c8c8;
+}
+
 #options-modal .options-panel--system select,
 #options-modal #computer_type2e,
 #options-modal #computer_type2 {

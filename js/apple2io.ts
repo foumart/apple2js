@@ -423,7 +423,7 @@ export default class Apple2IO
         );
     }
 
-    setSlot(slot: slot, card: Card) {
+    setSlot(slot: slot, card: Card | null) {
         this._slot[slot] = card;
     }
 
