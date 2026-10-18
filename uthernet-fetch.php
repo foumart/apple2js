@@ -6,7 +6,11 @@
  * returns the body. Private and loopback addresses are refused.
  */
 header('Cache-Control: no-store');
-header('Access-Control-Allow-Origin: *');
+$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+if (preg_match('#^https?://(localhost|127\\.0\\.0\\.1)(:\\d+)?$#', $origin)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Vary: Origin');
+}
 
 $url = isset($_GET['url']) ? $_GET['url'] : '';
 $body = load_public_url($url);

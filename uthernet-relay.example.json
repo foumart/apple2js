@@ -1,0 +1,4 @@
+{
+    "relay": "",
+    "_comment": "Rename this file as uthernet-relay.json and set relay to the uthernet-fetch.php URL on a host that runs PHP. Leave relay empty to disable."
+}

@@ -181,15 +181,9 @@ export function fetchTarget(url: string): string {
 }
 
 /**
- * Used only when this page's own uthernet-fetch.php is returned as source
- * instead of being run. That host does execute the script.
- */
-const PUBLIC_RELAY =
-    'https://foumartgames.com/extensions/AppleIIe/uthernet-fetch.php';
-
-/**
  * Plain HTTP is what the Apple sends. When that host answers only on
  * HTTPS, load the secure URL and still hand the Apple a plain response.
+ * The fetch always goes to uthernet-fetch.php beside this page.
  */
 async function loadUrl(url: string): Promise<Response> {
     const mode = getUthernetPrefs().web;
@@ -211,21 +205,43 @@ async function loadUrl(url: string): Promise<Response> {
     if (!(await isUnparsedProxy(response))) {
         return response;
     }
-    try {
-        const relay = await loadThroughProxy(
-            `${PUBLIC_RELAY}?url=${encodeURIComponent(target)}`
-        );
-        if (!(await isUnparsedProxy(relay))) {
-            return relay;
+    const relay = await configuredRelay();
+    if (relay && !relay.startsWith(window.location.origin)) {
+        try {
+            const remote = await loadThroughProxy(
+                `${relay}?url=${encodeURIComponent(target)}`
+            );
+            if (!(await isUnparsedProxy(remote))) {
+                return remote;
+            }
+        } catch {
+            /* The relay in uthernet-relay.json could not be read. */
         }
-    } catch {
-        /* The public relay could not be read. */
     }
     return new Response('proxy was not executed', {
         status: 502,
         headers: { 'content-type': 'text/plain' },
     });
 }
+
+/** Optional relay from uthernet-relay.json. Empty when that file is absent. */
+function configuredRelay(): Promise<string | null> {
+    if (!relayLookup) {
+        relayLookup = fetch('uthernet-relay.json', { cache: 'no-store' })
+            .then(async (response) => {
+                if (!response.ok) {
+                    return null;
+                }
+                const body = (await response.json()) as { relay?: string };
+                const relay = (body.relay || '').trim().replace(/\/$/, '');
+                return /^https?:\/\//i.test(relay) ? relay : null;
+            })
+            .catch(() => null);
+    }
+    return relayLookup;
+}
+
+let relayLookup: Promise<string | null> | null = null;
 
 async function loadThroughProxy(pageUrl: string): Promise<Response> {
     return fetch(pageUrl, { cache: 'no-store' });
