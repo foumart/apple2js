@@ -33,7 +33,8 @@ try {
         @{ Src = "dist\audio_worker.bundle.js";    Dst = "dist\audio_worker.bundle.js" },
         @{ Src = "dist\format_worker.bundle.js";   Dst = "dist\format_worker.bundle.js" },
         @{ Src = "css\apple2.css";                 Dst = "css\apple2.css" },
-        @{ Src = "apple2jse.html";                 Dst = "index.html" }
+        @{ Src = "apple2jse.html";                 Dst = "index.html" },
+        @{ Src = "uthernet-fetch.php";            Dst = "uthernet-fetch.php" }
     )
 
     foreach ($item in $copies) {

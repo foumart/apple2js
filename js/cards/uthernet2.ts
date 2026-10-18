@@ -6,10 +6,10 @@ import { Card, Restorable, byte } from '../types';
  * This is the virtual-W5100 subset AppleWin uses for DNS offload:
  * https://github.com/a2retrosystems/uthernet2/wiki/Virtual-W5100-with-DNS
  *
- * IP65's driver (drivers/w5100.s) must pass its probe, then GridLock's
- * WGET opens a TCP socket by hostname and writes a plain HTTP request.
- * The browser cannot open that TCP socket, so a finished request is
- * satisfied with fetch() and the response is handed back as HTTP bytes.
+ * IP65's driver (drivers/w5100.s) must pass its probe. Software such as
+ * WGET then opens a TCP socket by hostname and writes a plain HTTP request.
+ * The browser cannot open that socket, so a finished request is fetched
+ * by uthernet-fetch.php on this page's host and handed back as HTTP bytes.
  */
 
 const MEM_SIZE = 0x8000;
@@ -163,25 +163,20 @@ export function requestUrl(raw: string, dnsHost: string, port: number): string |
     if (!path.startsWith('/')) {
         path = `/${path}`;
     }
-    if (port && port !== 80 && host.indexOf(':') < 0) {
+    const scheme = port === 443 ? 'https' : 'http';
+    if (port && port !== 80 && port !== 443 && host.indexOf(':') < 0) {
         host = `${host}:${port}`;
     }
-    return `http://${host}${path}`;
+    return `${scheme}://${host}${path}`;
 }
 
 /**
- * The stage host does not send Access-Control-Allow-Origin. A page served
- * from that host can fetch it directly. From localhost, Apache fetches it.
+ * Ask this page's own host to load the URL. A page cannot fetch arbitrary
+ * sites itself: an HTTPS emulator page is not allowed to read an HTTP URL,
+ * and other origins do not send Access-Control-Allow-Origin.
  */
 export function fetchTarget(url: string): string {
-    if (typeof location === 'undefined') {
-        return url;
-    }
-    const host = location.hostname;
-    if (host !== 'localhost' && host !== '127.0.0.1') {
-        return url;
-    }
-    return `gridlock-fetch.php?url=${encodeURIComponent(url)}`;
+    return `uthernet-fetch.php?url=${encodeURIComponent(url)}`;
 }
 
 export default class Uthernet2 implements Card, Restorable<Uthernet2State> {

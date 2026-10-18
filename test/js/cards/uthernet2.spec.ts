@@ -62,6 +62,10 @@ describe('Uthernet II', () => {
         expect(requestUrl(raw, 'a2.foumartgames.com', 80)).toBe(
             'http://a2.foumartgames.com/gridlock/get.php?hash=abc&min=08&max=40'
         );
+        expect(fetchTarget('http://example.com/anything')).toBe(
+            'uthernet-fetch.php?url=' +
+                encodeURIComponent('http://example.com/anything')
+        );
     });
 
     it('resolves a hostname and returns the fetch body as HTTP/1.0', async () => {
