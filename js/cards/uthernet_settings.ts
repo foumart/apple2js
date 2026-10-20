@@ -9,6 +9,18 @@ export interface NetConfig {
     dns: number[];
 }
 
+/**
+ * Lease handed to Contiki when the real LAN is unknown: on a hosted page,
+ * or a dev server without PHP. Nothing leaves the browser on this subnet;
+ * it only has to be a valid private network.
+ */
+export const VIRTUAL_NET: NetConfig = {
+    ip: [10, 0, 0, 2],
+    mask: [255, 255, 255, 0],
+    gateway: [10, 0, 0, 1],
+    dns: [10, 0, 0, 1],
+};
+
 export interface UthernetPrefs {
     enabled: boolean;
     slot: number;

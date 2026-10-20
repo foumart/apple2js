@@ -3,11 +3,16 @@
  * LAN address of the machine running the emulator relay.
  * Contiki's DHCP request is answered with these values, so the Apple
  * sits on this network instead of an invented subnet.
+ *
+ * Only a browser on this same machine gets an answer. Anyone else would
+ * learn this server's internal addresses, and they are not on its LAN
+ * anyway; they get null and the emulator uses a virtual network.
  */
-header('Cache-Control: no-store');
+require __DIR__ . '/uthernet-guard.php';
+uthernet_guard('net');
 header('Content-Type: application/json');
 
-$config = lan_config();
+$config = uthernet_local_machine() ? lan_config() : null;
 if ($config === null) {
     echo 'null';
     exit;

@@ -1,7 +1,7 @@
 import { debug } from '../util';
 import { Card, Restorable, byte } from '../types';
-import MacRawHost, { httpBytes } from './uthernet_macraw';
-import { getUthernetPrefs } from './uthernet_settings';
+import MacRawHost, { httpBytes, pageType } from './uthernet_macraw';
+import { getUthernetPrefs, NetConfig, VIRTUAL_NET } from './uthernet_settings';
 
 /**
  * Uthernet II is a WIZnet W5100 on the slot I/O bus ($C0n4-$C0n7).
@@ -183,7 +183,6 @@ export function fetchTarget(url: string): string {
 /**
  * Plain HTTP is what the Apple sends. When that host answers only on
  * HTTPS, load the secure URL and still hand the Apple a plain response.
- * The fetch always goes to uthernet-fetch.php beside this page.
  */
 async function loadUrl(url: string): Promise<Response> {
     const mode = getUthernetPrefs().web;
@@ -191,40 +190,58 @@ async function loadUrl(url: string): Promise<Response> {
     if (mode === 'https' && target.startsWith('http://')) {
         target = `https://${target.slice('http://'.length)}`;
     }
-    let response = await loadThroughProxy(fetchTarget(target));
+    let response = await callScript(fetchTarget(target));
     if (
+        response &&
         mode === 'https-fallback' &&
-        !response.ok &&
         response.status === 502 &&
         target.startsWith('http://')
     ) {
-        response = await loadThroughProxy(
+        response = await callScript(
             fetchTarget(`https://${target.slice('http://'.length)}`)
         );
     }
-    if (!(await isUnparsedProxy(response))) {
-        return response;
-    }
-    const relay = await configuredRelay();
-    if (relay && !relay.startsWith(window.location.origin)) {
-        try {
-            const remote = await loadThroughProxy(
-                `${relay}?url=${encodeURIComponent(target)}`
-            );
-            if (!(await isUnparsedProxy(remote))) {
-                return remote;
-            }
-        } catch {
-            /* The relay in uthernet-relay.json could not be read. */
-        }
-    }
-    return new Response('proxy was not executed', {
-        status: 502,
-        headers: { 'content-type': 'text/plain' },
-    });
+    return (
+        response ??
+        new Response('proxy was not executed', {
+            status: 502,
+            headers: { 'content-type': 'text/plain' },
+        })
+    );
 }
 
-/** Optional relay from uthernet-relay.json. Empty when that file is absent. */
+/**
+ * Run one of the uthernet-*.php scripts. The copy beside this page is
+ * tried first. A dev server without PHP (webpack, browser-sync) returns
+ * the script's source or a 404 instead, and then the relay named in
+ * uthernet-relay.json is used. Null when neither ran.
+ */
+async function callScript(path: string): Promise<Response | null> {
+    const local = await tryScript(path);
+    if (local) {
+        return local;
+    }
+    const relay = await configuredRelay();
+    return relay ? tryScript(relay + path) : null;
+}
+
+async function tryScript(url: string): Promise<Response | null> {
+    try {
+        const response = await fetch(url, { cache: 'no-store' });
+        // uthernet-guard.php marks every response from a script that ran.
+        return response.headers?.get('x-uthernet') === '1' ? response : null;
+    } catch {
+        return null;
+    }
+}
+
+let relayLookup: Promise<string | null> | null = null;
+
+/**
+ * Folder holding the relay scripts, from uthernet-relay.json. Older files
+ * name uthernet-fetch.php itself; the other scripts sit beside it. Null
+ * when the file is absent or points back at this page's own folder.
+ */
 function configuredRelay(): Promise<string | null> {
     if (!relayLookup) {
         relayLookup = fetch('uthernet-relay.json', { cache: 'no-store' })
@@ -233,57 +250,46 @@ function configuredRelay(): Promise<string | null> {
                     return null;
                 }
                 const body = (await response.json()) as { relay?: string };
-                const relay = (body.relay || '').trim().replace(/\/$/, '');
-                return /^https?:\/\//i.test(relay) ? relay : null;
+                const relay = (body.relay || '').trim();
+                if (!/^https?:\/\//i.test(relay)) {
+                    return null;
+                }
+                const folder = new URL(
+                    relay.replace(/[^/]*\.php$/i, '').replace(/\/?$/, '/')
+                ).href;
+                const page =
+                    typeof location === 'undefined'
+                        ? ''
+                        : new URL('.', location.href).href;
+                return folder === page ? null : folder;
             })
             .catch(() => null);
     }
     return relayLookup;
 }
 
-let relayLookup: Promise<string | null> | null = null;
-
-async function loadThroughProxy(pageUrl: string): Promise<Response> {
-    return fetch(pageUrl, { cache: 'no-store' });
-}
-
-/** The web server handed back the PHP file instead of running it. */
-async function isUnparsedProxy(response: Response): Promise<boolean> {
-    if (typeof response.clone !== 'function') {
-        return false;
-    }
-    const bytes = new Uint8Array(await response.clone().arrayBuffer());
-    return (
-        bytes.length >= 5 &&
-        bytes[0] === 0x3c &&
-        bytes[1] === 0x3f &&
-        bytes[2] === 0x70 &&
-        bytes[3] === 0x68 &&
-        bytes[4] === 0x70
-    );
-}
-
-async function loadNetwork(): Promise<import('./uthernet_settings').NetConfig | null> {
+/**
+ * LAN settings for Contiki's DHCP lease. uthernet-net.php reports them only
+ * to a browser on its own machine, so a hosted page, or a dev server with
+ * no relay, hands out the virtual network instead.
+ */
+export async function detectNetwork(): Promise<NetConfig> {
     try {
-        const response = await fetch('uthernet-net.php');
-        if (!response.ok) {
-            return null;
+        const response = await callScript('uthernet-net.php');
+        const body = response?.ok ? await readJson(response) : null;
+        if (body) {
+            const ip = parseIp(body.ip);
+            const mask = parseIp(body.mask);
+            const gateway = parseIp(body.gateway);
+            const dns = parseIp(body.dns);
+            if (ip && mask && gateway && dns) {
+                return { ip, mask, gateway, dns };
+            }
         }
-        const body = await readJson(response);
-        if (!body) {
-            return null;
-        }
-        const ip = parseIp(body.ip);
-        const mask = parseIp(body.mask);
-        const gateway = parseIp(body.gateway);
-        const dns = parseIp(body.dns);
-        if (!ip || !mask || !gateway || !dns) {
-            return null;
-        }
-        return { ip, mask, gateway, dns };
     } catch {
-        return null;
+        /* Not JSON. */
     }
+    return VIRTUAL_NET;
 }
 
 async function readJson(
@@ -307,10 +313,10 @@ async function readJson(
 
 async function resolveName(name: string): Promise<string | null> {
     try {
-        const response = await fetch(
+        const response = await callScript(
             `uthernet-dns.php?name=${encodeURIComponent(name)}`
         );
-        if (!response.ok) {
+        if (!response?.ok) {
             return null;
         }
         const text = (await response.text()).trim();
@@ -347,7 +353,7 @@ export default class Uthernet2 implements Card, Restorable<Uthernet2State> {
             load: (url) => loadUrl(url),
             onData: () => this.drainMac(0),
             urlFor: requestUrl,
-            network: () => loadNetwork(),
+            network: () => detectNetwork(),
             resolve: (name) => resolveName(name),
         });
         this.reset();
@@ -523,8 +529,11 @@ export default class Uthernet2 implements Card, Restorable<Uthernet2State> {
             if (gen !== this.sockets[sock].gen) {
                 return;
             }
-            const type = response.headers?.get('content-type') || '';
-            this.sockets[sock].pending = httpBytes(response.status, body, type);
+            this.sockets[sock].pending = httpBytes(
+                response.status,
+                body,
+                pageType(response)
+            );
             this.sockets[sock].pendingOff = 0;
             this.sockets[sock].fetchDone = true;
             this.pump(sock);

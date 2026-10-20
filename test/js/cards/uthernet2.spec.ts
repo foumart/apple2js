@@ -28,6 +28,27 @@ function readWord(card: Uthernet2, addr: number): number {
     return (hi << 8) | lo;
 }
 
+/** A response from uthernet-*.php: marked as run, with the page's own type. */
+function scriptReply(body: Uint8Array | string, type = ''): Response {
+    const bytes =
+        typeof body === 'string' ? new TextEncoder().encode(body) : body;
+    const headers: Record<string, string> = { 'x-uthernet': '1' };
+    if (type) {
+        headers['x-uthernet-type'] = type;
+    }
+    return {
+        ok: true,
+        status: 200,
+        headers: { get: (name: string) => headers[name.toLowerCase()] ?? null },
+        text: async () => new TextDecoder().decode(bytes),
+        arrayBuffer: async () =>
+            bytes.buffer.slice(
+                bytes.byteOffset,
+                bytes.byteOffset + bytes.byteLength
+            ),
+    } as unknown as Response;
+}
+
 describe('Uthernet II', () => {
     it('answers the monitor test and the IP65 probe', () => {
         const card = new Uthernet2();
@@ -70,17 +91,7 @@ describe('Uthernet II', () => {
 
     it('resolves a hostname and returns the fetch body as HTTP/1.0', async () => {
         const payload = new Uint8Array([0x53, 0x54, 0x41, 0x47, 0x45]);
-        const fetchMock = jest.fn(
-            async () =>
-                ({
-                    status: 200,
-                    arrayBuffer: async () =>
-                        payload.buffer.slice(
-                            payload.byteOffset,
-                            payload.byteOffset + payload.byteLength
-                        ),
-                }) as Response
-        );
+        const fetchMock = jest.fn(async () => scriptReply(payload));
         const previous = global.fetch;
         global.fetch = fetchMock as typeof fetch;
 
@@ -345,29 +356,19 @@ describe('Uthernet II MACRAW', () => {
         global.fetch = jest.fn(async (input: RequestInfo | URL) => {
             const url = String(input);
             if (url.includes('uthernet-net.php')) {
-                return {
-                    ok: true,
-                    status: 200,
-                    json: async () => ({
+                return scriptReply(
+                    JSON.stringify({
                         ip: '10.4.4.10',
                         mask: '255.255.255.0',
                         gateway: '10.4.4.1',
                         dns: '10.4.4.1',
-                    }),
-                };
+                    })
+                );
             }
             if (url.includes('uthernet-dns.php')) {
-                return { ok: true, status: 200, text: async () => '93.184.216.34' };
+                return scriptReply('93.184.216.34');
             }
-            return {
-                ok: true,
-                status: 200,
-                arrayBuffer: async () =>
-                    payload.buffer.slice(
-                        payload.byteOffset,
-                        payload.byteOffset + payload.byteLength
-                    ),
-            };
+            return scriptReply(payload);
         }) as unknown as typeof fetch;
 
         try {
@@ -432,6 +433,86 @@ describe('Uthernet II MACRAW', () => {
                 decodeURIComponent(String(args[0]))
             );
             expect(calls.some((url) => url.includes('http://example.com/hello'))).toBe(true);
+        } finally {
+            global.fetch = previous;
+        }
+    });
+
+    it('uses the relay and a virtual network when the page cannot run PHP', async () => {
+        const relay = 'https://relay.example/apps/';
+        const previous = global.fetch;
+        global.fetch = jest.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url === 'uthernet-relay.json') {
+                return {
+                    ok: true,
+                    json: async () => ({ relay: `${relay}uthernet-fetch.php` }),
+                };
+            }
+            if (!url.startsWith(relay)) {
+                // A dev server without PHP hands back the script's source.
+                return { ok: true, status: 200, headers: { get: () => null } };
+            }
+            if (url.includes('uthernet-net.php')) {
+                // The relay is not on this machine, so it reports no LAN.
+                return scriptReply('null');
+            }
+            return scriptReply('<p>Hi', 'text/html; charset=utf-8');
+        }) as unknown as typeof fetch;
+
+        try {
+            await jest.isolateModulesAsync(async () => {
+                // A fresh module, so the relay lookup is not cached yet.
+                const { default: Card } = await import(
+                    '../../../js/cards/uthernet2'
+                );
+                const card = new Card();
+                openMacRaw(card);
+
+                sendFrame(card, dhcp(1));
+                await new Promise((resolve) => setTimeout(resolve, 0));
+                const offer = readFrame(card);
+                expect(offer).not.toBeNull();
+                const lease = ipPayload(offer as Uint8Array).subarray(8);
+                expect(Array.from(lease.subarray(16, 20))).toEqual([
+                    10, 0, 0, 2,
+                ]);
+
+                const server = [93, 184, 216, 34];
+                sendFrame(
+                    card,
+                    tcpFrame(1000, 0, 0x02, new Uint8Array(0), server)
+                );
+                readFrame(card);
+                const req = new TextEncoder().encode(
+                    'GET /hello HTTP/1.0\r\nHost: example.com\r\n\r\n'
+                );
+                sendFrame(card, tcpFrame(1001, 0x1001, 0x18, req, server));
+                await new Promise((resolve) => setTimeout(resolve, 0));
+                card.tick();
+
+                let text = '';
+                for (let i = 0; i < 6; i++) {
+                    const frame = readFrame(card);
+                    if (!frame) {
+                        break;
+                    }
+                    const tcp = ipPayload(frame);
+                    const hlen = ((tcp[12] >> 4) & 0x0f) * 4;
+                    for (let n = hlen; n < tcp.length; n++) {
+                        text += String.fromCharCode(tcp[n]);
+                    }
+                }
+                expect(text).toContain('Content-Type: text/html\r\n');
+                expect(text.endsWith('<p>Hi')).toBe(true);
+                const calls = (global.fetch as jest.Mock).mock.calls.map(
+                    (args: unknown[]) => String(args[0])
+                );
+                expect(calls).toContain(
+                    `${relay}uthernet-fetch.php?url=` +
+                        encodeURIComponent('http://example.com/hello')
+                );
+            });
         } finally {
             global.fetch = previous;
         }

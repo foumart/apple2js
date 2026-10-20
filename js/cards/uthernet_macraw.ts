@@ -488,11 +488,7 @@ export default class MacRawHost {
             if (gen !== conn.gen || gen !== this.gen) {
                 return;
             }
-            conn.body = httpBytes(
-                response.status,
-                body,
-                response.headers?.get('content-type') || ''
-            );
+            conn.body = httpBytes(response.status, body, pageType(response));
             conn.dataSeq = conn.sndNxt;
             this.transmit(conn);
             this.flush();
@@ -793,6 +789,19 @@ function dhcpOptions(replyType: number, net: NetConfig): Uint8Array {
     opt(6, net.dns);
     bytes.push(255);
     return Uint8Array.from(bytes);
+}
+
+/**
+ * Type of a page loaded through uthernet-fetch.php. The script sends every
+ * page as bytes, so a fetched page cannot run on the emulator's origin, and
+ * names the site's own type in X-Uthernet-Type.
+ */
+export function pageType(response: Response): string {
+    return (
+        response.headers?.get('x-uthernet-type') ||
+        response.headers?.get('content-type') ||
+        ''
+    );
 }
 
 export function httpBytes(status: number, body: Uint8Array, contentType = ''): Uint8Array {

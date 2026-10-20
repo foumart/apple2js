@@ -1,5 +1,5 @@
 import Apple2IO, { slot } from '../apple2io';
-import Uthernet2 from '../cards/uthernet2';
+import Uthernet2, { detectNetwork } from '../cards/uthernet2';
 import {
     AddressMode,
     setUthernetPrefs,
@@ -240,45 +240,25 @@ export class Network implements OptionHandler {
         }
     }
 
-    /** Show the address reported by uthernet-net.php. Nothing is invented. */
+    /**
+     * Show the lease Contiki's DHCP gets: the LAN address uthernet-net.php
+     * reports on this machine, or the virtual network when there is none.
+     */
     private async showDetected() {
         if (this.addressMode !== 'auto' || this.detecting) {
             return;
         }
         this.detecting = true;
-        type Detected = {
-            ip?: string;
-            mask?: string;
-            gateway?: string;
-            dns?: string;
-        };
-        let found: Detected | null = null;
-        try {
-            const response = await fetch('uthernet-net.php', {
-                cache: 'no-store',
-            });
-            if (response.ok) {
-                const text = (await response.text()).trim();
-                if (text && text !== 'null') {
-                    const body = JSON.parse(text) as Detected | null;
-                    if (body && typeof body === 'object' && body.ip) {
-                        found = body;
-                    }
-                }
-            }
-        } catch {
-            /* The relay could not see a network. */
-        } finally {
-            this.detecting = false;
-        }
-        if (this.addressMode !== 'auto' || !found?.ip) {
+        const found = await detectNetwork();
+        this.detecting = false;
+        if (this.addressMode !== 'auto') {
             return;
         }
         this.detected = {
-            [IP]: found?.ip ?? '',
-            [MASK]: found?.mask ?? '',
-            [GATEWAY]: found?.gateway ?? '',
-            [DNS]: found?.dns ?? '',
+            [IP]: found.ip.join('.'),
+            [MASK]: found.mask.join('.'),
+            [GATEWAY]: found.gateway.join('.'),
+            [DNS]: found.dns.join('.'),
         };
         this.showField(IP, this.detected[IP]);
         this.showField(MASK, this.detected[MASK]);
