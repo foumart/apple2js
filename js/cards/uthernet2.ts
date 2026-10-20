@@ -268,12 +268,24 @@ function configuredRelay(): Promise<string | null> {
     return relayLookup;
 }
 
+let networkLookup: Promise<NetConfig> | null = null;
+
 /**
  * LAN settings for Contiki's DHCP lease. uthernet-net.php reports them only
  * to a browser on its own machine, so a hosted page, or a dev server with
  * no relay, hands out the virtual network instead.
+ *
+ * Looked up once per page. Loading the saved options changes the Uthernet
+ * settings once per option, and each change asks for the network again.
  */
-export async function detectNetwork(): Promise<NetConfig> {
+export function detectNetwork(): Promise<NetConfig> {
+    if (!networkLookup) {
+        networkLookup = lookupNetwork();
+    }
+    return networkLookup;
+}
+
+async function lookupNetwork(): Promise<NetConfig> {
     try {
         const response = await callScript('uthernet-net.php');
         const body = response?.ok ? await readJson(response) : null;

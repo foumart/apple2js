@@ -27,9 +27,11 @@ function uthernet_guard($bucket)
         echo 'refused';
         exit;
     }
-    if (!uthernet_local_machine()) {
-        $limits = array('dns' => 3, 'fetch' => 6, 'net' => 6);
-        uthernet_rate_limit($bucket, isset($limits[$bucket]) ? $limits[$bucket] : 6, 60);
+    // uthernet-net.php answers other machines with null and does no work,
+    // so it has no limit.
+    $limits = array('dns' => 3, 'fetch' => 6);
+    if (isset($limits[$bucket]) && !uthernet_local_machine()) {
+        uthernet_rate_limit($bucket, $limits[$bucket], 60);
     }
 }
 

@@ -372,7 +372,10 @@ describe('Uthernet II MACRAW', () => {
         }) as unknown as typeof fetch;
 
         try {
-            const card = new Uthernet2();
+            // A fresh module, so the network is looked up with this mock.
+            jest.resetModules();
+            const { default: Card } = await import('../../../js/cards/uthernet2');
+            const card = new Card();
             openMacRaw(card);
             expect(readByte(card, 0x0403)).toBe(0x42);
 
@@ -433,6 +436,33 @@ describe('Uthernet II MACRAW', () => {
                 decodeURIComponent(String(args[0]))
             );
             expect(calls.some((url) => url.includes('http://example.com/hello'))).toBe(true);
+        } finally {
+            global.fetch = previous;
+        }
+    });
+
+    it('looks up the network once while the saved options load', async () => {
+        const previous = global.fetch;
+        global.fetch = jest.fn(async () =>
+            scriptReply('null')
+        ) as unknown as typeof fetch;
+        try {
+            jest.resetModules();
+            const { default: Card } = await import('../../../js/cards/uthernet2');
+            const { setUthernetPrefs } = await import(
+                '../../../js/cards/uthernet_settings'
+            );
+            const card = new Card();
+            openMacRaw(card);
+            // Options.addOptions applies the eight saved settings one by one.
+            for (let i = 0; i < 8; i++) {
+                setUthernetPrefs({ addressMode: 'auto' });
+            }
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            const lookups = (global.fetch as jest.Mock).mock.calls.filter(
+                (args: unknown[]) => String(args[0]).includes('uthernet-net.php')
+            );
+            expect(lookups).toHaveLength(1);
         } finally {
             global.fetch = previous;
         }
