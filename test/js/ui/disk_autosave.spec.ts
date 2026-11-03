@@ -49,6 +49,13 @@ describe('disk_autosave', () => {
         );
     });
 
+    it('readAutosaveEnabled turns on from autosave=true', () => {
+        expect(readAutosaveEnabled('?autosave=true')).toBe(true);
+        expect(
+            readAutosaveEnabled('?embedded=true&disk=false&autosave=true')
+        ).toBe(true);
+    });
+
     it.skip('readAutosaveEnabled when master switch is on', () => {
         expect(readAutosaveEnabled('')).toBe(true);
         expect(readAutosaveEnabled('?embedded=true')).toBe(true);

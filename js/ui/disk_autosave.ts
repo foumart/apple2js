@@ -9,7 +9,6 @@ import type DriveLights from './drive_lights';
 
 const AUTOSAVE_PREFIX = 'apple2js:autosave:';
 const DEBOUNCE_MS = 2500;
-const PERIODIC_MS = 5000;
 
 /** Master switch for automatic disk-image persistence across reloads. */
 export const DISK_AUTOSAVE_ENABLED = false;
@@ -26,20 +25,24 @@ function haveStorage(): boolean {
     return typeof window !== 'undefined' && !!window.localStorage;
 }
 
-/** URL/localStorage pref: autosave=false opts out when DISK_AUTOSAVE_ENABLED is on. */
+/**
+ * autosave=true on the page URL turns saving on. autosave=false turns it off.
+ * With no parameter, DISK_AUTOSAVE_ENABLED decides.
+ */
 export function readAutosaveEnabled(
     search: string | URLSearchParams = window.location.search
 ): boolean {
-    if (!DISK_AUTOSAVE_ENABLED) return false;
-
     const params =
         typeof search === 'string'
             ? new URLSearchParams(
                   search.startsWith('?') ? search.slice(1) : search
               )
             : search;
-    if (!params.has('autosave')) return true;
-    return params.get('autosave') !== 'false';
+    if (params.has('autosave')) {
+        const value = (params.get('autosave') || '').toLowerCase();
+        return value !== 'false' && value !== '0';
+    }
+    return DISK_AUTOSAVE_ENABLED;
 }
 
 function readHashDiskUrl(driveNo: DriveNumber): string | undefined {
@@ -414,54 +417,40 @@ export async function restoreDiskAutosaves(
 
 let disk2Ref: DiskII | null = null;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-const pendingDirty = new Set<DriveNumber>();
 /** Drives the player has written to since autosave hooks were armed. */
 const modifiedSinceBoot = new Set<DriveNumber>();
-const lastDirtyAt = new Map<DriveNumber, number>();
+/** Drives written since the last snapshot. One snapshot is stored per burst. */
+const unsaved = new Set<DriveNumber>();
 
-function flushAutosaveForDrives(
-    driveNos: DriveNumber[],
-    force = false,
-    manual = false
-) {
+function flushUnsaved() {
     if (!disk2Ref || !haveStorage() || !readAutosaveEnabled()) return;
 
-    for (const driveNo of driveNos) {
+    for (const driveNo of [...unsaved]) {
         const sourceUrl = getActiveDiskSourceUrl(driveNo);
         if (!sourceUrl) continue;
-        if (!manual && !modifiedSinceBoot.has(driveNo)) continue;
-        if (!force && !disk2Ref.getMetadata(driveNo).dirty) continue;
-        saveDiskAutosave(disk2Ref, driveNo, sourceUrl, { manual });
+        if (saveDiskAutosave(disk2Ref, driveNo, sourceUrl)) {
+            unsaved.delete(driveNo);
+        }
     }
 }
 
 function flushAllDirty() {
-    if (!disk2Ref) return;
-    const now = Date.now();
-    for (const driveNo of DRIVE_NUMBERS) {
-        if (!modifiedSinceBoot.has(driveNo)) continue;
-        if (!disk2Ref.getMetadata(driveNo).dirty) continue;
-        const last = lastDirtyAt.get(driveNo) ?? 0;
-        if (now - last < DEBOUNCE_MS) continue;
-        pendingDirty.add(driveNo);
+    if (debounceTimer !== null) {
+        clearTimeout(debounceTimer);
+        debounceTimer = null;
     }
-    flushAutosaveForDrives([...pendingDirty], true, false);
-    pendingDirty.clear();
+    flushUnsaved();
 }
 
 function scheduleAutosave(driveNo: DriveNumber) {
-    // IMPORTANT: the dirty callback fires on EVERY nibble written to disk
-    // (thousands of times during a single BSAVE). Serializing synchronously
-    // here froze the emulator loop, so only ever (re)arm a debounce timer that
-    // coalesces the writes into a single save once activity settles.
-    pendingDirty.add(driveNo);
+    // A BSAVE reports every nibble. Wait until that burst stops, then store once.
+    unsaved.add(driveNo);
     if (debounceTimer !== null) {
         clearTimeout(debounceTimer);
     }
     debounceTimer = setTimeout(() => {
         debounceTimer = null;
-        flushAutosaveForDrives([...pendingDirty], false, false);
-        pendingDirty.clear();
+        flushUnsaved();
     }, DEBOUNCE_MS);
 }
 
@@ -471,22 +460,16 @@ export function initDiskAutosave(disk2: DiskII, driveLights: DriveLights) {
 
     disk2Ref = disk2;
     modifiedSinceBoot.clear();
-    lastDirtyAt.clear();
 
     const originalDirty = driveLights.dirty.bind(driveLights);
     driveLights.dirty = (driveNo: DriveNumber, dirty: boolean) => {
         originalDirty(driveNo, dirty);
         if (dirty) {
             modifiedSinceBoot.add(driveNo);
-            lastDirtyAt.set(driveNo, Date.now());
             scheduleAutosave(driveNo);
         }
     };
 
     window.addEventListener('pagehide', flushAllDirty);
     window.addEventListener('beforeunload', flushAllDirty);
-
-    setInterval(() => {
-        flushAutosaveForDrives([...DRIVE_NUMBERS]);
-    }, PERIODIC_MS);
 }
